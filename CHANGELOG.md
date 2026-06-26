@@ -2,6 +2,13 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.4.1 - Table Panel Data Robustness
+
+- Validate table panel data files in the developer check script.
+- Detect missing configured sort fields in panel data rows.
+- Detect missing configured column fields in panel data rows.
+- Require configured sort fields to be numeric.
+
 ## v0.4.0 - Multi-Panel Table Foundation
 
 - Add a second configured table panel.

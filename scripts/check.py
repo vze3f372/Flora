@@ -77,6 +77,67 @@ def check_config_validator():
     run_command([sys.executable, "scripts/validate-config.py"])
 
 
+def is_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def load_json_file(path):
+    try:
+        return json.loads(Path(path).read_text())
+    except json.JSONDecodeError as error:
+        raise ValueError(f"{path} is not valid JSON: {error}") from error
+
+
+def check_table_panel_data(panel_name, panel):
+    panel_path = f"panels.{panel_name}"
+    data_file = panel.get("dataFile")
+
+    if not data_file:
+        raise ValueError(f"{panel_path}.dataFile is required")
+
+    data_path = Path(data_file)
+
+    if not data_path.exists():
+        raise ValueError(f"{panel_path}.dataFile does not exist: {data_file}")
+
+    data = load_json_file(data_path)
+
+    if not isinstance(data, dict):
+        raise ValueError(f"{data_file} must contain a JSON object")
+
+    sort_fields = [
+        field
+        for field in [panel.get("sortBy"), panel.get("sortThenBy")]
+        if field
+    ]
+
+    columns = panel.get("columns", [])
+    column_fields = [
+        column.get("field")
+        for column in columns
+        if isinstance(column, dict) and column.get("field")
+    ]
+
+    required_fields = list(dict.fromkeys(sort_fields + column_fields))
+
+    for row_name, row in data.items():
+        row_path = f"{data_file}.{row_name}"
+
+        if not isinstance(row_name, str) or not row_name.strip():
+            raise ValueError(f"{data_file} contains an empty row name")
+
+        if not isinstance(row, dict):
+            raise ValueError(f"{row_path} must be an object")
+
+        for field in required_fields:
+            if field not in row:
+                raise ValueError(f"{row_path} missing field: {field}")
+
+        for field in sort_fields:
+            if not is_number(row[field]):
+                raise ValueError(f"{row_path}.{field} must be numeric")
+
+
 def check_config_shape():
     print_step("checking config.json shape")
 
@@ -97,13 +158,7 @@ def check_config_shape():
         if panel.get("type") != "table":
             raise ValueError(f"{panel_path}.type must be table")
 
-        data_file = panel.get("dataFile")
-
-        if not data_file:
-            raise ValueError(f"{panel_path}.dataFile is required")
-
-        if not Path(data_file).exists():
-            raise ValueError(f"{panel_path}.dataFile does not exist: {data_file}")
+        check_table_panel_data(panel_name, panel)
 
 
 def check_readme_references():
