@@ -132,9 +132,6 @@ def validate_table_panel(panel, panel_path):
 
     validate_columns(panel.get("columns"), f"{panel_path}.columns")
 
-    if "scroll" in panel:
-        validate_scroll(panel["scroll"], f"{panel_path}.scroll")
-
 
 def validate_rotation(rotation, panels):
     require_object(rotation, "rotation")
