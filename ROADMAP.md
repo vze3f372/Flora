@@ -1,4 +1,14 @@
-# StreamPanel Roadmap
+# Flora Roadmap
+
+
+## v0.3.0 - Panel Engine Foundation
+
+- Introduce generic `panels` configuration root.
+- Add explicit panel `type` support.
+- Keep the existing raids table panel working.
+- Add renderer dispatch for future panel types.
+- Make table column widths config-driven.
+- Preserve compatibility with the legacy `leaderboards` configuration root during transition.
 
 ## Completed
 
@@ -13,7 +23,7 @@
 
 ## Next
 
-- [ ] Generic column definitions
+- [x] Generic column definitions
 - [ ] Split CSS into layout/theme/animation files
 - [ ] Smooth scrolling without visible scrollbar
 - [ ] OBS Browser Source setup documentation

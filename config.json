@@ -1,36 +1,37 @@
 {
-    "theme": "cyan",
-    "refreshSeconds": 3,
-    "leaderboards": {
-        "raids": {
-            "title": "TOP RAIDERS",
-            "subtitle": "THANK YOU FOR THE SUPPORT",
-            "dataFile": "data/raids.json",
-            "maxRows": 10,
-            "sortBy": "viewers",
-            "sortThenBy": "raids",
-            "columns": [
-                {
-                    "label": "Viewers",
-                    "field": "viewers",
-                    "className": "primary-number",
-                    "align": "center",
-                    "width": "150px"
-                },
-                {
-                    "label": "Raids",
-                    "field": "raids",
-                    "className": "secondary-number",
-                    "align": "center",
-                    "width": "110px"
-                }
-            ],
-            "scroll": {
-                "enabled": true,
-                "speedPixelsPerSecond": 24,
-                "startDelaySeconds": 1,
-                "gapPixels": 20
-            }
+  "theme": "cyan",
+  "refreshSeconds": 3,
+  "panels": {
+    "raids": {
+      "title": "TOP RAIDERS",
+      "subtitle": "THANK YOU FOR THE SUPPORT",
+      "dataFile": "data/raids.json",
+      "maxRows": 10,
+      "sortBy": "viewers",
+      "sortThenBy": "raids",
+      "columns": [
+        {
+          "label": "Viewers",
+          "field": "viewers",
+          "className": "primary-number",
+          "align": "center",
+          "width": "150px"
+        },
+        {
+          "label": "Raids",
+          "field": "raids",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "110px"
         }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "type": "table"
     }
+  }
 }
