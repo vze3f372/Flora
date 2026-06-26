@@ -82,8 +82,25 @@ See:
 docs/streamerbot/raid-table-panel.md
 ```
 
+## Validate configuration
+
+Flora includes a standard-library validation script for `config.json`.
+
+Run:
+
+```bash
+python scripts/validate-config.py
+```
+
+Expected output:
+
+```text
+config.json is valid
+```
+
 ## Documentation
 
 - `ROADMAP.md`
 - `docs/DESIGN.md`
+- `docs/configuration.md`
 - `docs/streamerbot/raid-table-panel.md`

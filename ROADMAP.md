@@ -2,6 +2,15 @@
 
 
 
+
+## v0.3.3 - Configuration Documentation and Validation
+
+- Add a configuration reference for `config.json`.
+- Document top-level configuration fields.
+- Document table panel configuration.
+- Document columns, sorting, and scroll settings.
+- Add a standard-library validation script for `config.json`.
+
 ## v0.3.2 - Documentation and Setup Cleanup
 
 - Move prototype Streamer.bot instructions into `docs/streamerbot/`.
