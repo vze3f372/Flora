@@ -1,5 +1,7 @@
 let scrollController = null;
 let lastRenderSignature = "";
+let rotationIndex = 0;
+let rotationTimer = null;
 
 const PANEL_RENDERERS = {
   table: renderTablePanel,
@@ -45,6 +47,18 @@ function getQueryValue(name, fallback) {
   return params.get(name) || fallback;
 }
 
+function hasQueryValue(name) {
+  const params = new URLSearchParams(window.location.search);
+  return params.has(name);
+}
+
+function getQueryFlag(name) {
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get(name);
+
+  return ["1", "true", "yes", "on"].includes(String(value).toLowerCase());
+}
+
 function escapeHtml(text) {
   return String(text)
     .replaceAll("&", "&amp;")
@@ -61,6 +75,66 @@ function getNumber(value) {
 
 function getPanelConfig(config, type) {
   return config.panels?.[type] ?? config.leaderboards?.[type] ?? null;
+}
+
+function getRotationEntries(config) {
+  const rotation = config.rotation;
+
+  if (!isObject(rotation) || !Array.isArray(rotation.panels)) {
+    return [];
+  }
+
+  return rotation.panels.filter(entry => (
+    isObject(entry)
+    && typeof entry.panel === "string"
+    && entry.panel.trim()
+  ));
+}
+
+function shouldUseRotation(config) {
+  if (hasQueryValue("type")) {
+    return false;
+  }
+
+  return getQueryFlag("rotation") || config.rotation?.enabled === true;
+}
+
+function normalizeRotationIndex(entries) {
+  if (entries.length === 0) {
+    rotationIndex = 0;
+    return;
+  }
+
+  if (rotationIndex < 0 || rotationIndex >= entries.length) {
+    rotationIndex = 0;
+  }
+}
+
+function getRotationDurationMilliseconds(entry) {
+  const durationSeconds = Number(entry.durationSeconds);
+  const safeDurationSeconds = Number.isFinite(durationSeconds) && durationSeconds > 0
+    ? durationSeconds
+    : 10;
+
+  return safeDurationSeconds * 1000;
+}
+
+function getRotationTransitionMilliseconds(config) {
+  const transitionMilliseconds = Number(config.rotation?.transitionMilliseconds);
+
+  if (!Number.isFinite(transitionMilliseconds) || transitionMilliseconds < 0) {
+    return 500;
+  }
+
+  return transitionMilliseconds;
+}
+
+function getPanelShell() {
+  return document.querySelector(".panel-shell") ?? document.body;
+}
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
 function renderPanelError(title, message) {
@@ -358,7 +432,7 @@ function buildRenderSignature(type, panelConfig, data) {
   });
 }
 
-async function renderPanel(force = false, configOverride = null) {
+async function renderPanel(force = false, configOverride = null, typeOverride = null) {
   let config = configOverride;
 
   if (!config) {
@@ -373,7 +447,7 @@ async function renderPanel(force = false, configOverride = null) {
     config = configResult.data;
   }
 
-  const type = getQueryValue("type", "raids");
+  const type = typeOverride ?? getQueryValue("type", "raids");
   const panelConfig = getPanelConfig(config, type);
 
   if (!panelConfig) {
@@ -524,6 +598,74 @@ function renderGoalPanel(type, panelConfig, data) {
   `;
 }
 
+async function renderRotationPanel(force = false) {
+  const configResult = await loadJson("config.json");
+
+  if (!configResult.ok) {
+    lastRenderSignature = "";
+    renderPanelError("CONFIG ERROR", configResult.message);
+    return null;
+  }
+
+  const config = configResult.data;
+  const entries = getRotationEntries(config);
+
+  if (entries.length === 0) {
+    lastRenderSignature = "";
+    renderPanelError("ROTATION ERROR", "No rotation panels configured.");
+    return null;
+  }
+
+  normalizeRotationIndex(entries);
+
+  const entry = entries[rotationIndex];
+  const panelName = entry.panel;
+
+  await renderPanel(force, config, panelName);
+
+  return {
+    config,
+    entries,
+    entry
+  };
+}
+
+async function transitionToNextRotationPanel(result) {
+  const shell = getPanelShell();
+  const transitionMilliseconds = getRotationTransitionMilliseconds(result.config);
+
+  if (transitionMilliseconds > 0) {
+    shell.classList.add("is-rotating-out");
+    await wait(transitionMilliseconds);
+  }
+
+  rotationIndex = (rotationIndex + 1) % result.entries.length;
+
+  const nextResult = await renderRotationPanel(true);
+
+  if (transitionMilliseconds > 0) {
+    requestAnimationFrame(() => {
+      shell.classList.remove("is-rotating-out");
+    });
+  }
+
+  scheduleRotation(nextResult);
+}
+
+function scheduleRotation(result) {
+  if (rotationTimer) {
+    clearTimeout(rotationTimer);
+  }
+
+  if (!result || !result.entries.length) {
+    return;
+  }
+
+  rotationTimer = setTimeout(() => {
+    transitionToNextRotationPanel(result);
+  }, getRotationDurationMilliseconds(result.entry));
+}
+
 async function start() {
   const configResult = await loadJson("config.json");
 
@@ -535,6 +677,17 @@ async function start() {
 
   const config = configResult.data;
   const refreshSeconds = config.refreshSeconds ?? 5;
+
+  if (shouldUseRotation(config)) {
+    const result = await renderRotationPanel(true);
+    scheduleRotation(result);
+
+    if (refreshSeconds > 0) {
+      setInterval(() => renderRotationPanel(false), refreshSeconds * 1000);
+    }
+
+    return;
+  }
 
   await renderPanel(true, config);
 

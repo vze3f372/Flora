@@ -321,6 +321,51 @@ New configuration should use:
 
 The legacy fallback should not be used for new features.
 
+## Panel rotation
+
+Panel rotation allows one OBS browser source to cycle through multiple panels.
+
+Example:
+
+~~~json
+"rotation": {
+  "enabled": false,
+  "transitionMilliseconds": 500,
+  "panels": [
+    {
+      "panel": "raids",
+      "durationSeconds": 10
+    },
+    {
+      "panel": "bits",
+      "durationSeconds": 10
+    },
+    {
+      "panel": "follower-goal",
+      "durationSeconds": 12
+    }
+  ]
+}
+~~~
+
+Use this URL to force rotation mode:
+
+~~~text
+http://localhost:8000/panel.html?rotation=true
+~~~
+
+Direct panel URLs take priority over rotation:
+
+~~~text
+http://localhost:8000/panel.html?type=raids
+~~~
+
+`rotation.enabled` is optional. When set to `true`, Flora rotates panels when no direct `type` query is provided.
+
+`rotation.transitionMilliseconds` controls the fade/dissolve duration between panels. Use `0` to disable the transition.
+
+Each rotation entry must reference an existing panel and define a positive `durationSeconds` value.
+
 ## Goal panels
 
 ### Goal panel progress colors

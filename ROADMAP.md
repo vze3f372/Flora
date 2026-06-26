@@ -12,6 +12,16 @@
 
 
 
+
+## v0.6.0 - Panel Rotation Foundation
+
+- Add optional panel rotation mode.
+- Add configurable rotation order.
+- Add configurable panel display durations.
+- Keep direct panel URLs unchanged.
+- Keep existing renderers unchanged.
+- Add fade/dissolve transitions between rotated panels.
+
 ## v0.5.2 - Goal Panel Theme Configuration
 
 - Add configurable goal progress colors.

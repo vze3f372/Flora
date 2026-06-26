@@ -26,3 +26,16 @@
         transform: translateY(calc(var(--scroll-distance) * -1));
     }
 }
+
+.panel-shell {
+  transition:
+    opacity 500ms ease,
+    transform 500ms ease,
+    filter 500ms ease;
+}
+
+.panel-shell.is-rotating-out {
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(2px);
+}

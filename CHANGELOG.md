@@ -2,6 +2,16 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.6.0 - Panel Rotation Foundation
+
+- Add optional panel rotation configuration.
+- Add `?rotation=true` URL support.
+- Allow one OBS browser source to cycle through configured panels.
+- Support per-panel rotation durations.
+- Keep direct `?type=` panel URLs working.
+- Validate rotation configuration.
+- Add fade/dissolve transitions between rotated panels.
+
 ## v0.5.2 - Goal Panel Theme Configuration
 
 - Add optional goal progress fill color configuration.
