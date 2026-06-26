@@ -44,10 +44,10 @@ function getPanelConfig(config, type) {
 }
 
 function renderPanelError(title, message) {
-  document.getElementById("leaderboard-title").textContent = title;
-  document.getElementById("leaderboard-subtitle").textContent = message;
-  document.getElementById("leaderboard-scroll-track").innerHTML =
-    `<div class="leaderboard-empty">${escapeHtml(message)}</div>`;
+  document.getElementById("panel-title").textContent = title;
+  document.getElementById("panel-subtitle").textContent = message;
+  document.getElementById("table-panel-scroll-track").innerHTML =
+    `<div class="table-panel-empty">${escapeHtml(message)}</div>`;
 }
 
 function sortEntries(entries, panelConfig) {
@@ -91,13 +91,13 @@ function getTableGridTemplate(panelConfig) {
 }
 
 function renderTableColumns(panelConfig) {
-  const columns = document.getElementById("leaderboard-columns");
+  const columns = document.getElementById("table-panel-columns");
 
   columns.innerHTML = `
-    <div class="leaderboard-column leaderboard-column--rank">Rank</div>
-    <div class="leaderboard-column leaderboard-column--name">Name</div>
+    <div class="table-panel-column table-panel-column--rank">Rank</div>
+    <div class="table-panel-column table-panel-column--name">Name</div>
     ${panelConfig.columns.map(column => `
-      <div class="leaderboard-column leaderboard-column--${escapeHtml(column.className || column.field)}" style="${getColumnStyle(column)}">
+      <div class="table-panel-column table-panel-column--${escapeHtml(column.className || column.field)}" style="${getColumnStyle(column)}">
         ${escapeHtml(column.label)}
       </div>
     `).join("")}
@@ -105,27 +105,27 @@ function renderTableColumns(panelConfig) {
 }
 
 function getRankClass(rank) {
-  if (rank === 1) return "leaderboard-row--gold";
-  if (rank === 2) return "leaderboard-row--silver";
-  if (rank === 3) return "leaderboard-row--bronze";
+  if (rank === 1) return "table-panel-row--gold";
+  if (rank === 2) return "table-panel-row--silver";
+  if (rank === 3) return "table-panel-row--bronze";
 
   return "";
 }
 
 function createTableRow(rank, name, stats, panelConfig) {
   const row = document.createElement("div");
-  row.className = `leaderboard-row ${getRankClass(rank)}`.trim();
+  row.className = `table-panel-row ${getRankClass(rank)}`.trim();
 
   const valueCells = panelConfig.columns.map(column => {
     const value = stats[column.field] ?? 0;
     const className = column.className || column.field;
 
-    return `<div class="leaderboard-value leaderboard-value--${escapeHtml(className)}" style="${getColumnStyle(column)}">${escapeHtml(value)}</div>`;
+    return `<div class="table-panel-value table-panel-value--${escapeHtml(className)}" style="${getColumnStyle(column)}">${escapeHtml(value)}</div>`;
   }).join("");
 
   row.innerHTML = `
-    <div class="leaderboard-rank">${rank}.</div>
-    <div class="leaderboard-name">${escapeHtml(name)}</div>
+    <div class="table-panel-rank">${rank}.</div>
+    <div class="table-panel-name">${escapeHtml(name)}</div>
     ${valueCells}
   `;
 
@@ -174,7 +174,7 @@ class ScrollController {
     const originals = Array.from(this.track.children);
 
     const gap = document.createElement("div");
-    gap.className = "leaderboard-scroll-gap";
+    gap.className = "table-panel-scroll-gap";
     gap.dataset.scrollDuplicate = "true";
     gap.style.height = `${gapPixels}px`;
 
@@ -240,17 +240,17 @@ async function renderPanel(force = false) {
 }
 
 function renderTablePanel(type, panelConfig, data) {
-  document.getElementById("leaderboard-title").textContent = panelConfig.title;
-  document.getElementById("leaderboard-subtitle").textContent = panelConfig.subtitle;
+  document.getElementById("panel-title").textContent = panelConfig.title;
+  document.getElementById("panel-subtitle").textContent = panelConfig.subtitle;
 
   const gridTemplate = getTableGridTemplate(panelConfig);
-  const columns = document.getElementById("leaderboard-columns");
+  const columns = document.getElementById("table-panel-columns");
 
   columns.style.setProperty("--panel-grid-template", gridTemplate);
   renderTableColumns(panelConfig);
 
-  const viewport = document.getElementById("leaderboard-rows");
-  const track = document.getElementById("leaderboard-scroll-track");
+  const viewport = document.getElementById("table-panel-rows");
+  const track = document.getElementById("table-panel-scroll-track");
 
   track.style.setProperty("--panel-grid-template", gridTemplate);
 
@@ -265,7 +265,7 @@ function renderTablePanel(type, panelConfig, data) {
   const maxRows = panelConfig.maxRows ?? 10;
 
   if (entries.length === 0) {
-    track.innerHTML = `<div class="leaderboard-empty">No entries yet</div>`;
+    track.innerHTML = `<div class="table-panel-empty">No entries yet</div>`;
     track.classList.add("is-static");
     return;
   }

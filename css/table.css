@@ -1,12 +1,12 @@
-.leaderboard-columns,
-.leaderboard-row {
+.table-panel-columns,
+.table-panel-row {
     display: grid;
     grid-template-columns: var(--panel-grid-template, 70px minmax(0, 1fr) 150px 110px);
     align-items: center;
     column-gap: 12px;
 }
 
-.leaderboard-columns {
+.table-panel-columns {
     margin-bottom: 10px;
     padding: 0 16px;
     font-size: clamp(11px, 1.6vw, 15px);
@@ -16,7 +16,7 @@
     text-transform: uppercase;
 }
 
-.leaderboard-row {
+.table-panel-row {
     min-height: 58px;
     margin: 7px 0;
     padding: 6px 16px;
@@ -25,14 +25,14 @@
     border-radius: 9px;
 }
 
-.leaderboard-rank {
+.table-panel-rank {
     font-size: clamp(22px, 4vw, 34px);
     font-weight: 900;
     color: var(--accent-primary);
     text-shadow: var(--value-glow);
 }
 
-.leaderboard-name {
+.table-panel-name {
     font-size: clamp(20px, 4vw, 31px);
     font-weight: 900;
     white-space: nowrap;
@@ -41,27 +41,27 @@
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
-.leaderboard-value {
+.table-panel-value {
     text-align: center;
     font-size: clamp(18px, 3.4vw, 27px);
     font-weight: 800;
     color: var(--text-secondary);
 }
 
-.leaderboard-value--primary-number {
+.table-panel-value--primary-number {
     font-size: clamp(22px, 4vw, 33px);
     font-weight: 900;
     color: var(--accent-primary);
     text-shadow: var(--value-glow);
 }
 
-.leaderboard-value--secondary-number {
+.table-panel-value--secondary-number {
     font-size: clamp(18px, 3.4vw, 27px);
     font-weight: 800;
     color: var(--text-secondary);
 }
 
-.leaderboard-rows {
+.table-panel-rows {
     position: relative;
     max-height: calc(100vh - 230px);
     overflow: hidden;
@@ -81,14 +81,14 @@
     );
 }
 
-.leaderboard-empty {
+.table-panel-empty {
     margin-top: 70px;
     text-align: center;
     font-size: 28px;
     color: var(--text-secondary);
 }
 
-.leaderboard-row--gold {
+.table-panel-row--gold {
     min-height: 66px;
     background:
         linear-gradient(90deg, rgba(255, 209, 102, 0.26), rgba(255, 255, 255, 0.055)),
@@ -99,7 +99,7 @@
         0 0 16px rgba(255, 209, 102, 0.24);
 }
 
-.leaderboard-row--silver {
+.table-panel-row--silver {
     background:
         linear-gradient(90deg, rgba(215, 226, 235, 0.20), rgba(255, 255, 255, 0.045)),
         var(--row-background);
@@ -109,7 +109,7 @@
         0 0 12px rgba(215, 226, 235, 0.16);
 }
 
-.leaderboard-row--bronze {
+.table-panel-row--bronze {
     background:
         linear-gradient(90deg, rgba(205, 127, 50, 0.20), rgba(255, 255, 255, 0.04)),
         var(--row-background);
@@ -119,21 +119,21 @@
         0 0 12px rgba(205, 127, 50, 0.16);
 }
 
-.leaderboard-row--gold .leaderboard-rank {
+.table-panel-row--gold .table-panel-rank {
     color: #ffd166;
     text-shadow:
         0 0 8px rgba(255, 209, 102, 0.85),
         0 0 18px rgba(255, 209, 102, 0.32);
 }
 
-.leaderboard-row--silver .leaderboard-rank {
+.table-panel-row--silver .table-panel-rank {
     color: #d7e2eb;
     text-shadow:
         0 0 8px rgba(215, 226, 235, 0.75),
         0 0 16px rgba(215, 226, 235, 0.24);
 }
 
-.leaderboard-row--bronze .leaderboard-rank {
+.table-panel-row--bronze .table-panel-rank {
     color: #cd7f32;
     text-shadow:
         0 0 8px rgba(205, 127, 50, 0.75),

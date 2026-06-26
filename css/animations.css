@@ -1,23 +1,23 @@
-.leaderboard-scroll-track {
+.table-panel-scroll-track {
     --scroll-distance: 0px;
     --scroll-duration: 20s;
     --scroll-delay: 3s;
     transform: translateY(0);
 }
 
-.leaderboard-scroll-track.is-scrolling {
-    animation: leaderboard-scroll var(--scroll-duration) linear var(--scroll-delay) infinite;
+.table-panel-scroll-track.is-scrolling {
+    animation: table-panel-scroll var(--scroll-duration) linear var(--scroll-delay) infinite;
 }
 
-.leaderboard-scroll-track.is-static {
+.table-panel-scroll-track.is-static {
     animation: none;
 }
 
-.leaderboard-scroll-gap {
+.table-panel-scroll-gap {
     height: var(--scroll-gap, 20px);
 }
 
-@keyframes leaderboard-scroll {
+@keyframes table-panel-scroll {
     from {
         transform: translateY(0);
     }
