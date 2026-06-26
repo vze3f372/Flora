@@ -365,7 +365,8 @@ function renderTablePanel(type, panelConfig, data) {
   const maxRows = panelConfig.maxRows ?? 10;
 
   if (entries.length === 0) {
-    track.innerHTML = `<div class="table-panel-empty">No entries yet</div>`;
+    const emptyMessage = panelConfig.emptyMessage ?? "No entries yet";
+    track.innerHTML = `<div class="table-panel-empty">${escapeHtml(emptyMessage)}</div>`;
     track.classList.add("is-static");
     return;
   }

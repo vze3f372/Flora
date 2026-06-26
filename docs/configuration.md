@@ -133,6 +133,22 @@ Example:
 "dataFile": "data/raids.json"
 ```
 
+### `emptyMessage`
+
+Optional text displayed when a table panel data file is valid but contains no rows.
+
+Example:
+
+~~~json
+"emptyMessage": "No raids recorded yet"
+~~~
+
+If omitted, Flora displays:
+
+~~~text
+No entries yet
+~~~
+
 ### `maxRows`
 
 Maximum number of rows displayed before scroll duplication is applied.
