@@ -13,11 +13,17 @@
             "columns": [
                 {
                     "label": "Viewers",
-                    "field": "viewers"
+                    "field": "viewers",
+                    "className": "primary-number",
+                    "align": "center",
+                    "width": "150px"
                 },
                 {
                     "label": "Raids",
-                    "field": "raids"
+                    "field": "raids",
+                    "className": "secondary-number",
+                    "align": "center",
+                    "width": "110px"
                 }
             ]
         }

@@ -136,3 +136,16 @@ body {
 .leaderboard-value--raids {
     color: #b7c4ce;
 }
+
+.leaderboard-value--primary-number {
+    font-size: clamp(22px, 4vw, 33px);
+    font-weight: 900;
+    color: #38f3ff;
+    text-shadow: 0 0 8px rgba(0, 230, 255, 0.55);
+}
+
+.leaderboard-value--secondary-number {
+    font-size: clamp(18px, 3.4vw, 27px);
+    font-weight: 800;
+    color: #b7c4ce;
+}

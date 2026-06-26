@@ -51,13 +51,31 @@ function sortEntries(entries, boardConfig) {
     });
 }
 
+function getColumnStyle(column) {
+    const styles = [];
+
+    if (column.align) {
+        styles.push(`text-align: ${column.align}`);
+    }
+
+    if (column.width) {
+        styles.push(`--column-width: ${column.width}`);
+    }
+
+    return styles.join("; ");
+}
+
 function renderColumns(boardConfig) {
     const columns = document.getElementById("leaderboard-columns");
 
     columns.innerHTML = `
-        <div>Rank</div>
-        <div>Name</div>
-        ${boardConfig.columns.map(column => `<div>${escapeHtml(column.label)}</div>`).join("")}
+        <div class="leaderboard-column leaderboard-column--rank">Rank</div>
+        <div class="leaderboard-column leaderboard-column--name">Name</div>
+        ${boardConfig.columns.map(column => `
+            <div class="leaderboard-column leaderboard-column--${escapeHtml(column.className || column.field)}" style="${getColumnStyle(column)}">
+                ${escapeHtml(column.label)}
+            </div>
+        `).join("")}
     `;
 }
 
@@ -67,7 +85,8 @@ function createRow(rank, name, stats, boardConfig) {
 
     const valueCells = boardConfig.columns.map(column => {
         const value = stats[column.field] ?? 0;
-        return `<div class="leaderboard-value leaderboard-value--${escapeHtml(column.field)}">${escapeHtml(value)}</div>`;
+        const className = column.className || column.field;
+        return `<div class="leaderboard-value leaderboard-value--${escapeHtml(className)}" style="${getColumnStyle(column)}">${escapeHtml(value)}</div>`;
     }).join("");
 
     row.innerHTML = `
