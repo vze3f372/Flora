@@ -29,6 +29,8 @@ REQUIRED_FILES = [
     "data/events.json",
     "scripts/validate-config.py",
     "scripts/flora-data.py",
+    "docs/streamerbot/http-actions.md",
+    "scripts/flora-server.py",
 ]
 
 

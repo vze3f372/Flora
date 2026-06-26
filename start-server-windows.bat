@@ -1,3 +1,3 @@
 @echo off
 cd /d "%~dp0"
-python -m http.server 8000
+py -3 scripts\flora-server.py --host 127.0.0.1 --port 8000

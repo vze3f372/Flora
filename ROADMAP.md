@@ -19,6 +19,15 @@
 
 
 
+## v0.9.0 - Streamer.bot HTTP Action Integration
+
+- Add a localhost API bridge for Streamer.bot.
+- Avoid direct Wine-to-Linux Python command execution.
+- Route Streamer.bot events through HTTP POST requests.
+- Reuse the existing Flora JSON writer.
+- Add dry-run testing for real Streamer.bot actions.
+- Document raid, bits, follow, sub, goal, and custom event actions.
+
 ## v0.8.2 - Event Writer Convenience Commands
 
 - Add shortcut commands for common recent event types.

@@ -2,6 +2,19 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.9.0 - Streamer.bot HTTP Action Integration
+
+- Add local Flora HTTP server.
+- Serve OBS browser-source files through the Flora server.
+- Add `/api/raid` endpoint for raid table and recent event updates.
+- Add `/api/bits` endpoint for bits table and recent event updates.
+- Add `/api/follow` endpoint for recent follow events.
+- Add `/api/sub` endpoint for recent subscription events.
+- Add `/api/goal` endpoint for goal updates.
+- Add `/api/event` endpoint for custom recent events.
+- Add dry-run support for Streamer.bot HTTP actions.
+- Document Streamer.bot HTTP request setup.
+
 ## v0.8.2 - Event Writer Convenience Commands
 
 - Add `raid-event` writer shortcut.
