@@ -101,6 +101,16 @@ http://localhost:8000/panel.html?type=bits
 http://localhost:8000/panel.html?type=follower-goal
 ~~~
 
+## Streamer.bot data updates
+
+- Streamer.bot data writer: `docs/streamerbot/data-writer.md`
+
+Flora data files can be updated with:
+
+~~~bash
+python scripts/flora-data.py --help
+~~~
+
 ## Developer checks
 
 Run the local project checks before committing:

@@ -14,6 +14,15 @@
 
 
 
+
+## v0.7.0 - Streamer.bot Data Writer Foundation
+
+- Add command-line data writer tooling.
+- Add safe raid, bits, and goal update commands.
+- Add atomic JSON writes.
+- Document Streamer.bot usage.
+- Keep renderers unchanged.
+
 ## v0.6.1 - Rotation Runtime Polish
 
 - Add configurable rotation start panel.
