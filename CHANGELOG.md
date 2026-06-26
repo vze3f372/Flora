@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.8.1 - Event Panel Polish
+
+- Add configurable event type labels.
+- Add configurable event type colors.
+- Add event type configuration validation.
+- Expand sample event data.
+- Add recent events to panel rotation.
+
 ## v0.8.0 - Stream Event Panel Foundation
 
 - Add `events` panel renderer type.

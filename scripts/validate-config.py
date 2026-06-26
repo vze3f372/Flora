@@ -194,6 +194,25 @@ def validate_events_panel(panel, panel_path):
         if isinstance(max_events, bool) or not isinstance(max_events, int) or max_events < 1:
             fail(f"{panel_path}.maxEvents must be an integer greater than or equal to 1")
 
+    if "eventTypes" in panel:
+        require_object(panel["eventTypes"], f"{panel_path}.eventTypes")
+
+        for event_type, type_config in panel["eventTypes"].items():
+            require_non_empty_string(event_type, f"{panel_path}.eventTypes key")
+            require_object(type_config, f"{panel_path}.eventTypes.{event_type}")
+
+            if "label" in type_config:
+                require_non_empty_string(
+                    type_config["label"],
+                    f"{panel_path}.eventTypes.{event_type}.label",
+                )
+
+            if "color" in type_config:
+                require_hex_color(
+                    type_config["color"],
+                    f"{panel_path}.eventTypes.{event_type}.color",
+                )
+
 
 def validate_goal_panel(panel, panel_path):
     validate_common_panel_fields(panel, panel_path)

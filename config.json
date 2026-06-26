@@ -95,7 +95,29 @@
       "typeLabel": "Event",
       "nameLabel": "User",
       "detailLabel": "Details",
-      "timeLabel": "Time"
+      "timeLabel": "Time",
+      "eventTypes": {
+        "raid": {
+          "label": "RAID",
+          "color": "#5eead4"
+        },
+        "bits": {
+          "label": "BITS",
+          "color": "#67e8f9"
+        },
+        "goal": {
+          "label": "GOAL",
+          "color": "#a78bfa"
+        },
+        "follow": {
+          "label": "FOLLOW",
+          "color": "#86efac"
+        },
+        "sub": {
+          "label": "SUB",
+          "color": "#f0abfc"
+        }
+      }
     }
   },
   "rotation": {
@@ -112,6 +134,10 @@
       {
         "panel": "follower-goal",
         "durationSeconds": 12
+      },
+      {
+        "panel": "recent-events",
+        "durationSeconds": 10
       }
     ],
     "transitionMilliseconds": 500,

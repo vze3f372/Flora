@@ -18,6 +18,14 @@
 
 
 
+
+## v0.8.1 - Event Panel Polish
+
+- Add event type display labels.
+- Add event type colors.
+- Improve sample recent event data.
+- Add recent events to the default rotation list.
+
 ## v0.8.0 - Stream Event Panel Foundation
 
 - Add recent stream activity panel.
