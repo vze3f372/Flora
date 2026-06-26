@@ -82,6 +82,15 @@ See:
 docs/streamerbot/raid-table-panel.md
 ```
 
+
+## Developer checks
+
+Run the local project checks before committing:
+
+```bash
+python scripts/check.py
+```
+
 ## Validate configuration
 
 Flora includes a standard-library validation script for `config.json`.
@@ -100,6 +109,7 @@ config.json is valid
 
 ## Documentation
 
+- `CHANGELOG.md`
 - `ROADMAP.md`
 - `docs/DESIGN.md`
 - `docs/configuration.md`

@@ -3,6 +3,15 @@
 
 
 
+
+## v0.3.4 - Developer Workflow Cleanup
+
+- Add a local project check script.
+- Validate required project files.
+- Validate config syntax and semantics from one command.
+- Document the developer check command.
+- Add a changelog if missing.
+
 ## v0.3.3 - Configuration Documentation and Validation
 
 - Add a configuration reference for `config.json`.
