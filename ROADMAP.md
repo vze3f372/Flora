@@ -11,6 +11,14 @@
 
 
 
+
+## v0.5.2 - Goal Panel Theme Configuration
+
+- Add configurable goal progress colors.
+- Validate goal progress color configuration.
+- Keep existing goal panel behavior unchanged.
+- Keep table panels unchanged.
+
 ## v0.5.1 - Goal Panel Configuration Polish
 
 - Add optional number formatting for goal panels.

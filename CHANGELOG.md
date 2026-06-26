@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.5.2 - Goal Panel Theme Configuration
+
+- Add optional goal progress fill color configuration.
+- Add optional goal progress empty color configuration.
+- Validate goal progress colors as hex values.
+- Keep the current cyan/teal goal colors as defaults.
+- Keep table panels unchanged.
+
 ## v0.5.1 - Goal Panel Configuration Polish
 
 - Add optional goal number formatting.

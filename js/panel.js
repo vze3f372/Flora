@@ -199,6 +199,18 @@ function clampPercentage(value) {
   return Math.max(0, Math.min(value, 100));
 }
 
+const DEFAULT_GOAL_PROGRESS_FILL = "#5eead4";
+const DEFAULT_GOAL_PROGRESS_EMPTY = "#16323a";
+
+function isSafeHexColor(value) {
+  return typeof value === "string"
+    && /^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?$/.test(value.trim());
+}
+
+function getGoalColor(value, fallback) {
+  return isSafeHexColor(value) ? value.trim() : fallback;
+}
+
 function formatGoalNumber(value, panelConfig) {
   const format = panelConfig.numberFormat ?? "plain";
 
@@ -467,6 +479,13 @@ function renderGoalPanel(type, panelConfig, data) {
   const targetLabel = panelConfig.targetLabel ?? "Target";
   const percentLabel = panelConfig.percentLabel ?? "Complete";
   const statusText = getGoalStatusText(current, target, displayPercentage, panelConfig);
+  const progressFill = getGoalColor(panelConfig.progressFill, DEFAULT_GOAL_PROGRESS_FILL);
+  const progressEmpty = getGoalColor(panelConfig.progressEmpty, DEFAULT_GOAL_PROGRESS_EMPTY);
+  const progressStyle = [
+    `--goal-progress: ${barPercentage}%`,
+    `--goal-fill: ${progressFill}`,
+    `--goal-empty: ${progressEmpty}`
+  ].join("; ");
 
   document.getElementById("panel-title").textContent = panelConfig.title;
   document.getElementById("panel-subtitle").textContent = panelConfig.subtitle;
@@ -494,7 +513,7 @@ function renderGoalPanel(type, panelConfig, data) {
         </div>
       </div>
 
-      <div class="goal-panel-progress" aria-label="${escapeHtml(percentLabel)}" style="--goal-progress: ${barPercentage}%"></div>
+      <div class="goal-panel-progress" aria-label="${escapeHtml(percentLabel)}" style="${escapeHtml(progressStyle)}"></div>
 
       ${statusText ? `
         <div class="goal-panel-percent">

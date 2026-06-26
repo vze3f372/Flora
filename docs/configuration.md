@@ -323,6 +323,31 @@ The legacy fallback should not be used for new features.
 
 ## Goal panels
 
+### Goal panel progress colors
+
+Goal panels support optional progress bar color configuration.
+
+~~~json
+"progressFill": "#5eead4",
+"progressEmpty": "#16323a"
+~~~
+
+`progressFill` controls the filled portion of the progress bar.
+
+`progressEmpty` controls the unfilled portion of the progress bar.
+
+Both values must be hex colors.
+
+Supported examples:
+
+~~~text
+#fff
+#ffffff
+#ffffffff
+~~~
+
+If omitted, Flora uses the default cyan/teal goal colors.
+
 ### Goal panel display options
 
 Goal panels support optional display configuration.

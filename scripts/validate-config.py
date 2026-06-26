@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -20,6 +21,8 @@ GOAL_NUMBER_FORMATS = {
     "plain",
     "compact",
 }
+
+HEX_COLOR_PATTERN = re.compile(r"^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?$")
 
 
 def fail(message):
@@ -49,6 +52,13 @@ def require_positive_number(value, path):
 def require_boolean(value, path):
     if not isinstance(value, bool):
         fail(f"{path} must be true or false")
+
+
+def require_hex_color(value, path):
+    require_non_empty_string(value, path)
+
+    if not HEX_COLOR_PATTERN.match(value.strip()):
+        fail(f"{path} must be a hex color such as #5eead4")
 
 
 def validate_scroll(scroll, path):
@@ -144,6 +154,15 @@ def validate_goal_panel(panel, panel_path):
 
     if "showPercent" in panel:
         require_boolean(panel["showPercent"], f"{panel_path}.showPercent")
+
+    optional_color_fields = [
+        "progressFill",
+        "progressEmpty",
+    ]
+
+    for field in optional_color_fields:
+        if field in panel:
+            require_hex_color(panel[field], f"{panel_path}.{field}")
 
 
 def validate_panel(panel, panel_path):

@@ -81,7 +81,9 @@
       "percentLabel": "Complete",
       "numberFormat": "plain",
       "completeMessage": "Goal reached!",
-      "showPercent": true
+      "showPercent": true,
+      "progressFill": "#5eead4",
+      "progressEmpty": "#16323a"
     }
   }
 }
