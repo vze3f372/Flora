@@ -199,6 +199,34 @@ function clampPercentage(value) {
   return Math.max(0, Math.min(value, 100));
 }
 
+function formatGoalNumber(value, panelConfig) {
+  const format = panelConfig.numberFormat ?? "plain";
+
+  if (format === "compact") {
+    return new Intl.NumberFormat("en", {
+      notation: "compact",
+      maximumFractionDigits: 1
+    }).format(value);
+  }
+
+  return String(value);
+}
+
+function getGoalStatusText(current, target, displayPercentage, panelConfig) {
+  const showPercent = panelConfig.showPercent ?? true;
+
+  if (current >= target && panelConfig.completeMessage) {
+    return panelConfig.completeMessage;
+  }
+
+  if (!showPercent) {
+    return "";
+  }
+
+  const percentLabel = panelConfig.percentLabel ?? "Complete";
+  return `${displayPercentage}% ${percentLabel}`;
+}
+
 function renderTableColumns(panelConfig) {
   const columns = document.getElementById("table-panel-columns");
   const rankLabel = panelConfig.rankLabel ?? "Rank";
@@ -438,6 +466,7 @@ function renderGoalPanel(type, panelConfig, data) {
   const currentLabel = panelConfig.currentLabel ?? "Current";
   const targetLabel = panelConfig.targetLabel ?? "Target";
   const percentLabel = panelConfig.percentLabel ?? "Complete";
+  const statusText = getGoalStatusText(current, target, displayPercentage, panelConfig);
 
   document.getElementById("panel-title").textContent = panelConfig.title;
   document.getElementById("panel-subtitle").textContent = panelConfig.subtitle;
@@ -457,19 +486,21 @@ function renderGoalPanel(type, panelConfig, data) {
       <div class="goal-panel-values">
         <div class="goal-panel-value">
           <span class="goal-panel-label">${escapeHtml(currentLabel)}</span>
-          <strong class="goal-panel-number">${escapeHtml(current)}</strong>
+          <strong class="goal-panel-number">${escapeHtml(formatGoalNumber(current, panelConfig))}</strong>
         </div>
         <div class="goal-panel-value">
           <span class="goal-panel-label">${escapeHtml(targetLabel)}</span>
-          <strong class="goal-panel-number">${escapeHtml(target)}</strong>
+          <strong class="goal-panel-number">${escapeHtml(formatGoalNumber(target, panelConfig))}</strong>
         </div>
       </div>
 
       <div class="goal-panel-progress" aria-label="${escapeHtml(percentLabel)}" style="--goal-progress: ${barPercentage}%"></div>
 
-      <div class="goal-panel-percent">
-        ${escapeHtml(displayPercentage)}% ${escapeHtml(percentLabel)}
-      </div>
+      ${statusText ? `
+        <div class="goal-panel-percent">
+          ${escapeHtml(statusText)}
+        </div>
+      ` : ""}
     </section>
   `;
 }

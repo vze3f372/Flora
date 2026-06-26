@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.5.1 - Goal Panel Configuration Polish
+
+- Add optional goal number formatting.
+- Add optional goal completion messages.
+- Add optional percentage text visibility.
+- Validate new goal panel display options.
+- Keep table panels unchanged.
+
 ## v0.5.0 - Goal Panel Foundation
 
 - Add a new `goal` panel renderer type.

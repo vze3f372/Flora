@@ -78,7 +78,10 @@
       "goalKey": "followers",
       "currentLabel": "Followers",
       "targetLabel": "Goal",
-      "percentLabel": "Complete"
+      "percentLabel": "Complete",
+      "numberFormat": "plain",
+      "completeMessage": "Goal reached!",
+      "showPercent": true
     }
   }
 }

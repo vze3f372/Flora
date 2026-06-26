@@ -10,6 +10,14 @@
 
 
 
+
+## v0.5.1 - Goal Panel Configuration Polish
+
+- Add optional number formatting for goal panels.
+- Add optional completion message behavior.
+- Add optional percentage text visibility.
+- Keep existing table panels unchanged.
+
 ## v0.5.0 - Goal Panel Foundation
 
 - Add the first non-table panel renderer.
