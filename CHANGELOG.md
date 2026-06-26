@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.7.1 - Streamer.bot Writer Hardening
+
+- Add `--dry-run` support to data writer commands.
+- Add `show` command for inspecting current data.
+- Improve numeric argument validation messages.
+- Expand Streamer.bot data writer documentation.
+- Keep renderers unchanged.
+
 ## v0.7.0 - Streamer.bot Data Writer Foundation
 
 - Add `scripts/flora-data.py` for safe data updates.
