@@ -91,13 +91,19 @@ def check_config_shape():
     if "raids" not in panels:
         raise ValueError("config.json missing panels.raids")
 
-    raids = panels["raids"]
+    for panel_name, panel in panels.items():
+        panel_path = f"panels.{panel_name}"
 
-    if raids.get("type") != "table":
-        raise ValueError("panels.raids.type must be table")
+        if panel.get("type") != "table":
+            raise ValueError(f"{panel_path}.type must be table")
 
-    if raids.get("dataFile") != "data/raids.json":
-        raise ValueError("panels.raids.dataFile must be data/raids.json")
+        data_file = panel.get("dataFile")
+
+        if not data_file:
+            raise ValueError(f"{panel_path}.dataFile is required")
+
+        if not Path(data_file).exists():
+            raise ValueError(f"{panel_path}.dataFile does not exist: {data_file}")
 
 
 def check_readme_references():

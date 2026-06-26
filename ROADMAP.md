@@ -4,6 +4,15 @@
 
 
 
+
+## v0.4.0 - Multi-Panel Table Foundation
+
+- Add a second configured table panel.
+- Add a second local data file.
+- Prove the table renderer can render multiple configured panels.
+- Validate that configured panel data files exist.
+- Document multiple panel URLs.
+
 ## v0.3.4 - Developer Workflow Cleanup
 
 - Add a local project check script.

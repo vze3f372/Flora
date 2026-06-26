@@ -1,0 +1,14 @@
+{
+  "ExampleUser01": {
+    "bits": 2500,
+    "cheers": 12
+  },
+  "ExampleUser02": {
+    "bits": 1750,
+    "cheers": 9
+  },
+  "ExampleUser03": {
+    "bits": 900,
+    "cheers": 4
+  }
+}

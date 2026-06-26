@@ -36,6 +36,7 @@ Then open:
 
 ```text
 http://localhost:8000/panel.html?type=raids
+http://localhost:8000/panel.html?type=bits
 ```
 
 ## Current panel
