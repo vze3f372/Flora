@@ -1,3 +1,6 @@
+let scrollController = null;
+let lastRenderSignature = "";
+
 async function loadJson(path, fallback) {
     try {
         const response = await fetch(path + "?cacheBust=" + Date.now());
@@ -93,6 +96,7 @@ function createRow(rank, name, stats, boardConfig) {
     const valueCells = boardConfig.columns.map(column => {
         const value = stats[column.field] ?? 0;
         const className = column.className || column.field;
+
         return `<div class="leaderboard-value leaderboard-value--${escapeHtml(className)}" style="${getColumnStyle(column)}">${escapeHtml(value)}</div>`;
     }).join("");
 
@@ -105,40 +109,132 @@ function createRow(rank, name, stats, boardConfig) {
     return row;
 }
 
-async function renderLeaderboard() {
+class ScrollController {
+    constructor(track, viewport) {
+        this.track = track;
+        this.viewport = viewport;
+    }
+
+    reset() {
+        this.track.classList.remove("is-scrolling", "is-static");
+        this.track.style.removeProperty("--scroll-distance");
+        this.track.style.removeProperty("--scroll-duration");
+        this.track.style.removeProperty("--scroll-delay");
+        this.track.style.removeProperty("--scroll-gap");
+
+        this.track
+            .querySelectorAll("[data-scroll-duplicate='true']")
+            .forEach(element => element.remove());
+    }
+
+    apply(scrollConfig) {
+        this.reset();
+
+        if (!scrollConfig?.enabled) {
+            this.track.classList.add("is-static");
+            return;
+        }
+
+        const viewportHeight = this.viewport.clientHeight;
+        const contentHeight = this.track.scrollHeight;
+
+        if (contentHeight <= viewportHeight) {
+            this.track.classList.add("is-static");
+            return;
+        }
+
+        const gapPixels = scrollConfig.gapPixels ?? 20;
+        const speedPixelsPerSecond = scrollConfig.speedPixelsPerSecond ?? 24;
+        const startDelaySeconds = scrollConfig.startDelaySeconds ?? 1;
+
+        const originals = Array.from(this.track.children);
+
+        const gap = document.createElement("div");
+        gap.className = "leaderboard-scroll-gap";
+        gap.dataset.scrollDuplicate = "true";
+        gap.style.height = `${gapPixels}px`;
+
+        const clones = originals.map(element => {
+            const clone = element.cloneNode(true);
+            clone.dataset.scrollDuplicate = "true";
+            return clone;
+        });
+
+        this.track.appendChild(gap);
+        clones.forEach(clone => this.track.appendChild(clone));
+
+        const scrollDistance = contentHeight + gapPixels;
+        const durationSeconds = Math.max(scrollDistance / speedPixelsPerSecond, 8);
+
+        this.track.style.setProperty("--scroll-distance", `${scrollDistance}px`);
+        this.track.style.setProperty("--scroll-duration", `${durationSeconds}s`);
+        this.track.style.setProperty("--scroll-delay", `${startDelaySeconds}s`);
+        this.track.style.setProperty("--scroll-gap", `${gapPixels}px`);
+
+        this.track.classList.add("is-scrolling");
+    }
+}
+
+function buildRenderSignature(type, boardConfig, data) {
+    return JSON.stringify({
+        type,
+        boardConfig,
+        data
+    });
+}
+
+async function renderPanel(force = false) {
     const config = await loadJson("config.json", {});
     const type = getQueryValue("type", "raids");
-
     const boardConfig = config.leaderboards?.[type];
 
     if (!boardConfig) {
         document.getElementById("leaderboard-title").textContent = "UNKNOWN PANEL";
         document.getElementById("leaderboard-subtitle").textContent = type;
-        document.getElementById("leaderboard-rows").innerHTML =
+        document.getElementById("leaderboard-scroll-track").innerHTML =
             `<div class="leaderboard-empty">No configuration found</div>`;
         return;
     }
+
+    const data = await loadJson(boardConfig.dataFile, {});
+    const signature = buildRenderSignature(type, boardConfig, data);
+
+    if (!force && signature === lastRenderSignature) {
+        return;
+    }
+
+    lastRenderSignature = signature;
 
     document.getElementById("leaderboard-title").textContent = boardConfig.title;
     document.getElementById("leaderboard-subtitle").textContent = boardConfig.subtitle;
 
     renderColumns(boardConfig);
 
-    const data = await loadJson(boardConfig.dataFile, {});
-    const rowsContainer = document.getElementById("leaderboard-rows");
+    const viewport = document.getElementById("leaderboard-rows");
+    const track = document.getElementById("leaderboard-scroll-track");
 
-    rowsContainer.innerHTML = "";
+    if (!scrollController) {
+        scrollController = new ScrollController(track, viewport);
+    }
+
+    scrollController.reset();
+    track.innerHTML = "";
 
     const entries = sortEntries(Object.entries(data), boardConfig);
     const maxRows = boardConfig.maxRows ?? 10;
 
     if (entries.length === 0) {
-        rowsContainer.innerHTML = `<div class="leaderboard-empty">No entries yet</div>`;
+        track.innerHTML = `<div class="leaderboard-empty">No entries yet</div>`;
+        track.classList.add("is-static");
         return;
     }
 
     entries.slice(0, maxRows).forEach(([name, stats], index) => {
-        rowsContainer.appendChild(createRow(index + 1, name, stats, boardConfig));
+        track.appendChild(createRow(index + 1, name, stats, boardConfig));
+    });
+
+    requestAnimationFrame(() => {
+        scrollController.apply(boardConfig.scroll);
     });
 }
 
@@ -146,9 +242,11 @@ async function start() {
     const config = await loadJson("config.json", {});
     const refreshSeconds = config.refreshSeconds ?? 5;
 
-    await renderLeaderboard();
+    await renderPanel(true);
 
-    setInterval(renderLeaderboard, refreshSeconds * 1000);
+    if (refreshSeconds > 0) {
+        setInterval(() => renderPanel(false), refreshSeconds * 1000);
+    }
 }
 
 start();

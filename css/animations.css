@@ -1,14 +1,15 @@
-.leaderboard-rows {
+.leaderboard-scroll-track {
     --scroll-distance: 0px;
     --scroll-duration: 20s;
     --scroll-delay: 3s;
+    transform: translateY(0);
 }
 
-.leaderboard-rows.is-scrolling {
+.leaderboard-scroll-track.is-scrolling {
     animation: leaderboard-scroll var(--scroll-duration) linear var(--scroll-delay) infinite;
 }
 
-.leaderboard-rows.is-static {
+.leaderboard-scroll-track.is-static {
     animation: none;
 }
 

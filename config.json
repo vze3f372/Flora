@@ -28,7 +28,7 @@
             "scroll": {
                 "enabled": true,
                 "speedPixelsPerSecond": 24,
-                "startDelaySeconds": 3,
+                "startDelaySeconds": 1,
                 "gapPixels": 20
             }
         }
