@@ -69,6 +69,16 @@
       "emptyMessage": "No bits recorded yet",
       "rankLabel": "Rank",
       "nameLabel": "User"
+    },
+    "follower-goal": {
+      "type": "goal",
+      "title": "FOLLOWER GOAL",
+      "subtitle": "THANK YOU FOR THE SUPPORT",
+      "dataFile": "data/goals.json",
+      "goalKey": "followers",
+      "currentLabel": "Followers",
+      "targetLabel": "Goal",
+      "percentLabel": "Complete"
     }
   }
 }

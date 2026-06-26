@@ -9,6 +9,14 @@
 
 
 
+
+## v0.5.0 - Goal Panel Foundation
+
+- Add the first non-table panel renderer.
+- Add sample goal panel configuration and data.
+- Validate goal panel configuration and data.
+- Keep existing table panels unchanged.
+
 ## v0.4.4 - Table Panel Header and Label Polish
 
 - Add optional table panel rank labels.

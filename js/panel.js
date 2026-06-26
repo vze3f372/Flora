@@ -2,7 +2,8 @@ let scrollController = null;
 let lastRenderSignature = "";
 
 const PANEL_RENDERERS = {
-  table: renderTablePanel
+  table: renderTablePanel,
+  goal: renderGoalPanel
 };
 
 async function loadJson(path) {
@@ -160,6 +161,42 @@ function validateTableData(data, panelConfig) {
   }
 
   return null;
+}
+
+function validateGoalData(data, panelConfig) {
+  if (!isObject(data)) {
+    return "Panel data must be a JSON object.";
+  }
+
+  const goalKey = panelConfig.goalKey;
+
+  if (!goalKey) {
+    return "Goal panel is missing goalKey.";
+  }
+
+  const goal = data[goalKey];
+
+  if (!isObject(goal)) {
+    return `Goal data is missing key: ${goalKey}`;
+  }
+
+  if (!Number.isFinite(Number(goal.current))) {
+    return `${goalKey}.current must be numeric.`;
+  }
+
+  if (!Number.isFinite(Number(goal.target))) {
+    return `${goalKey}.target must be numeric.`;
+  }
+
+  if (Number(goal.target) <= 0) {
+    return `${goalKey}.target must be greater than zero.`;
+  }
+
+  return null;
+}
+
+function clampPercentage(value) {
+  return Math.max(0, Math.min(value, 100));
 }
 
 function renderTableColumns(panelConfig) {
@@ -380,6 +417,61 @@ function renderTablePanel(type, panelConfig, data) {
   requestAnimationFrame(() => {
     scrollController.apply(panelConfig.scroll);
   });
+}
+
+
+function renderGoalPanel(type, panelConfig, data) {
+  const dataError = validateGoalData(data, panelConfig);
+
+  if (dataError) {
+    renderPanelError("PANEL DATA ERROR", dataError);
+    return;
+  }
+
+  const goal = data[panelConfig.goalKey];
+  const current = Number(goal.current);
+  const target = Number(goal.target);
+  const rawPercentage = (current / target) * 100;
+  const displayPercentage = Math.round(rawPercentage);
+  const barPercentage = clampPercentage(rawPercentage);
+
+  const currentLabel = panelConfig.currentLabel ?? "Current";
+  const targetLabel = panelConfig.targetLabel ?? "Target";
+  const percentLabel = panelConfig.percentLabel ?? "Complete";
+
+  document.getElementById("panel-title").textContent = panelConfig.title;
+  document.getElementById("panel-subtitle").textContent = panelConfig.subtitle;
+
+  const columns = document.getElementById("table-panel-columns");
+  const track = document.getElementById("table-panel-scroll-track");
+
+  columns.innerHTML = "";
+
+  if (scrollController) {
+    scrollController.reset();
+  }
+
+  track.classList.add("is-static");
+  track.innerHTML = `
+    <section class="goal-panel" aria-label="${escapeHtml(panelConfig.title)}">
+      <div class="goal-panel-values">
+        <div class="goal-panel-value">
+          <span class="goal-panel-label">${escapeHtml(currentLabel)}</span>
+          <strong class="goal-panel-number">${escapeHtml(current)}</strong>
+        </div>
+        <div class="goal-panel-value">
+          <span class="goal-panel-label">${escapeHtml(targetLabel)}</span>
+          <strong class="goal-panel-number">${escapeHtml(target)}</strong>
+        </div>
+      </div>
+
+      <div class="goal-panel-progress" aria-label="${escapeHtml(percentLabel)}" style="--goal-progress: ${barPercentage}%"></div>
+
+      <div class="goal-panel-percent">
+        ${escapeHtml(displayPercentage)}% ${escapeHtml(percentLabel)}
+      </div>
+    </section>
+  `;
 }
 
 async function start() {
