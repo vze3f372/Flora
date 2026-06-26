@@ -1,7 +1,6 @@
 {
     "theme": "cyan",
     "refreshSeconds": 3,
-
     "leaderboards": {
         "raids": {
             "title": "TOP RAIDERS",
@@ -25,7 +24,13 @@
                     "align": "center",
                     "width": "110px"
                 }
-            ]
+            ],
+            "scroll": {
+                "enabled": true,
+                "speedPixelsPerSecond": 24,
+                "startDelaySeconds": 3,
+                "gapPixels": 20
+            }
         }
     }
 }

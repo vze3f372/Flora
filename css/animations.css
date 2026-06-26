@@ -1,1 +1,27 @@
-/* Animation rules will be added in the scrolling milestone. */
+.leaderboard-rows {
+    --scroll-distance: 0px;
+    --scroll-duration: 20s;
+    --scroll-delay: 3s;
+}
+
+.leaderboard-rows.is-scrolling {
+    animation: leaderboard-scroll var(--scroll-duration) linear var(--scroll-delay) infinite;
+}
+
+.leaderboard-rows.is-static {
+    animation: none;
+}
+
+.leaderboard-scroll-gap {
+    height: var(--scroll-gap, 20px);
+}
+
+@keyframes leaderboard-scroll {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(calc(var(--scroll-distance) * -1));
+    }
+}
