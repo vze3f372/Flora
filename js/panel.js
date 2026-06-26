@@ -164,10 +164,12 @@ function validateTableData(data, panelConfig) {
 
 function renderTableColumns(panelConfig) {
   const columns = document.getElementById("table-panel-columns");
+  const rankLabel = panelConfig.rankLabel ?? "Rank";
+  const nameLabel = panelConfig.nameLabel ?? "Name";
 
   columns.innerHTML = `
-    <div class="table-panel-column table-panel-column--rank">Rank</div>
-    <div class="table-panel-column table-panel-column--name">Name</div>
+    <div class="table-panel-column table-panel-column--rank">${escapeHtml(rankLabel)}</div>
+    <div class="table-panel-column table-panel-column--name">${escapeHtml(nameLabel)}</div>
     ${panelConfig.columns.map(column => `
       <div class="table-panel-column table-panel-column--${escapeHtml(column.className || column.field)}" style="${getColumnStyle(column)}">
         ${escapeHtml(column.label)}

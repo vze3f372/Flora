@@ -2,6 +2,13 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.4.4 - Table Panel Header and Label Polish
+
+- Add configurable table panel rank labels.
+- Add configurable table panel name labels.
+- Validate optional table panel label fields.
+- Keep default labels as `Rank` and `Name`.
+
 ## v0.4.3 - Table Panel Empty-State Configuration
 
 - Add configurable table panel empty-state messages.
