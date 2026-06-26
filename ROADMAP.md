@@ -1,6 +1,15 @@
 # Flora Roadmap
 
 
+
+## v0.3.2 - Documentation and Setup Cleanup
+
+- Move prototype Streamer.bot instructions into `docs/streamerbot/`.
+- Document the current `panels.raids` configuration model.
+- Document the OBS Browser Source URL.
+- Clarify that Streamer.bot writes data and Flora renders panels.
+- Add README setup instructions.
+
 ## v0.3.0 - Panel Engine Foundation
 
 - Introduce generic `panels` configuration root.
