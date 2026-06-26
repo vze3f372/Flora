@@ -13,6 +13,14 @@
 
 
 
+
+## v0.6.1 - Rotation Runtime Polish
+
+- Add configurable rotation start panel.
+- Add query overrides for rotation testing.
+- Add optional rotation debug overlay.
+- Keep existing renderer behavior unchanged.
+
 ## v0.6.0 - Panel Rotation Foundation
 
 - Add optional panel rotation mode.

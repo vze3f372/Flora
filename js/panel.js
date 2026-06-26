@@ -59,6 +59,13 @@ function getQueryFlag(name) {
   return ["1", "true", "yes", "on"].includes(String(value).toLowerCase());
 }
 
+function getQueryNumber(name) {
+  const params = new URLSearchParams(window.location.search);
+  const value = Number(params.get(name));
+
+  return Number.isFinite(value) ? value : null;
+}
+
 function escapeHtml(text) {
   return String(text)
     .replaceAll("&", "&amp;")
@@ -99,7 +106,15 @@ function shouldUseRotation(config) {
   return getQueryFlag("rotation") || config.rotation?.enabled === true;
 }
 
-function normalizeRotationIndex(entries) {
+function findRotationIndex(entries, panelName) {
+  return entries.findIndex(entry => entry.panel === panelName);
+}
+
+function getRotationStartPanel(config) {
+  return getQueryValue("start", config.rotation?.startPanel ?? "");
+}
+
+function normalizeRotationIndex(entries, config) {
   if (entries.length === 0) {
     rotationIndex = 0;
     return;
@@ -108,9 +123,27 @@ function normalizeRotationIndex(entries) {
   if (rotationIndex < 0 || rotationIndex >= entries.length) {
     rotationIndex = 0;
   }
+
+  const startPanel = getRotationStartPanel(config);
+
+  if (!startPanel) {
+    return;
+  }
+
+  const startIndex = findRotationIndex(entries, startPanel);
+
+  if (startIndex >= 0) {
+    rotationIndex = startIndex;
+  }
 }
 
 function getRotationDurationMilliseconds(entry) {
+  const queryDurationSeconds = getQueryNumber("duration");
+
+  if (queryDurationSeconds !== null && queryDurationSeconds > 0) {
+    return queryDurationSeconds * 1000;
+  }
+
   const durationSeconds = Number(entry.durationSeconds);
   const safeDurationSeconds = Number.isFinite(durationSeconds) && durationSeconds > 0
     ? durationSeconds
@@ -598,7 +631,49 @@ function renderGoalPanel(type, panelConfig, data) {
   `;
 }
 
-async function renderRotationPanel(force = false) {
+function getRotationDebugEnabled() {
+  return getQueryFlag("debug");
+}
+
+function getOrCreateRotationDebug() {
+  let debug = document.getElementById("rotation-debug");
+
+  if (!debug) {
+    debug = document.createElement("div");
+    debug.id = "rotation-debug";
+    debug.className = "rotation-debug";
+    document.body.appendChild(debug);
+  }
+
+  return debug;
+}
+
+function updateRotationDebug(result) {
+  const existingDebug = document.getElementById("rotation-debug");
+
+  if (!getRotationDebugEnabled()) {
+    if (existingDebug) {
+      existingDebug.remove();
+    }
+
+    return;
+  }
+
+  const debug = getOrCreateRotationDebug();
+
+  if (!result || !result.entry || !result.entries) {
+    debug.textContent = "rotation: unavailable";
+    return;
+  }
+
+  const panelNumber = result.index + 1;
+  const panelTotal = result.entries.length;
+  const durationSeconds = getRotationDurationMilliseconds(result.entry) / 1000;
+
+  debug.textContent = `rotation ${panelNumber}/${panelTotal}: ${result.entry.panel} · ${durationSeconds}s`;
+}
+
+async function renderRotationPanel(force = false, applyStartPanel = false) {
   const configResult = await loadJson("config.json");
 
   if (!configResult.ok) {
@@ -616,7 +691,11 @@ async function renderRotationPanel(force = false) {
     return null;
   }
 
-  normalizeRotationIndex(entries);
+  if (applyStartPanel) {
+    normalizeRotationIndex(entries, config);
+  } else if (rotationIndex < 0 || rotationIndex >= entries.length) {
+    rotationIndex = 0;
+  }
 
   const entry = entries[rotationIndex];
   const panelName = entry.panel;
@@ -626,7 +705,8 @@ async function renderRotationPanel(force = false) {
   return {
     config,
     entries,
-    entry
+    entry,
+    index: rotationIndex
   };
 }
 
@@ -641,7 +721,7 @@ async function transitionToNextRotationPanel(result) {
 
   rotationIndex = (rotationIndex + 1) % result.entries.length;
 
-  const nextResult = await renderRotationPanel(true);
+  const nextResult = await renderRotationPanel(true, false);
 
   if (transitionMilliseconds > 0) {
     requestAnimationFrame(() => {
@@ -656,6 +736,8 @@ function scheduleRotation(result) {
   if (rotationTimer) {
     clearTimeout(rotationTimer);
   }
+
+  updateRotationDebug(result);
 
   if (!result || !result.entries.length) {
     return;
@@ -679,7 +761,7 @@ async function start() {
   const refreshSeconds = config.refreshSeconds ?? 5;
 
   if (shouldUseRotation(config)) {
-    const result = await renderRotationPanel(true);
+    const result = await renderRotationPanel(true, true);
     scheduleRotation(result);
 
     if (refreshSeconds > 0) {

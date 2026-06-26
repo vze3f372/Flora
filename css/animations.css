@@ -39,3 +39,20 @@
   transform: translateY(8px);
   filter: blur(2px);
 }
+
+.rotation-debug {
+  position: fixed;
+  right: 12px;
+  bottom: 10px;
+  z-index: 9999;
+  padding: 6px 9px;
+  border: 1px solid rgba(94, 234, 212, 0.55);
+  border-radius: 999px;
+  background: rgba(8, 20, 26, 0.82);
+  color: #5eead4;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}

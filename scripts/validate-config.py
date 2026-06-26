@@ -147,6 +147,12 @@ def validate_rotation(rotation, panels):
             "rotation.transitionMilliseconds",
         )
 
+    if "startPanel" in rotation:
+        require_non_empty_string(rotation["startPanel"], "rotation.startPanel")
+
+        if rotation["startPanel"] not in panels:
+            fail(f"rotation.startPanel references unknown panel: {rotation['startPanel']}")
+
     entries = rotation.get("panels")
     require_list(entries, "rotation.panels")
 
