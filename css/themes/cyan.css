@@ -1,0 +1,22 @@
+:root {
+    --text-primary: #f4fbff;
+    --text-secondary: #b7c4ce;
+
+    --accent-primary: #38f3ff;
+    --accent-secondary: #8ff8ff;
+
+    --panel-background: linear-gradient(135deg, rgba(5, 15, 24, 0.86), rgba(10, 23, 35, 0.72));
+    --panel-border: rgba(0, 220, 255, 0.85);
+    --panel-shadow:
+        0 0 18px rgba(0, 220, 255, 0.55),
+        inset 0 0 28px rgba(0, 140, 220, 0.18);
+
+    --row-background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025));
+    --row-border: rgba(120, 240, 255, 0.13);
+
+    --accent-glow:
+        0 0 10px rgba(0, 230, 255, 0.9),
+        0 0 24px rgba(0, 140, 255, 0.45);
+
+    --value-glow: 0 0 8px rgba(0, 230, 255, 0.55);
+}

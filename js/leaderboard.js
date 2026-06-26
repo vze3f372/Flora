@@ -79,9 +79,16 @@ function renderColumns(boardConfig) {
     `;
 }
 
+function getRankClass(rank) {
+    if (rank === 1) return "leaderboard-row--gold";
+    if (rank === 2) return "leaderboard-row--silver";
+    if (rank === 3) return "leaderboard-row--bronze";
+    return "";
+}
+
 function createRow(rank, name, stats, boardConfig) {
     const row = document.createElement("div");
-    row.className = "leaderboard-row";
+    row.className = `leaderboard-row ${getRankClass(rank)}`.trim();
 
     const valueCells = boardConfig.columns.map(column => {
         const value = stats[column.field] ?? 0;
