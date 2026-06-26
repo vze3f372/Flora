@@ -12,11 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 RAIDS_FILE = ROOT / "data" / "raids.json"
 BITS_FILE = ROOT / "data" / "bits.json"
 GOALS_FILE = ROOT / "data" / "goals.json"
+EVENTS_FILE = ROOT / "data" / "events.json"
 
 DATA_FILES = {
     "raids": RAIDS_FILE,
     "bits": BITS_FILE,
     "goals": GOALS_FILE,
+    "events": EVENTS_FILE,
 }
 
 
@@ -198,6 +200,42 @@ def update_goal(args):
     ))
 
 
+def add_event(args):
+    event_type = require_non_empty_text(args.type, "type")
+    name = require_non_empty_text(args.name, "name")
+    detail = require_non_empty_text(args.detail, "detail")
+    event_time = require_non_empty_text(args.time, "time")
+
+    data = load_json_object(EVENTS_FILE)
+    events = data.setdefault("events", [])
+
+    if not isinstance(events, list):
+        fail("data/events.json.events must be a list")
+
+    event = {
+        "type": event_type,
+        "name": name,
+        "detail": detail,
+        "time": event_time,
+    }
+
+    events.insert(0, event)
+    del events[args.keep:]
+
+    save_json_object(EVENTS_FILE, data, args.dry_run)
+
+    print_json(make_result(
+        "event",
+        dry_run=args.dry_run,
+        file="data/events.json",
+        type=event_type,
+        name=name,
+        detail=detail,
+        time=event_time,
+        kept=len(events),
+    ))
+
+
 def reset_panel(args):
     if not args.yes:
         fail("reset requires --yes")
@@ -272,6 +310,18 @@ def build_parser():
     goal.add_argument("--target", type=positive_int("target"))
     add_dry_run_argument(goal)
     goal.set_defaults(func=update_goal)
+
+    event = subparsers.add_parser(
+        "event",
+        help="Append a recent stream event.",
+    )
+    event.add_argument("--type", required=True)
+    event.add_argument("--name", required=True)
+    event.add_argument("--detail", required=True)
+    event.add_argument("--time", default="Just now")
+    event.add_argument("--keep", default=25, type=positive_int("keep"))
+    add_dry_run_argument(event)
+    event.set_defaults(func=add_event)
 
     reset = subparsers.add_parser(
         "reset",

@@ -9,6 +9,7 @@ from pathlib import Path
 SUPPORTED_PANEL_TYPES = {
     "table",
     "goal",
+    "events",
 }
 
 ALIGN_VALUES = {
@@ -172,6 +173,28 @@ def validate_rotation(rotation, panels):
         require_positive_number(entry.get("durationSeconds"), f"{entry_path}.durationSeconds")
 
 
+def validate_events_panel(panel, panel_path):
+    validate_common_panel_fields(panel, panel_path)
+
+    optional_label_fields = [
+        "emptyMessage",
+        "typeLabel",
+        "nameLabel",
+        "detailLabel",
+        "timeLabel",
+    ]
+
+    for field in optional_label_fields:
+        if field in panel:
+            require_non_empty_string(panel[field], f"{panel_path}.{field}")
+
+    max_events = panel.get("maxEvents")
+
+    if max_events is not None:
+        if isinstance(max_events, bool) or not isinstance(max_events, int) or max_events < 1:
+            fail(f"{panel_path}.maxEvents must be an integer greater than or equal to 1")
+
+
 def validate_goal_panel(panel, panel_path):
     validate_common_panel_fields(panel, panel_path)
 
@@ -222,6 +245,10 @@ def validate_panel(panel, panel_path):
 
     if panel_type == "goal":
         validate_goal_panel(panel, panel_path)
+        return
+
+    if panel_type == "events":
+        validate_events_panel(panel, panel_path)
         return
 
     fail(f"{panel_path}.type is not supported: {panel_type}")

@@ -491,3 +491,46 @@ percentLabel
 ~~~
 
 `current` and `target` must be numeric. `target` must be greater than zero.
+
+## Event panels
+
+Event panels display recent stream activity.
+
+Example:
+
+~~~json
+"recent-events": {
+  "type": "events",
+  "title": "RECENT ACTIVITY",
+  "subtitle": "LATEST STREAM EVENTS",
+  "dataFile": "data/events.json",
+  "maxEvents": 8,
+  "emptyMessage": "No recent events yet"
+}
+~~~
+
+The data file must contain an `events` array.
+
+Example:
+
+~~~json
+{
+  "events": [
+    {
+      "type": "raid",
+      "name": "ExampleRaider",
+      "detail": "Raided with 25 viewers",
+      "time": "Just now"
+    }
+  ]
+}
+~~~
+
+Each event must include:
+
+~~~text
+type
+name
+detail
+time
+~~~

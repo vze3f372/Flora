@@ -301,3 +301,29 @@ http://localhost:8000/panel.html?type=bits
 http://localhost:8000/panel.html?type=follower-goal
 http://localhost:8000/panel.html?rotation=true&duration=3&debug=true
 ~~~
+
+## Recent event panel examples
+
+Add a raid event:
+
+~~~text
+python scripts/flora-data.py event --type raid --name "%userName%" --detail "Raided with %viewerCount% viewers"
+~~~
+
+Add a bits event:
+
+~~~text
+python scripts/flora-data.py event --type bits --name "%userName%" --detail "Cheered %bits% bits"
+~~~
+
+Dry-run raid event:
+
+~~~text
+python scripts/flora-data.py event --type raid --name "%userName%" --detail "Raided with %viewerCount% viewers" --dry-run
+~~~
+
+Recent event panel URL:
+
+~~~text
+http://localhost:8000/panel.html\?type\=recent-events
+~~~

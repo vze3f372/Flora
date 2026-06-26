@@ -17,6 +17,14 @@
 
 
 
+
+## v0.8.0 - Stream Event Panel Foundation
+
+- Add recent stream activity panel.
+- Add event panel data validation.
+- Add writer support for appending events.
+- Keep existing table, goal, and rotation behavior unchanged.
+
 ## v0.7.2 - Writer Command Examples for Streamer.bot
 
 - Add practical Streamer.bot command examples.
