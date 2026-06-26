@@ -19,6 +19,14 @@
 
 
 
+## v0.9.2 - Streamer.bot Fetch URL Compatibility
+
+- Support Streamer.bot's built-in Fetch URL sub-action.
+- Allow local GET requests with query parameters.
+- Keep POST endpoints available for other clients.
+- Add dry-run-first Fetch URL workflow.
+- Remove the need for C# HTTP code in Wine.
+
 ## v0.9.0 - Streamer.bot HTTP Action Integration
 
 - Add a localhost API bridge for Streamer.bot.

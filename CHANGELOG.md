@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.9.2 - Streamer.bot Fetch URL Compatibility
+
+- Add GET-compatible Flora API handling for Streamer.bot Fetch URL.
+- Keep existing POST API behavior.
+- Add Fetch URL recipes for raid, bits, follow, sub, goal, and custom events.
+- Document dry-run and live Fetch URL examples.
+- Avoid requiring Streamer.bot C# HTTP access under Wine.
+
 ## v0.9.0 - Streamer.bot HTTP Action Integration
 
 - Add local Flora HTTP server.
