@@ -15,6 +15,15 @@
 
 
 
+
+## v0.7.1 - Streamer.bot Writer Hardening
+
+- Add dry-run support for data writer commands.
+- Add data inspection commands.
+- Improve writer argument validation.
+- Improve Streamer.bot usage documentation.
+- Keep renderers unchanged.
+
 ## v0.7.0 - Streamer.bot Data Writer Foundation
 
 - Add command-line data writer tooling.

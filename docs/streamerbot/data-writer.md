@@ -10,6 +10,36 @@ scripts/flora-data.py
 
 It uses Python standard library only and writes JSON files atomically.
 
+## Show current data
+
+Show all data:
+
+~~~bash
+python scripts/flora-data.py show --panel all
+~~~
+
+Show one data file:
+
+~~~bash
+python scripts/flora-data.py show --panel raids
+python scripts/flora-data.py show --panel bits
+python scripts/flora-data.py show --panel goals
+~~~
+
+## Dry runs
+
+Most write commands support `--dry-run`.
+
+A dry run prints the result that would be written but does not change the data file.
+
+Example:
+
+~~~bash
+python scripts/flora-data.py raid --name "ExampleRaider" --viewers 25 --dry-run
+~~~
+
+Dry runs are useful when testing Streamer.bot variables.
+
 ## Raid updates
 
 Increment one raider's total viewers and raid count:
@@ -96,6 +126,12 @@ python scripts/flora-data.py reset --panel goals --yes
 
 The `--yes` flag is required so resets are deliberate.
 
+Dry-run reset example:
+
+~~~bash
+python scripts/flora-data.py reset --panel bits --yes --dry-run
+~~~
+
 ## Streamer.bot usage
 
 In Streamer.bot, create an action that runs a command.
@@ -118,4 +154,13 @@ Example command for a bits action:
 python scripts/flora-data.py bits --name "%userName%" --bits "%bits%" --cheers 1
 ~~~
 
+Dry-run examples for testing Streamer.bot variables:
+
+~~~text
+python scripts/flora-data.py raid --name "%userName%" --viewers "%viewerCount%" --dry-run
+python scripts/flora-data.py bits --name "%userName%" --bits "%bits%" --cheers 1 --dry-run
+~~~
+
 The exact variable names depend on the Streamer.bot trigger and action context.
+
+If a Streamer.bot variable may contain spaces, keep it wrapped in quotes.
