@@ -49,6 +49,11 @@ def require_positive_number(value, path):
         fail(f"{path} must be a positive number")
 
 
+def require_non_negative_number(value, path):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+        fail(f"{path} must be a non-negative number")
+
+
 def require_boolean(value, path):
     if not isinstance(value, bool):
         fail(f"{path} must be true or false")
@@ -130,6 +135,37 @@ def validate_table_panel(panel, panel_path):
         validate_scroll(panel["scroll"], f"{panel_path}.scroll")
 
 
+def validate_rotation(rotation, panels):
+    require_object(rotation, "rotation")
+
+    if "enabled" in rotation:
+        require_boolean(rotation["enabled"], "rotation.enabled")
+
+    if "transitionMilliseconds" in rotation:
+        require_non_negative_number(
+            rotation["transitionMilliseconds"],
+            "rotation.transitionMilliseconds",
+        )
+
+    entries = rotation.get("panels")
+    require_list(entries, "rotation.panels")
+
+    if not entries:
+        fail("rotation.panels must contain at least one panel")
+
+    for index, entry in enumerate(entries):
+        entry_path = f"rotation.panels[{index}]"
+        require_object(entry, entry_path)
+
+        panel_name = entry.get("panel")
+        require_non_empty_string(panel_name, f"{entry_path}.panel")
+
+        if panel_name not in panels:
+            fail(f"{entry_path}.panel references unknown panel: {panel_name}")
+
+        require_positive_number(entry.get("durationSeconds"), f"{entry_path}.durationSeconds")
+
+
 def validate_goal_panel(panel, panel_path):
     validate_common_panel_fields(panel, panel_path)
 
@@ -200,6 +236,9 @@ def validate_config(config):
     for name, panel in panels.items():
         require_non_empty_string(name, "panel name")
         validate_panel(panel, f"panels.{name}")
+
+    if "rotation" in config:
+        validate_rotation(config["rotation"], panels)
 
 
 def main():

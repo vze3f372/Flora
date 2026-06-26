@@ -85,5 +85,23 @@
       "progressFill": "#5eead4",
       "progressEmpty": "#16323a"
     }
+  },
+  "rotation": {
+    "enabled": false,
+    "panels": [
+      {
+        "panel": "raids",
+        "durationSeconds": 10
+      },
+      {
+        "panel": "bits",
+        "durationSeconds": 10
+      },
+      {
+        "panel": "follower-goal",
+        "durationSeconds": 12
+      }
+    ],
+    "transitionMilliseconds": 500
   }
 }

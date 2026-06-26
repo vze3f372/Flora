@@ -85,6 +85,22 @@ docs/streamerbot/raid-table-panel.md
 ```
 
 
+## Panel rotation
+
+Use rotation mode when one OBS browser source should cycle through multiple panels.
+
+~~~text
+http://localhost:8000/panel.html?rotation=true
+~~~
+
+Direct panel URLs still work and take priority over rotation:
+
+~~~text
+http://localhost:8000/panel.html?type=raids
+http://localhost:8000/panel.html?type=bits
+http://localhost:8000/panel.html?type=follower-goal
+~~~
+
 ## Developer checks
 
 Run the local project checks before committing:
