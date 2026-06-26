@@ -1,8 +1,8 @@
-# StreamPanel Design Philosophy
+# Flora Design Philosophy
 
 ## Goals
 
-StreamPanel should feel like a professional broadcast graphics package rather than a traditional browser widget.
+Flora should feel like a professional broadcast graphics package rather than a traditional browser widget.
 
 The UI should enhance the stream without distracting from the content.
 
@@ -124,3 +124,9 @@ Configuration should drive behaviour.
 Panels should be data-driven.
 
 No feature should require hardcoding a specific leaderboard.
+
+## Panel Engine Direction
+
+Flora should treat leaderboards as one type of panel, not as the core abstraction. Renderer code should resolve a configured panel, inspect its panel type, and delegate rendering to a focused renderer implementation.
+
+The current table renderer is the first concrete panel renderer. Future panel types should be added through the same dispatch boundary rather than by adding panel-specific branches throughout the main render loop.
