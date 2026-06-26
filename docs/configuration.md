@@ -320,3 +320,55 @@ New configuration should use:
 ```
 
 The legacy fallback should not be used for new features.
+
+## Goal panels
+
+Goal panels display progress toward a numeric target.
+
+Example:
+
+~~~json
+"follower-goal": {
+  "type": "goal",
+  "title": "FOLLOWER GOAL",
+  "subtitle": "THANK YOU FOR THE SUPPORT",
+  "dataFile": "data/goals.json",
+  "goalKey": "followers",
+  "currentLabel": "Followers",
+  "targetLabel": "Goal",
+  "percentLabel": "Complete"
+}
+~~~
+
+The data file must contain an object keyed by `goalKey`.
+
+Example:
+
+~~~json
+{
+  "followers": {
+    "current": 42,
+    "target": 100
+  }
+}
+~~~
+
+Required fields:
+
+~~~text
+type
+title
+subtitle
+dataFile
+goalKey
+~~~
+
+Optional labels:
+
+~~~text
+currentLabel
+targetLabel
+percentLabel
+~~~
+
+`current` and `target` must be numeric. `target` must be greater than zero.

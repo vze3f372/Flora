@@ -6,185 +6,217 @@ import sys
 from pathlib import Path
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
 REQUIRED_FILES = [
     "README.md",
+    "CHANGELOG.md",
     "ROADMAP.md",
     "config.json",
     "panel.html",
-    "data/raids.json",
     "js/panel.js",
     "css/base.css",
     "css/layout.css",
     "css/panel.css",
     "css/table.css",
+    "css/goal.css",
     "css/animations.css",
     "css/themes/cyan.css",
-    "docs/DESIGN.md",
-    "docs/configuration.md",
-    "docs/streamerbot/raid-table-panel.md",
+    "data/raids.json",
+    "data/bits.json",
+    "data/goals.json",
     "scripts/validate-config.py",
 ]
 
-REQUIRED_README_REFERENCES = [
-    "docs/configuration.md",
-    "docs/streamerbot/raid-table-panel.md",
-    "python scripts/validate-config.py",
-]
-
-REQUIRED_CONFIG_KEYS = [
-    "theme",
-    "refreshSeconds",
-    "panels",
-]
-
-
-def print_step(message):
-    print(f"==> {message}")
-
 
 def fail(message):
-    print(f"check failed: {message}", file=sys.stderr)
-    return 1
+    print(f"check error: {message}", file=sys.stderr)
+    raise SystemExit(1)
+
+
+def check_required_files():
+    print("==> checking required files")
+
+    for relative_path in REQUIRED_FILES:
+        path = ROOT / relative_path
+
+        if not path.exists():
+            fail(f"missing required file: {relative_path}")
 
 
 def run_command(command):
     result = subprocess.run(
         command,
-        text=True,
+        cwd=ROOT,
         stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
     )
 
     if result.returncode != 0:
-        raise RuntimeError("command failed: " + " ".join(command))
+        message = result.stderr.strip() or "command failed"
+        fail(message)
 
 
-def check_required_files():
-    print_step("checking required files")
+def load_json_file(relative_path):
+    path = ROOT / relative_path
 
-    missing = [path for path in REQUIRED_FILES if not Path(path).exists()]
-
-    if missing:
-        raise ValueError("missing required files: " + ", ".join(missing))
-
-
-def check_json_syntax():
-    print_step("checking config.json syntax")
-    run_command([sys.executable, "-m", "json.tool", "config.json"])
-
-
-def check_config_validator():
-    print_step("checking config.json semantics")
-    run_command([sys.executable, "scripts/validate-config.py"])
+    try:
+        with path.open("r", encoding="utf-8") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        fail(f"{relative_path} does not exist")
+    except json.JSONDecodeError as error:
+        fail(f"{relative_path} is not valid JSON: {error}")
 
 
 def is_number(value):
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+    return not isinstance(value, bool) and isinstance(value, (int, float))
 
 
-def load_json_file(path):
-    try:
-        return json.loads(Path(path).read_text())
-    except json.JSONDecodeError as error:
-        raise ValueError(f"{path} is not valid JSON: {error}") from error
+def check_config_json_syntax():
+    print("==> checking config.json syntax")
+    run_command(["python", "-m", "json.tool", "config.json"])
+
+
+def check_config_semantics():
+    print("==> checking config.json semantics")
+    run_command(["python", "scripts/validate-config.py"])
+
+
+def get_panels(config):
+    panels = config.get("panels")
+
+    if not isinstance(panels, dict) or not panels:
+        fail("config.json must define at least one panel in panels")
+
+    return panels
+
+
+def check_data_file_exists(panel_name, panel):
+    data_file = panel.get("dataFile")
+
+    if not isinstance(data_file, str) or not data_file.strip():
+        fail(f"panels.{panel_name}.dataFile must not be empty")
+
+    if not (ROOT / data_file).exists():
+        fail(f"panels.{panel_name}.dataFile does not exist: {data_file}")
 
 
 def check_table_panel_data(panel_name, panel):
-    panel_path = f"panels.{panel_name}"
-    data_file = panel.get("dataFile")
-
-    if not data_file:
-        raise ValueError(f"{panel_path}.dataFile is required")
-
-    data_path = Path(data_file)
-
-    if not data_path.exists():
-        raise ValueError(f"{panel_path}.dataFile does not exist: {data_file}")
-
-    data = load_json_file(data_path)
+    data_file = panel["dataFile"]
+    data = load_json_file(data_file)
 
     if not isinstance(data, dict):
-        raise ValueError(f"{data_file} must contain a JSON object")
+        fail(f"{data_file} must contain a JSON object")
 
     sort_fields = [
-        field
-        for field in [panel.get("sortBy"), panel.get("sortThenBy")]
+        field for field in [
+            panel.get("sortBy"),
+            panel.get("sortThenBy"),
+        ]
         if field
     ]
 
-    columns = panel.get("columns", [])
     column_fields = [
         column.get("field")
-        for column in columns
+        for column in panel.get("columns", [])
         if isinstance(column, dict) and column.get("field")
     ]
 
     required_fields = list(dict.fromkeys(sort_fields + column_fields))
 
-    for row_name, row in data.items():
-        row_path = f"{data_file}.{row_name}"
+    for name, stats in data.items():
+        if not isinstance(name, str) or not name.strip():
+            fail(f"{data_file} contains an empty row name")
 
-        if not isinstance(row_name, str) or not row_name.strip():
-            raise ValueError(f"{data_file} contains an empty row name")
-
-        if not isinstance(row, dict):
-            raise ValueError(f"{row_path} must be an object")
+        if not isinstance(stats, dict):
+            fail(f"{data_file}.{name} must contain a JSON object")
 
         for field in required_fields:
-            if field not in row:
-                raise ValueError(f"{row_path} missing field: {field}")
+            if field not in stats:
+                fail(f"{data_file}.{name} is missing field: {field}")
 
         for field in sort_fields:
-            if not is_number(row[field]):
-                raise ValueError(f"{row_path}.{field} must be numeric")
+            if not is_number(stats[field]):
+                fail(f"{data_file}.{name}.{field} must be numeric")
+
+
+def check_goal_panel_data(panel_name, panel):
+    data_file = panel["dataFile"]
+    data = load_json_file(data_file)
+
+    if not isinstance(data, dict):
+        fail(f"{data_file} must contain a JSON object")
+
+    goal_key = panel.get("goalKey")
+
+    if not isinstance(goal_key, str) or not goal_key.strip():
+        fail(f"panels.{panel_name}.goalKey must not be empty")
+
+    goal = data.get(goal_key)
+
+    if not isinstance(goal, dict):
+        fail(f"{data_file} is missing goal key: {goal_key}")
+
+    for field in ["current", "target"]:
+        if field not in goal:
+            fail(f"{data_file}.{goal_key} is missing field: {field}")
+
+        if not is_number(goal[field]):
+            fail(f"{data_file}.{goal_key}.{field} must be numeric")
+
+    if goal["target"] <= 0:
+        fail(f"{data_file}.{goal_key}.target must be greater than zero")
 
 
 def check_config_shape():
-    print_step("checking config.json shape")
+    print("==> checking config.json shape")
 
-    config = json.loads(Path("config.json").read_text())
-
-    for key in REQUIRED_CONFIG_KEYS:
-        if key not in config:
-            raise ValueError(f"config.json missing top-level key: {key}")
-
-    panels = config["panels"]
-
-    if "raids" not in panels:
-        raise ValueError("config.json missing panels.raids")
+    config = load_json_file("config.json")
+    panels = get_panels(config)
 
     for panel_name, panel in panels.items():
-        panel_path = f"panels.{panel_name}"
+        if not isinstance(panel, dict):
+            fail(f"panels.{panel_name} must be an object")
 
-        if panel.get("type") != "table":
-            raise ValueError(f"{panel_path}.type must be table")
+        check_data_file_exists(panel_name, panel)
 
-        check_table_panel_data(panel_name, panel)
+        panel_type = panel.get("type", "table")
+
+        if panel_type == "table":
+            check_table_panel_data(panel_name, panel)
+            continue
+
+        if panel_type == "goal":
+            check_goal_panel_data(panel_name, panel)
+            continue
+
+        fail(f"panels.{panel_name}.type is not supported: {panel_type}")
 
 
 def check_readme_references():
-    print_step("checking README references")
+    print("==> checking README references")
 
-    readme = Path("README.md").read_text()
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
-    missing = [
-        reference
-        for reference in REQUIRED_README_REFERENCES
-        if reference not in readme
+    required_terms = [
+        "panel.html?type=raids",
+        "panel.html?type=bits",
+        "python scripts/check.py",
     ]
 
-    if missing:
-        raise ValueError("README.md missing references: " + ", ".join(missing))
+    for term in required_terms:
+        if term not in readme:
+            fail(f"README.md is missing reference: {term}")
 
 
 def main():
-    try:
-        check_required_files()
-        check_json_syntax()
-        check_config_validator()
-        check_config_shape()
-        check_readme_references()
-    except (RuntimeError, ValueError) as error:
-        return fail(str(error))
+    check_required_files()
+    check_config_json_syntax()
+    check_config_semantics()
+    check_config_shape()
+    check_readme_references()
 
     print("All checks passed")
     return 0

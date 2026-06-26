@@ -2,6 +2,15 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.5.0 - Goal Panel Foundation
+
+- Add a new `goal` panel renderer type.
+- Add a sample `follower-goal` panel.
+- Add `data/goals.json` sample data.
+- Add goal panel styling.
+- Extend configuration validation for goal panels.
+- Extend developer checks for goal panel data.
+
 ## v0.4.4 - Table Panel Header and Label Polish
 
 - Add configurable table panel rank labels.

@@ -1,0 +1,59 @@
+.goal-panel {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 32px 34px;
+}
+
+.goal-panel-values {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-bottom: 26px;
+}
+
+.goal-panel-value {
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  background: var(--panel-background-alt);
+}
+
+.goal-panel-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--panel-muted);
+}
+
+.goal-panel-number {
+  display: block;
+  font-size: 2.35rem;
+  line-height: 1;
+  color: var(--panel-text);
+}
+
+.goal-panel-progress {
+  overflow: hidden;
+  height: 28px;
+  border: 1px solid var(--panel-border, #6f4a2a);
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      var(--goal-fill, #5eead4) 0%,
+      var(--goal-fill, #5eead4) var(--goal-progress, 0%),
+      var(--goal-empty, #16323a) var(--goal-progress, 0%),
+      var(--goal-empty, #16323a) 100%
+    );
+}
+
+.goal-panel-percent {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--panel-muted);
+}
