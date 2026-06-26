@@ -323,6 +323,34 @@ The legacy fallback should not be used for new features.
 
 ## Goal panels
 
+### Goal panel display options
+
+Goal panels support optional display configuration.
+
+~~~json
+"numberFormat": "plain",
+"completeMessage": "Goal reached!",
+"showPercent": true
+~~~
+
+`numberFormat` controls how current and target values are displayed.
+
+Supported values:
+
+~~~text
+plain
+compact
+~~~
+
+`plain` displays full numbers such as `12500`.
+
+`compact` displays shortened numbers such as `12.5K`.
+
+`completeMessage` is displayed instead of the percentage text when `current` is greater than or equal to `target`.
+
+`showPercent` controls whether the percentage text is displayed. The progress bar is still displayed when `showPercent` is `false`.
+
+
 Goal panels display progress toward a numeric target.
 
 Example:

@@ -16,6 +16,11 @@ ALIGN_VALUES = {
     "right",
 }
 
+GOAL_NUMBER_FORMATS = {
+    "plain",
+    "compact",
+}
+
 
 def fail(message):
     raise ValueError(message)
@@ -39,6 +44,11 @@ def require_non_empty_string(value, path):
 def require_positive_number(value, path):
     if isinstance(value, bool) or not isinstance(value, (int, float)) or value <= 0:
         fail(f"{path} must be a positive number")
+
+
+def require_boolean(value, path):
+    if not isinstance(value, bool):
+        fail(f"{path} must be true or false")
 
 
 def validate_scroll(scroll, path):
@@ -119,11 +129,21 @@ def validate_goal_panel(panel, panel_path):
         "currentLabel",
         "targetLabel",
         "percentLabel",
+        "completeMessage",
     ]
 
     for field in optional_label_fields:
         if field in panel:
             require_non_empty_string(panel[field], f"{panel_path}.{field}")
+
+    if "numberFormat" in panel:
+        require_non_empty_string(panel["numberFormat"], f"{panel_path}.numberFormat")
+
+        if panel["numberFormat"] not in GOAL_NUMBER_FORMATS:
+            fail(f"{panel_path}.numberFormat must be one of: {', '.join(sorted(GOAL_NUMBER_FORMATS))}")
+
+    if "showPercent" in panel:
+        require_boolean(panel["showPercent"], f"{panel_path}.showPercent")
 
 
 def validate_panel(panel, panel_path):
