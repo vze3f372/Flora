@@ -278,3 +278,11 @@ If the API returns an error such as `viewerCount must be an integer`, the trigge
 6. Remove `dryRun=true`.
 7. Trigger the event again.
 8. Refresh the relevant Flora panel in the browser or OBS.
+
+## Fetch URL compatibility
+
+For Streamer.bot Fetch URL recipes that do not require C# POST requests, see:
+
+~~~text
+docs/streamerbot/fetch-url-recipes.md
+~~~

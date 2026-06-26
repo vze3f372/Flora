@@ -168,6 +168,16 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
     def do_OPTIONS(self) -> None:
         self.send_json(204, None)
 
+    def api_routes(self):
+        return {
+            "/api/raid": self.handle_raid,
+            "/api/bits": self.handle_bits,
+            "/api/follow": self.handle_follow,
+            "/api/sub": self.handle_sub,
+            "/api/goal": self.handle_goal,
+            "/api/event": self.handle_event,
+        }
+
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
 
@@ -183,30 +193,17 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             return
 
         if parsed.path.startswith("/api/"):
-            self.send_json(
-                405,
-                {
-                    "ok": False,
-                    "error": "Use POST for Flora API write endpoints.",
-                },
-            )
+            self.handle_api_request(parsed, allow_body=False)
             return
 
         super().do_GET()
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        self.handle_api_request(parsed, allow_body=True)
 
-        routes = {
-            "/api/raid": self.handle_raid,
-            "/api/bits": self.handle_bits,
-            "/api/follow": self.handle_follow,
-            "/api/sub": self.handle_sub,
-            "/api/goal": self.handle_goal,
-            "/api/event": self.handle_event,
-        }
-
-        handler = routes.get(parsed.path)
+    def handle_api_request(self, parsed, allow_body: bool) -> None:
+        handler = self.api_routes().get(parsed.path)
 
         if handler is None:
             self.send_json(
@@ -219,9 +216,10 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             return
 
         try:
-            payload = self.read_payload(parsed.query)
+            payload = self.read_payload(parsed.query, allow_body=allow_body)
             dry_run = parse_bool(payload.get("dryRun", payload.get("dry_run")))
             result = handler(payload, dry_run)
+            result["method"] = self.command
             self.send_json(200, result)
         except ApiError as error:
             self.send_json(
@@ -229,6 +227,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
                 {
                     "ok": False,
                     "error": error.message,
+                    "method": self.command,
                 },
             )
         except Exception as error:
@@ -237,16 +236,20 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
                 {
                     "ok": False,
                     "error": str(error),
+                    "method": self.command,
                 },
             )
 
-    def read_payload(self, query: str) -> dict[str, Any]:
+    def read_payload(self, query: str, allow_body: bool = True) -> dict[str, Any]:
         payload: dict[str, Any] = {}
 
         query_values = parse_qs(query, keep_blank_values=True)
 
         for key, values in query_values.items():
             payload[key] = values[-1] if values else ""
+
+        if not allow_body:
+            return payload
 
         length = int(self.headers.get("Content-Length", "0") or "0")
 

@@ -147,3 +147,4 @@ config.json is valid
 - `docs/DESIGN.md`
 - `docs/configuration.md`
 - `docs/streamerbot/raid-table-panel.md`
+- [Streamer.bot Fetch URL recipes](docs/streamerbot/fetch-url-recipes.md)

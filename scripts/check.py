@@ -30,6 +30,7 @@ REQUIRED_FILES = [
     "scripts/validate-config.py",
     "scripts/flora-data.py",
     "docs/streamerbot/http-actions.md",
+    "docs/streamerbot/fetch-url-recipes.md",
     "scripts/flora-server.py",
 ]
 
