@@ -102,6 +102,7 @@
         "durationSeconds": 12
       }
     ],
-    "transitionMilliseconds": 500
+    "transitionMilliseconds": 500,
+    "startPanel": "bits"
   }
 }

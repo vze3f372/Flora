@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.6.1 - Rotation Runtime Polish
+
+- Add optional rotation start panel configuration.
+- Add `start` query override for rotation.
+- Add `duration` query override for rotation testing.
+- Add `debug=true` rotation status overlay.
+- Keep direct `type` URLs authoritative.
+
 ## v0.6.0 - Panel Rotation Foundation
 
 - Add optional panel rotation configuration.

@@ -330,6 +330,7 @@ Example:
 ~~~json
 "rotation": {
   "enabled": false,
+  "startPanel": "raids",
   "transitionMilliseconds": 500,
   "panels": [
     {
@@ -361,6 +362,26 @@ http://localhost:8000/panel.html?type=raids
 ~~~
 
 `rotation.enabled` is optional. When set to `true`, Flora rotates panels when no direct `type` query is provided.
+
+`rotation.startPanel` controls which configured rotation panel is shown first.
+
+Use the `start` query parameter to override the starting panel for a specific browser source:
+
+~~~text
+http://localhost:8000/panel.html?rotation=true&start=bits
+~~~
+
+Use the `duration` query parameter to temporarily override all rotation durations:
+
+~~~text
+http://localhost:8000/panel.html?rotation=true&duration=3
+~~~
+
+Use the `debug` query parameter to show a small rotation status overlay:
+
+~~~text
+http://localhost:8000/panel.html?rotation=true&debug=true
+~~~
 
 `rotation.transitionMilliseconds` controls the fade/dissolve duration between panels. Use `0` to disable the transition.
 
