@@ -24,7 +24,7 @@
   font-size: 0.78rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #5eead4;
+  color: var(--event-type-color, #5eead4);
 }
 
 .events-panel-name {

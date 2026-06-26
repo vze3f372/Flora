@@ -11,6 +11,18 @@
       "name": "ExampleUser",
       "detail": "Cheered 100 bits",
       "time": "Earlier"
+    },
+    {
+      "type": "follow",
+      "name": "NewFollower",
+      "detail": "Followed the channel",
+      "time": "Today"
+    },
+    {
+      "type": "sub",
+      "name": "ExampleSub",
+      "detail": "Subscribed to the channel",
+      "time": "Today"
     }
   ]
 }

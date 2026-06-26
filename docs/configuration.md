@@ -534,3 +534,26 @@ name
 detail
 time
 ~~~
+
+### Event type labels and colors
+
+Event panels support optional display configuration per event type.
+
+~~~json
+"eventTypes": {
+  "raid": {
+    "label": "RAID",
+    "color": "#5eead4"
+  },
+  "bits": {
+    "label": "BITS",
+    "color": "#67e8f9"
+  }
+}
+~~~
+
+`label` controls the text displayed for the event type.
+
+`color` controls the event type text color. Colors must be hex values.
+
+If an event type is not configured, Flora displays the raw event type from the data file.

@@ -327,6 +327,30 @@ function validateEventsData(data) {
   return null;
 }
 
+function getEventTypeConfig(panelConfig, eventType) {
+  const eventTypes = panelConfig.eventTypes;
+
+  if (!isObject(eventTypes)) {
+    return {};
+  }
+
+  const typeConfig = eventTypes[eventType];
+
+  return isObject(typeConfig) ? typeConfig : {};
+}
+
+function getEventTypeLabel(panelConfig, eventType) {
+  const typeConfig = getEventTypeConfig(panelConfig, eventType);
+
+  return typeConfig.label ?? eventType;
+}
+
+function getEventTypeColor(panelConfig, eventType) {
+  const typeConfig = getEventTypeConfig(panelConfig, eventType);
+
+  return getGoalColor(typeConfig.color, DEFAULT_GOAL_PROGRESS_FILL);
+}
+
 function clampPercentage(value) {
   return Math.max(0, Math.min(value, 100));
 }
@@ -627,14 +651,19 @@ function renderEventsPanel(type, panelConfig, data) {
   track.innerHTML = `
     <section class="events-panel" aria-label="${escapeHtml(panelConfig.title)}">
       <div class="events-panel-list">
-        ${events.map(event => `
-          <article class="events-panel-row">
-            <div class="events-panel-type">${escapeHtml(event.type)}</div>
-            <div class="events-panel-name">${escapeHtml(event.name)}</div>
-            <div class="events-panel-detail">${escapeHtml(event.detail)}</div>
-            <div class="events-panel-time">${escapeHtml(event.time)}</div>
-          </article>
-        `).join("")}
+        ${events.map(event => {
+          const eventLabel = getEventTypeLabel(panelConfig, event.type);
+          const eventColor = getEventTypeColor(panelConfig, event.type);
+
+          return `
+            <article class="events-panel-row">
+              <div class="events-panel-type" style="--event-type-color: ${escapeHtml(eventColor)}">${escapeHtml(eventLabel)}</div>
+              <div class="events-panel-name">${escapeHtml(event.name)}</div>
+              <div class="events-panel-detail">${escapeHtml(event.detail)}</div>
+              <div class="events-panel-time">${escapeHtml(event.time)}</div>
+            </article>
+          `;
+        }).join("")}
       </div>
     </section>
   `;
