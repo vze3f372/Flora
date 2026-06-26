@@ -200,11 +200,18 @@ def update_goal(args):
     ))
 
 
-def add_event(args):
-    event_type = require_non_empty_text(args.type, "type")
-    name = require_non_empty_text(args.name, "name")
-    detail = require_non_empty_text(args.detail, "detail")
-    event_time = require_non_empty_text(args.time, "time")
+def pluralize(value, singular, plural=None):
+    if value == 1:
+        return singular
+
+    return plural or f"{singular}s"
+
+
+def write_event(event_type, name, detail, event_time, keep, dry_run):
+    event_type = require_non_empty_text(event_type, "type")
+    name = require_non_empty_text(name, "name")
+    detail = require_non_empty_text(detail, "detail")
+    event_time = require_non_empty_text(event_time, "time")
 
     data = load_json_object(EVENTS_FILE)
     events = data.setdefault("events", [])
@@ -220,13 +227,13 @@ def add_event(args):
     }
 
     events.insert(0, event)
-    del events[args.keep:]
+    del events[keep:]
 
-    save_json_object(EVENTS_FILE, data, args.dry_run)
+    save_json_object(EVENTS_FILE, data, dry_run)
 
     print_json(make_result(
         "event",
-        dry_run=args.dry_run,
+        dry_run=dry_run,
         file="data/events.json",
         type=event_type,
         name=name,
@@ -234,6 +241,65 @@ def add_event(args):
         time=event_time,
         kept=len(events),
     ))
+
+
+def add_event(args):
+    write_event(
+        args.type,
+        args.name,
+        args.detail,
+        args.time,
+        args.keep,
+        args.dry_run,
+    )
+
+
+def add_raid_event(args):
+    detail = f"Raided with {args.viewers} {pluralize(args.viewers, 'viewer')}"
+
+    write_event(
+        "raid",
+        args.name,
+        detail,
+        args.time,
+        args.keep,
+        args.dry_run,
+    )
+
+
+def add_bits_event(args):
+    detail = f"Cheered {args.bits} {pluralize(args.bits, 'bit')}"
+
+    write_event(
+        "bits",
+        args.name,
+        detail,
+        args.time,
+        args.keep,
+        args.dry_run,
+    )
+
+
+def add_follow_event(args):
+    write_event(
+        "follow",
+        args.name,
+        "Followed the channel",
+        args.time,
+        args.keep,
+        args.dry_run,
+    )
+
+
+def add_sub_event(args):
+    write_event(
+        "sub",
+        args.name,
+        "Subscribed to the channel",
+        args.time,
+        args.keep,
+        args.dry_run,
+    )
 
 
 def reset_panel(args):
@@ -322,6 +388,48 @@ def build_parser():
     event.add_argument("--keep", default=25, type=positive_int("keep"))
     add_dry_run_argument(event)
     event.set_defaults(func=add_event)
+
+    raid_event = subparsers.add_parser(
+        "raid-event",
+        help="Append a raid event with generated detail text.",
+    )
+    raid_event.add_argument("--name", required=True)
+    raid_event.add_argument("--viewers", required=True, type=non_negative_int("viewers"))
+    raid_event.add_argument("--time", default="Just now")
+    raid_event.add_argument("--keep", default=25, type=positive_int("keep"))
+    add_dry_run_argument(raid_event)
+    raid_event.set_defaults(func=add_raid_event)
+
+    bits_event = subparsers.add_parser(
+        "bits-event",
+        help="Append a bits event with generated detail text.",
+    )
+    bits_event.add_argument("--name", required=True)
+    bits_event.add_argument("--bits", required=True, type=non_negative_int("bits"))
+    bits_event.add_argument("--time", default="Just now")
+    bits_event.add_argument("--keep", default=25, type=positive_int("keep"))
+    add_dry_run_argument(bits_event)
+    bits_event.set_defaults(func=add_bits_event)
+
+    follow_event = subparsers.add_parser(
+        "follow-event",
+        help="Append a follow event.",
+    )
+    follow_event.add_argument("--name", required=True)
+    follow_event.add_argument("--time", default="Just now")
+    follow_event.add_argument("--keep", default=25, type=positive_int("keep"))
+    add_dry_run_argument(follow_event)
+    follow_event.set_defaults(func=add_follow_event)
+
+    sub_event = subparsers.add_parser(
+        "sub-event",
+        help="Append a subscription event.",
+    )
+    sub_event.add_argument("--name", required=True)
+    sub_event.add_argument("--time", default="Just now")
+    sub_event.add_argument("--keep", default=25, type=positive_int("keep"))
+    add_dry_run_argument(sub_event)
+    sub_event.set_defaults(func=add_sub_event)
 
     reset = subparsers.add_parser(
         "reset",

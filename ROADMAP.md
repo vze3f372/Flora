@@ -19,6 +19,14 @@
 
 
 
+## v0.8.2 - Event Writer Convenience Commands
+
+- Add shortcut commands for common recent event types.
+- Reduce quoted detail strings in Streamer.bot actions.
+- Keep the generic event writer command for custom event text.
+- Keep recent events as a bounded newest-first feed.
+- Prepare for full Streamer.bot action integration.
+
 ## v0.8.1 - Event Panel Polish
 
 - Add event type display labels.

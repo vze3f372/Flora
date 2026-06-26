@@ -636,7 +636,6 @@ function renderEventsPanel(type, panelConfig, data) {
     scrollController.reset();
   }
 
-  track.classList.add("is-static");
   track.innerHTML = "";
 
   const maxEvents = panelConfig.maxEvents ?? 8;
@@ -648,25 +647,21 @@ function renderEventsPanel(type, panelConfig, data) {
     return;
   }
 
-  track.innerHTML = `
-    <section class="events-panel" aria-label="${escapeHtml(panelConfig.title)}">
-      <div class="events-panel-list">
-        ${events.map(event => {
-          const eventLabel = getEventTypeLabel(panelConfig, event.type);
-          const eventColor = getEventTypeColor(panelConfig, event.type);
+  track.innerHTML = events.map(event => {
+    const eventLabel = getEventTypeLabel(panelConfig, event.type);
+    const eventColor = getEventTypeColor(panelConfig, event.type);
 
-          return `
-            <article class="events-panel-row">
-              <div class="events-panel-type" style="--event-type-color: ${escapeHtml(eventColor)}">${escapeHtml(eventLabel)}</div>
-              <div class="events-panel-name">${escapeHtml(event.name)}</div>
-              <div class="events-panel-detail">${escapeHtml(event.detail)}</div>
-              <div class="events-panel-time">${escapeHtml(event.time)}</div>
-            </article>
-          `;
-        }).join("")}
-      </div>
-    </section>
-  `;
+    return `
+      <article class="events-panel-row">
+        <div class="events-panel-type" style="--event-type-color: ${escapeHtml(eventColor)}">${escapeHtml(eventLabel)}</div>
+        <div class="events-panel-name">${escapeHtml(event.name)}</div>
+        <div class="events-panel-detail">${escapeHtml(event.detail)}</div>
+        <div class="events-panel-time">${escapeHtml(event.time)}</div>
+      </article>
+    `;
+  }).join("");
+
+  track.classList.add("is-static");
 }
 
 function renderGoalPanel(type, panelConfig, data) {

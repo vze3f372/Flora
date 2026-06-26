@@ -2,6 +2,16 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.8.2 - Event Writer Convenience Commands
+
+- Add `raid-event` writer shortcut.
+- Add `bits-event` writer shortcut.
+- Add `follow-event` writer shortcut.
+- Add `sub-event` writer shortcut.
+- Keep the generic `event` writer command.
+- Keep recent events as a fixed newest-first feed.
+- Update Streamer.bot writer examples.
+
 ## v0.8.1 - Event Panel Polish
 
 - Add configurable event type labels.
