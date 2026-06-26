@@ -32,7 +32,9 @@
         "gapPixels": 20
       },
       "type": "table",
-      "emptyMessage": "No raids recorded yet"
+      "emptyMessage": "No raids recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "Raider"
     },
     "bits": {
       "title": "TOP BITS",
@@ -64,7 +66,9 @@
         "gapPixels": 20
       },
       "type": "table",
-      "emptyMessage": "No bits recorded yet"
+      "emptyMessage": "No bits recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "User"
     }
   }
 }

@@ -8,6 +8,14 @@
 
 
 
+
+## v0.4.4 - Table Panel Header and Label Polish
+
+- Add optional table panel rank labels.
+- Add optional table panel name labels.
+- Validate optional label configuration.
+- Keep populated table rendering unchanged.
+
 ## v0.4.3 - Table Panel Empty-State Configuration
 
 - Add configurable empty-state text per table panel.

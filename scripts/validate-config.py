@@ -107,8 +107,15 @@ def validate_table_panel(panel, panel_path):
     if "sortThenBy" in panel and panel["sortThenBy"] is not None:
         require_non_empty_string(panel["sortThenBy"], f"{panel_path}.sortThenBy")
 
-    if "emptyMessage" in panel:
-        require_non_empty_string(panel["emptyMessage"], f"{panel_path}.emptyMessage")
+    optional_label_fields = [
+        "rankLabel",
+        "nameLabel",
+        "emptyMessage",
+    ]
+
+    for field in optional_label_fields:
+        if field in panel:
+            require_non_empty_string(panel[field], f"{panel_path}.{field}")
 
     max_rows = panel.get("maxRows")
 

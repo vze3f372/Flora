@@ -115,6 +115,38 @@ Example:
 }
 ```
 
+### `rankLabel`
+
+Optional label for the rank column.
+
+Example:
+
+~~~json
+"rankLabel": "Rank"
+~~~
+
+If omitted, Flora displays:
+
+~~~text
+Rank
+~~~
+
+### `nameLabel`
+
+Optional label for the name column.
+
+Example:
+
+~~~json
+"nameLabel": "Raider"
+~~~
+
+If omitted, Flora displays:
+
+~~~text
+Name
+~~~
+
 ### `title`
 
 Displayed as the main panel title.
