@@ -2,6 +2,16 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.7.0 - Streamer.bot Data Writer Foundation
+
+- Add `scripts/flora-data.py` for safe data updates.
+- Support raid data updates.
+- Support bits and cheer data updates.
+- Support goal data updates.
+- Support deliberate data resets.
+- Use atomic JSON writes.
+- Add Streamer.bot data writer documentation.
+
 ## v0.6.1 - Rotation Runtime Polish
 
 - Add optional rotation start panel configuration.

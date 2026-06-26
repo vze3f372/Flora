@@ -26,6 +26,7 @@ REQUIRED_FILES = [
     "data/bits.json",
     "data/goals.json",
     "scripts/validate-config.py",
+    "scripts/flora-data.py",
 ]
 
 
