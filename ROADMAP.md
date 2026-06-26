@@ -6,6 +6,15 @@
 
 
 
+
+## v0.4.2 - Renderer Error-State Robustness
+
+- Improve user-facing renderer error states.
+- Handle missing data files clearly.
+- Handle malformed data JSON clearly.
+- Handle invalid table data shape at render time.
+- Keep valid table rendering unchanged.
+
 ## v0.4.1 - Table Panel Data Robustness
 
 - Validate configured table panel data files.

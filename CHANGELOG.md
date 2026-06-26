@@ -2,6 +2,13 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.4.2 - Renderer Error-State Robustness
+
+- Improve renderer error states for missing or malformed config and data files.
+- Render clear panel errors for unsupported panel types.
+- Validate table data shape at render time before rendering rows.
+- Preserve normal table rendering for valid panel data.
+
 ## v0.4.1 - Table Panel Data Robustness
 
 - Validate table panel data files in the developer check script.

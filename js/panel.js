@@ -5,18 +5,37 @@ const PANEL_RENDERERS = {
   table: renderTablePanel
 };
 
-async function loadJson(path, fallback) {
+async function loadJson(path) {
   try {
     const response = await fetch(path + "?cacheBust=" + Date.now());
 
     if (!response.ok) {
-      throw new Error("Could not load " + path);
+      return {
+        ok: false,
+        message: `Could not load ${path}`
+      };
     }
 
-    return await response.json();
+    try {
+      return {
+        ok: true,
+        data: await response.json()
+      };
+    } catch (error) {
+      console.error(error);
+
+      return {
+        ok: false,
+        message: `${path} is not valid JSON`
+      };
+    }
   } catch (error) {
     console.error(error);
-    return fallback;
+
+    return {
+      ok: false,
+      message: `Could not load ${path}`
+    };
   }
 }
 
@@ -44,10 +63,26 @@ function getPanelConfig(config, type) {
 }
 
 function renderPanelError(title, message) {
-  document.getElementById("panel-title").textContent = title;
-  document.getElementById("panel-subtitle").textContent = message;
-  document.getElementById("table-panel-scroll-track").innerHTML =
-    `<div class="table-panel-empty">${escapeHtml(message)}</div>`;
+  const titleElement = document.getElementById("panel-title");
+  const subtitleElement = document.getElementById("panel-subtitle");
+  const columns = document.getElementById("table-panel-columns");
+  const track = document.getElementById("table-panel-scroll-track");
+
+  if (!titleElement || !subtitleElement || !columns || !track) {
+    console.error(title, message);
+    return;
+  }
+
+  titleElement.textContent = title;
+  subtitleElement.textContent = message;
+  columns.innerHTML = "";
+
+  if (scrollController) {
+    scrollController.reset();
+  }
+
+  track.innerHTML = `<div class="table-panel-empty">${escapeHtml(message)}</div>`;
+  track.classList.add("is-static");
 }
 
 function sortEntries(entries, panelConfig) {
@@ -88,6 +123,43 @@ function getTableGridTemplate(panelConfig) {
   const valueColumns = panelConfig.columns.map(column => column.width || "120px");
 
   return [...fixedColumns, ...valueColumns].join(" ");
+}
+
+function isObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function validateTableData(data, panelConfig) {
+  if (!isObject(data)) {
+    return "Panel data must be a JSON object.";
+  }
+
+  const sortFields = [panelConfig.sortBy, panelConfig.sortThenBy].filter(Boolean);
+  const columnFields = panelConfig.columns
+    .map(column => column.field)
+    .filter(Boolean);
+
+  const requiredFields = [...new Set([...sortFields, ...columnFields])];
+
+  for (const [name, stats] of Object.entries(data)) {
+    if (!isObject(stats)) {
+      return `${name} must contain a JSON object.`;
+    }
+
+    for (const field of requiredFields) {
+      if (!(field in stats)) {
+        return `${name} is missing field: ${field}`;
+      }
+    }
+
+    for (const field of sortFields) {
+      if (!Number.isFinite(Number(stats[field]))) {
+        return `${name}.${field} must be numeric.`;
+      }
+    }
+  }
+
+  return null;
 }
 
 function renderTableColumns(panelConfig) {
@@ -207,8 +279,21 @@ function buildRenderSignature(type, panelConfig, data) {
   });
 }
 
-async function renderPanel(force = false) {
-  const config = await loadJson("config.json", {});
+async function renderPanel(force = false, configOverride = null) {
+  let config = configOverride;
+
+  if (!config) {
+    const configResult = await loadJson("config.json");
+
+    if (!configResult.ok) {
+      lastRenderSignature = "";
+      renderPanelError("CONFIG ERROR", configResult.message);
+      return;
+    }
+
+    config = configResult.data;
+  }
+
   const type = getQueryValue("type", "raids");
   const panelConfig = getPanelConfig(config, type);
 
@@ -227,7 +312,15 @@ async function renderPanel(force = false) {
     return;
   }
 
-  const data = await loadJson(panelConfig.dataFile, {});
+  const dataResult = await loadJson(panelConfig.dataFile);
+
+  if (!dataResult.ok) {
+    lastRenderSignature = "";
+    renderPanelError("PANEL DATA ERROR", dataResult.message);
+    return;
+  }
+
+  const data = dataResult.data;
   const signature = buildRenderSignature(type, panelConfig, data);
 
   if (!force && signature === lastRenderSignature) {
@@ -240,6 +333,13 @@ async function renderPanel(force = false) {
 }
 
 function renderTablePanel(type, panelConfig, data) {
+  const dataError = validateTableData(data, panelConfig);
+
+  if (dataError) {
+    renderPanelError("PANEL DATA ERROR", dataError);
+    return;
+  }
+
   document.getElementById("panel-title").textContent = panelConfig.title;
   document.getElementById("panel-subtitle").textContent = panelConfig.subtitle;
 
@@ -280,10 +380,18 @@ function renderTablePanel(type, panelConfig, data) {
 }
 
 async function start() {
-  const config = await loadJson("config.json", {});
+  const configResult = await loadJson("config.json");
+
+  if (!configResult.ok) {
+    renderPanelError("CONFIG ERROR", configResult.message);
+    setInterval(() => renderPanel(false), 5000);
+    return;
+  }
+
+  const config = configResult.data;
   const refreshSeconds = config.refreshSeconds ?? 5;
 
-  await renderPanel(true);
+  await renderPanel(true, config);
 
   if (refreshSeconds > 0) {
     setInterval(() => renderPanel(false), refreshSeconds * 1000);
