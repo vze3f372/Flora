@@ -1,0 +1,9 @@
+{
+  "theme": "cyan",
+  "title": "TOP RAIDERS",
+  "subtitle": "THANK YOU FOR THE SUPPORT",
+  "maxRows": 10,
+  "scroll": true,
+  "scrollSpeedSeconds": 28,
+  "panelOpacity": 0.82
+}
