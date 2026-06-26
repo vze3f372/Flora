@@ -2,6 +2,13 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.4.3 - Table Panel Empty-State Configuration
+
+- Add configurable table panel empty-state messages.
+- Use panel-specific empty messages when valid data contains no rows.
+- Validate `emptyMessage` configuration when present.
+- Preserve the default `No entries yet` fallback.
+
 ## v0.4.2 - Renderer Error-State Robustness
 
 - Improve renderer error states for missing or malformed config and data files.

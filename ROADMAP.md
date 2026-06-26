@@ -7,6 +7,14 @@
 
 
 
+
+## v0.4.3 - Table Panel Empty-State Configuration
+
+- Add configurable empty-state text per table panel.
+- Keep renderer error states reserved for broken config or data.
+- Validate empty-state configuration.
+- Keep populated table rendering unchanged.
+
 ## v0.4.2 - Renderer Error-State Robustness
 
 - Improve user-facing renderer error states.

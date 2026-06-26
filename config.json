@@ -31,7 +31,8 @@
         "startDelaySeconds": 1,
         "gapPixels": 20
       },
-      "type": "table"
+      "type": "table",
+      "emptyMessage": "No raids recorded yet"
     },
     "bits": {
       "title": "TOP BITS",
@@ -62,7 +63,8 @@
         "startDelaySeconds": 1,
         "gapPixels": 20
       },
-      "type": "table"
+      "type": "table",
+      "emptyMessage": "No bits recorded yet"
     }
   }
 }
