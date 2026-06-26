@@ -132,6 +132,12 @@ Dry-run reset example:
 python scripts/flora-data.py reset --panel bits --yes --dry-run
 ~~~
 
+For copy-paste Streamer.bot command examples, see:
+
+~~~text
+docs/streamerbot/command-examples.md
+~~~
+
 ## Streamer.bot usage
 
 In Streamer.bot, create an action that runs a command.

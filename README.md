@@ -104,6 +104,7 @@ http://localhost:8000/panel.html?type=follower-goal
 ## Streamer.bot data updates
 
 - Streamer.bot data writer: `docs/streamerbot/data-writer.md`
+- Streamer.bot command examples: `docs/streamerbot/command-examples.md`
 
 Flora data files can be updated with:
 
