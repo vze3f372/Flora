@@ -1,9 +1,25 @@
 {
-  "theme": "cyan",
-  "title": "TOP RAIDERS",
-  "subtitle": "THANK YOU FOR THE SUPPORT",
-  "maxRows": 10,
-  "scroll": true,
-  "scrollSpeedSeconds": 28,
-  "panelOpacity": 0.82
+    "theme": "cyan",
+    "refreshSeconds": 3,
+
+    "leaderboards": {
+        "raids": {
+            "title": "TOP RAIDERS",
+            "subtitle": "THANK YOU FOR THE SUPPORT",
+            "dataFile": "data/raids.json",
+            "maxRows": 10,
+            "sortBy": "viewers",
+            "sortThenBy": "raids",
+            "columns": [
+                {
+                    "label": "Viewers",
+                    "field": "viewers"
+                },
+                {
+                    "label": "Raids",
+                    "field": "raids"
+                }
+            ]
+        }
+    }
 }
