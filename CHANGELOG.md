@@ -2,6 +2,13 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.4.0 - Multi-Panel Table Foundation
+
+- Add a second configured table panel.
+- Add `data/bits.json` as a second panel data file.
+- Validate configured panel data file paths in the developer check script.
+- Document multiple panel URLs.
+
 ## v0.3.4 - Developer Workflow Cleanup
 
 - Add a local project check script.

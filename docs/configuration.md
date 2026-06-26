@@ -62,6 +62,33 @@ http://localhost:8000/panel.html?type=raids
 
 The `type` query parameter maps to a key in `panels`.
 
+## Multiple panels
+
+Flora can define multiple panels under the same `panels` object.
+
+Example:
+
+~~~json
+"panels": {
+  "raids": {
+    "type": "table"
+  },
+  "bits": {
+    "type": "table"
+  }
+}
+~~~
+
+The selected panel is controlled by the `type` query parameter:
+
+~~~text
+http://localhost:8000/panel.html?type=raids
+http://localhost:8000/panel.html?type=bits
+~~~
+
+Each panel can use its own title, subtitle, data file, sort fields, columns, and scroll settings.
+
+
 ## Table panels
 
 The current supported panel type is:

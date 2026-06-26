@@ -32,6 +32,37 @@
         "gapPixels": 20
       },
       "type": "table"
+    },
+    "bits": {
+      "title": "TOP BITS",
+      "subtitle": "THANK YOU FOR THE SUPPORT",
+      "dataFile": "data/bits.json",
+      "maxRows": 10,
+      "sortBy": "bits",
+      "sortThenBy": "cheers",
+      "columns": [
+        {
+          "label": "Bits",
+          "field": "bits",
+          "className": "primary-number",
+          "align": "center",
+          "width": "150px"
+        },
+        {
+          "label": "Cheers",
+          "field": "cheers",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "110px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "type": "table"
     }
   }
 }
