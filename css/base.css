@@ -1,3 +1,9 @@
+@import url("layout.css");
+@import url("panel.css");
+@import url("table.css");
+@import url("animations.css");
+@import url("themes/cyan.css");
+
 html,
 body {
     margin: 0;
@@ -7,145 +13,5 @@ body {
     background: transparent;
     overflow: hidden;
     font-family: Arial, Helvetica, sans-serif;
-    color: #f4fbff;
-}
-
-.leaderboard-panel {
-    box-sizing: border-box;
-    width: 100vw;
-    height: 100vh;
-    padding: 28px 34px;
-    background: linear-gradient(135deg, rgba(5, 15, 24, 0.86), rgba(10, 23, 35, 0.72));
-    border: 2px solid rgba(0, 220, 255, 0.85);
-    border-radius: 18px;
-    box-shadow:
-        0 0 18px rgba(0, 220, 255, 0.55),
-        inset 0 0 28px rgba(0, 140, 220, 0.18);
-}
-
-.leaderboard-title {
-    text-align: center;
-    font-size: clamp(28px, 6vw, 52px);
-    font-weight: 900;
-    letter-spacing: 4px;
-    color: #38f3ff;
-    text-shadow:
-        0 0 10px rgba(0, 230, 255, 0.9),
-        0 0 24px rgba(0, 140, 255, 0.45);
-}
-
-.leaderboard-subtitle {
-    margin-top: 4px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: clamp(12px, 2vw, 17px);
-    font-weight: 700;
-    letter-spacing: 5px;
-    color: #8ff8ff;
-}
-
-.leaderboard-columns,
-.leaderboard-row {
-    display: grid;
-    grid-template-columns: 70px minmax(0, 1fr) 150px 110px;
-    align-items: center;
-    column-gap: 12px;
-}
-
-.leaderboard-columns {
-    margin-bottom: 10px;
-    padding: 0 16px;
-    font-size: clamp(11px, 1.6vw, 15px);
-    font-weight: 800;
-    letter-spacing: 1px;
-    color: #75f7ff;
-    text-transform: uppercase;
-}
-
-.leaderboard-row {
-    min-height: 58px;
-    margin: 7px 0;
-    padding: 6px 16px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025));
-    border: 1px solid rgba(120,240,255,0.13);
-    border-radius: 9px;
-}
-
-.leaderboard-rank {
-    font-size: clamp(22px, 4vw, 34px);
-    font-weight: 900;
-    color: #38f3ff;
-    text-shadow: 0 0 9px rgba(0, 230, 255, 0.75);
-}
-
-.leaderboard-name {
-    font-size: clamp(20px, 4vw, 31px);
-    font-weight: 900;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-}
-
-.leaderboard-viewers {
-    text-align: center;
-    font-size: clamp(20px, 4vw, 33px);
-    font-weight: 900;
-    color: #38f3ff;
-}
-
-.leaderboard-raids {
-    text-align: center;
-    font-size: clamp(18px, 3.4vw, 27px);
-    font-weight: 800;
-    color: #b7c4ce;
-}
-
-.leaderboard-empty {
-    margin-top: 70px;
-    text-align: center;
-    font-size: 28px;
-    color: #b7c4ce;
-}
-
-
-.leaderboard-columns div:nth-child(3),
-.leaderboard-columns div:nth-child(4) {
-    text-align: center;
-}
-
-.leaderboard-columns div:nth-child(1),
-.leaderboard-columns div:nth-child(2) {
-    text-align: left;
-}
-
-.leaderboard-value {
-    text-align: center;
-    font-size: clamp(18px, 3.4vw, 27px);
-    font-weight: 800;
-    color: #b7c4ce;
-}
-
-.leaderboard-value--viewers {
-    font-size: clamp(22px, 4vw, 33px);
-    font-weight: 900;
-    color: #38f3ff;
-    text-shadow: 0 0 8px rgba(0, 230, 255, 0.55);
-}
-
-.leaderboard-value--raids {
-    color: #b7c4ce;
-}
-
-.leaderboard-value--primary-number {
-    font-size: clamp(22px, 4vw, 33px);
-    font-weight: 900;
-    color: #38f3ff;
-    text-shadow: 0 0 8px rgba(0, 230, 255, 0.55);
-}
-
-.leaderboard-value--secondary-number {
-    font-size: clamp(18px, 3.4vw, 27px);
-    font-weight: 800;
-    color: #b7c4ce;
+    color: var(--text-primary);
 }
