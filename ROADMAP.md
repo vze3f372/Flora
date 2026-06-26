@@ -16,6 +16,14 @@
 
 
 
+
+## v0.7.2 - Writer Command Examples for Streamer.bot
+
+- Add practical Streamer.bot command examples.
+- Add dry-run workflow documentation.
+- Add Linux and Wine usage notes.
+- Keep code unchanged unless integration testing exposes an issue.
+
 ## v0.7.1 - Streamer.bot Writer Hardening
 
 - Add dry-run support for data writer commands.

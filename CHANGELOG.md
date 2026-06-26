@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.7.2 - Writer Command Examples for Streamer.bot
+
+- Add copy-paste Streamer.bot command examples.
+- Document dry-run testing workflow.
+- Add Linux and Wine path notes.
+- Add raid, bits, goal, reset, and show examples.
+- Keep renderer and writer behavior unchanged.
+
 ## v0.7.1 - Streamer.bot Writer Hardening
 
 - Add `--dry-run` support to data writer commands.
