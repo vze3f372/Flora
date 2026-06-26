@@ -2,6 +2,15 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.8.0 - Stream Event Panel Foundation
+
+- Add `events` panel renderer type.
+- Add `recent-events` panel configuration.
+- Add `data/events.json` sample data.
+- Add event panel styling.
+- Validate event panel configuration and data.
+- Add data writer support for appending recent events.
+
 ## v0.7.2 - Writer Command Examples for Streamer.bot
 
 - Add copy-paste Streamer.bot command examples.

@@ -1,0 +1,16 @@
+{
+  "events": [
+    {
+      "type": "raid",
+      "name": "ExampleRaider",
+      "detail": "Raided with 25 viewers",
+      "time": "Just now"
+    },
+    {
+      "type": "bits",
+      "name": "ExampleUser",
+      "detail": "Cheered 100 bits",
+      "time": "Earlier"
+    }
+  ]
+}

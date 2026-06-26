@@ -170,3 +170,25 @@ python scripts/flora-data.py bits --name "%userName%" --bits "%bits%" --cheers 1
 The exact variable names depend on the Streamer.bot trigger and action context.
 
 If a Streamer.bot variable may contain spaces, keep it wrapped in quotes.
+
+## Recent event updates
+
+Append a recent stream event:
+
+~~~bash
+python scripts/flora-data.py event --type raid --name "ExampleRaider" --detail "Raided with 25 viewers"
+~~~
+
+Dry-run example:
+
+~~~bash
+python scripts/flora-data.py event --type bits --name "ExampleUser" --detail "Cheered 100 bits" --dry-run
+~~~
+
+The newest event is inserted at the top of `data/events.json`.
+
+By default, Flora keeps the newest 25 events when appending. Use `--keep` to change this:
+
+~~~bash
+python scripts/flora-data.py event --type raid --name "ExampleRaider" --detail "Raided with 25 viewers" --keep 50
+~~~

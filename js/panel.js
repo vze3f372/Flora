@@ -5,7 +5,8 @@ let rotationTimer = null;
 
 const PANEL_RENDERERS = {
   table: renderTablePanel,
-  goal: renderGoalPanel
+  goal: renderGoalPanel,
+  events: renderEventsPanel
 };
 
 async function loadJson(path) {
@@ -302,6 +303,30 @@ function validateGoalData(data, panelConfig) {
   return null;
 }
 
+function validateEventsData(data) {
+  if (!isObject(data)) {
+    return "Panel data must be a JSON object.";
+  }
+
+  if (!Array.isArray(data.events)) {
+    return "Panel data must contain an events array.";
+  }
+
+  for (const [index, event] of data.events.entries()) {
+    if (!isObject(event)) {
+      return `events[${index}] must contain a JSON object.`;
+    }
+
+    for (const field of ["type", "name", "detail", "time"]) {
+      if (typeof event[field] !== "string" || !event[field].trim()) {
+        return `events[${index}].${field} must not be empty.`;
+      }
+    }
+  }
+
+  return null;
+}
+
 function clampPercentage(value) {
   return Math.max(0, Math.min(value, 100));
 }
@@ -566,6 +591,54 @@ function renderTablePanel(type, panelConfig, data) {
   });
 }
 
+
+function renderEventsPanel(type, panelConfig, data) {
+  const dataError = validateEventsData(data);
+
+  if (dataError) {
+    renderPanelError("PANEL DATA ERROR", dataError);
+    return;
+  }
+
+  document.getElementById("panel-title").textContent = panelConfig.title;
+  document.getElementById("panel-subtitle").textContent = panelConfig.subtitle;
+
+  const columns = document.getElementById("table-panel-columns");
+  const track = document.getElementById("table-panel-scroll-track");
+
+  columns.innerHTML = "";
+
+  if (scrollController) {
+    scrollController.reset();
+  }
+
+  track.classList.add("is-static");
+  track.innerHTML = "";
+
+  const maxEvents = panelConfig.maxEvents ?? 8;
+  const events = data.events.slice(0, maxEvents);
+
+  if (events.length === 0) {
+    const emptyMessage = panelConfig.emptyMessage ?? "No recent events yet";
+    track.innerHTML = `<div class="table-panel-empty">${escapeHtml(emptyMessage)}</div>`;
+    return;
+  }
+
+  track.innerHTML = `
+    <section class="events-panel" aria-label="${escapeHtml(panelConfig.title)}">
+      <div class="events-panel-list">
+        ${events.map(event => `
+          <article class="events-panel-row">
+            <div class="events-panel-type">${escapeHtml(event.type)}</div>
+            <div class="events-panel-name">${escapeHtml(event.name)}</div>
+            <div class="events-panel-detail">${escapeHtml(event.detail)}</div>
+            <div class="events-panel-time">${escapeHtml(event.time)}</div>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
 
 function renderGoalPanel(type, panelConfig, data) {
   const dataError = validateGoalData(data, panelConfig);

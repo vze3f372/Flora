@@ -38,6 +38,7 @@ Then open:
 http://localhost:8000/panel.html?type=raids
 http://localhost:8000/panel.html?type=bits
 http://localhost:8000/panel.html?type=follower-goal
+http://localhost:8000/panel.html?type=recent-events
 ```
 
 ## Current panel

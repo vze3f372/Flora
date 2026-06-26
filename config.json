@@ -84,6 +84,18 @@
       "showPercent": true,
       "progressFill": "#5eead4",
       "progressEmpty": "#16323a"
+    },
+    "recent-events": {
+      "type": "events",
+      "title": "RECENT ACTIVITY",
+      "subtitle": "LATEST STREAM EVENTS",
+      "dataFile": "data/events.json",
+      "maxEvents": 8,
+      "emptyMessage": "No recent events yet",
+      "typeLabel": "Event",
+      "nameLabel": "User",
+      "detailLabel": "Details",
+      "timeLabel": "Time"
     }
   },
   "rotation": {

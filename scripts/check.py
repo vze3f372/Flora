@@ -20,11 +20,13 @@ REQUIRED_FILES = [
     "css/panel.css",
     "css/table.css",
     "css/goal.css",
+    "css/events.css",
     "css/animations.css",
     "css/themes/cyan.css",
     "data/raids.json",
     "data/bits.json",
     "data/goals.json",
+    "data/events.json",
     "scripts/validate-config.py",
     "scripts/flora-data.py",
 ]
@@ -171,6 +173,29 @@ def check_goal_panel_data(panel_name, panel):
         fail(f"{data_file}.{goal_key}.target must be greater than zero")
 
 
+def check_events_panel_data(panel_name, panel):
+    data_file = panel["dataFile"]
+    data = load_json_file(data_file)
+
+    if not isinstance(data, dict):
+        fail(f"{data_file} must contain a JSON object")
+
+    events = data.get("events")
+
+    if not isinstance(events, list):
+        fail(f"{data_file}.events must be a list")
+
+    for index, event in enumerate(events):
+        if not isinstance(event, dict):
+            fail(f"{data_file}.events[{index}] must contain a JSON object")
+
+        for field in ["type", "name", "detail", "time"]:
+            value = event.get(field)
+
+            if not isinstance(value, str) or not value.strip():
+                fail(f"{data_file}.events[{index}].{field} must not be empty")
+
+
 def check_config_shape():
     print("==> checking config.json shape")
 
@@ -191,6 +216,10 @@ def check_config_shape():
 
         if panel_type == "goal":
             check_goal_panel_data(panel_name, panel)
+            continue
+
+        if panel_type == "events":
+            check_events_panel_data(panel_name, panel)
             continue
 
         fail(f"panels.{panel_name}.type is not supported: {panel_type}")
