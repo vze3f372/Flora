@@ -5,6 +5,14 @@
 
 
 
+
+## v0.4.1 - Table Panel Data Robustness
+
+- Validate configured table panel data files.
+- Detect missing sort fields in table panel data.
+- Detect missing column fields in table panel data.
+- Keep renderer behavior unchanged.
+
 ## v0.4.0 - Multi-Panel Table Foundation
 
 - Add a second configured table panel.

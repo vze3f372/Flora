@@ -88,6 +88,8 @@ docs/streamerbot/raid-table-panel.md
 
 Run the local project checks before committing:
 
+The check script validates configuration syntax, configuration semantics, required files, and configured table panel data files.
+
 ```bash
 python scripts/check.py
 ```
