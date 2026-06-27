@@ -148,4 +148,5 @@ config.json is valid
 - `docs/configuration.md`
 - `docs/streamerbot/raid-table-panel.md`
 - [Streamer.bot Fetch URL recipes](docs/streamerbot/fetch-url-recipes.md)
+- [Live Twitch trigger recipes](docs/streamerbot/live-trigger-recipes.md)
 - [Streamer.bot Fetch URL quickstart](docs/streamerbot/fetch-url-quickstart.md)

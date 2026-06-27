@@ -123,7 +123,7 @@ http://127.0.0.1:8000/api/event?type=custom&name=ManualEventTest&detail=Manual%2
 Raid:
 
 ~~~text
-http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewerCount%&dryRun=true
+http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewers%&dryRun=true
 ~~~
 
 Bits:
@@ -161,7 +161,7 @@ For normal Twitch usernames and numbers, no special encoding is usually needed.
 If Flora returns an error such as:
 
 ~~~text
-viewerCount must be an integer
+viewers must be an integer
 ~~~
 
 Streamer.bot probably did not replace the variable. Test with a manual URL first, then replace one value at a time with Streamer.bot variables.
@@ -171,4 +171,11 @@ For the recommended first Streamer.bot test action, see:
 
 ~~~text
 docs/streamerbot/fetch-url-quickstart.md
+~~~
+## Live Twitch triggers
+
+For recipes using real Twitch triggers, see:
+
+~~~text
+docs/streamerbot/live-trigger-recipes.md
 ~~~

@@ -69,7 +69,7 @@ Dry-run body:
 ~~~json
 {
   "name": "%userName%",
-  "viewers": "%viewerCount%"
+  "viewers": "%viewers%"
 }
 ~~~
 
@@ -266,7 +266,7 @@ Streamer.bot variable names may differ between triggers.
 
 Start with `dryRun=true`.
 
-If the API returns an error such as `viewerCount must be an integer`, the trigger variable was probably not replaced by Streamer.bot. Adjust the variable name in the request body and test again.
+If the API returns an error such as `viewers must be an integer`, the trigger variable was probably not replaced by Streamer.bot. Adjust the variable name in the request body and test again.
 
 ## Recommended setup order
 

@@ -31,6 +31,7 @@ REQUIRED_FILES = [
     "scripts/flora-data.py",
     "docs/streamerbot/http-actions.md",
     "docs/streamerbot/fetch-url-recipes.md",
+    "docs/streamerbot/live-trigger-recipes.md",
     "docs/streamerbot/fetch-url-quickstart.md",
     "scripts/flora-server.py",
 ]

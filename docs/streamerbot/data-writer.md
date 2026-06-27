@@ -151,7 +151,7 @@ Use the Flora project folder as the working directory:
 Example command for a raid action:
 
 ~~~text
-python scripts/flora-data.py raid --name "%userName%" --viewers "%viewerCount%"
+python scripts/flora-data.py raid --name "%userName%" --viewers "%viewers%"
 ~~~
 
 Example command for a bits action:
@@ -163,7 +163,7 @@ python scripts/flora-data.py bits --name "%userName%" --bits "%bits%" --cheers 1
 Dry-run examples for testing Streamer.bot variables:
 
 ~~~text
-python scripts/flora-data.py raid --name "%userName%" --viewers "%viewerCount%" --dry-run
+python scripts/flora-data.py raid --name "%userName%" --viewers "%viewers%" --dry-run
 python scripts/flora-data.py bits --name "%userName%" --bits "%bits%" --cheers 1 --dry-run
 ~~~
 

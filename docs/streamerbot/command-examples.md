@@ -39,16 +39,16 @@ Update TOP RAIDERS when a raid happens.
 Dry-run test command:
 
 ~~~text
-python scripts/flora-data.py raid --name "%userName%" --viewers "%viewerCount%" --dry-run
+python scripts/flora-data.py raid --name "%userName%" --viewers "%viewers%" --dry-run
 ~~~
 
 Live command:
 
 ~~~text
-python scripts/flora-data.py raid --name "%userName%" --viewers "%viewerCount%"
+python scripts/flora-data.py raid --name "%userName%" --viewers "%viewers%"
 ~~~
 
-If the raid viewer count variable has a different name in your Streamer.bot trigger, replace `%viewerCount%` with the correct variable.
+For the Twitch Raid trigger, Streamer.bot uses `%viewers%` for raid size.
 
 Example with a manually tested value:
 
@@ -258,13 +258,13 @@ Keep Streamer.bot variables wrapped in quotes when they may contain spaces.
 Good:
 
 ~~~text
-python scripts/flora-data.py raid --name "%userName%" --viewers "%viewerCount%"
+python scripts/flora-data.py raid --name "%userName%" --viewers "%viewers%"
 ~~~
 
 Risky:
 
 ~~~text
-python scripts/flora-data.py raid --name %userName% --viewers %viewerCount%
+python scripts/flora-data.py raid --name %userName% --viewers %viewers%
 ~~~
 
 Names can contain spaces. Numeric values should not contain commas or extra text.
@@ -307,7 +307,7 @@ http://localhost:8000/panel.html?rotation=true&duration=3&debug=true
 Add a raid event:
 
 ~~~text
-python scripts/flora-data.py event --type raid --name "%userName%" --detail "Raided with %viewerCount% viewers"
+python scripts/flora-data.py event --type raid --name "%userName%" --detail "Raided with %viewers% viewers"
 ~~~
 
 Add a bits event:
@@ -319,7 +319,7 @@ python scripts/flora-data.py event --type bits --name "%userName%" --detail "Che
 Dry-run raid event:
 
 ~~~text
-python scripts/flora-data.py event --type raid --name "%userName%" --detail "Raided with %viewerCount% viewers" --dry-run
+python scripts/flora-data.py event --type raid --name "%userName%" --detail "Raided with %viewers% viewers" --dry-run
 ~~~
 
 Recent event panel URL:
