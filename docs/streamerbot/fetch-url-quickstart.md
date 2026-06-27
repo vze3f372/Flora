@@ -109,7 +109,7 @@ After the manual test works, replace the manual URL with a trigger-variable URL.
 Example raid URL:
 
 ~~~text
-http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewerCount%&dryRun=true
+http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewers%&dryRun=true
 ~~~
 
 Remove `dryRun=true` only after the variable version works.
@@ -121,13 +121,13 @@ If Flora receives the request but returns an error, the most likely problem is a
 Example:
 
 ~~~text
-viewerCount must be an integer
+viewers must be an integer
 ~~~
 
 That usually means Flora received this literal text:
 
 ~~~text
-%viewerCount%
+%viewers%
 ~~~
 
 instead of a number.

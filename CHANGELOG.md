@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.9.4 - Live Twitch Trigger Recipes
+
+- Add Streamer.bot recipes for live Twitch raid, cheer, follow, and subscription triggers.
+- Document Fetch URL actions for each trigger.
+- Correct the raid trigger viewer variable to `%viewers%`.
+- Add manual fallback URLs for trigger-variable debugging.
+- Add Action History troubleshooting notes.
+
 ## v0.9.3 - Streamer.bot Fetch URL Setup Polish
 
 - Add a Fetch URL quickstart for Streamer.bot.

@@ -19,6 +19,13 @@
 
 
 
+## v0.9.4 - Live Twitch Trigger Recipes
+
+- Document real Twitch trigger wiring for Streamer.bot.
+- Use Fetch URL for live trigger actions.
+- Verify raid trigger variables before live use.
+- Prepare for end-to-end stream testing.
+
 ## v0.9.3 - Streamer.bot Fetch URL Setup Polish
 
 - Make the Streamer.bot setup path clearer.
