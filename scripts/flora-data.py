@@ -5,6 +5,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
+from datetime import datetime, timezone
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -212,6 +213,7 @@ def write_event(event_type, name, detail, event_time, keep, dry_run):
     name = require_non_empty_text(name, "name")
     detail = require_non_empty_text(detail, "detail")
     event_time = require_non_empty_text(event_time, "time")
+    created_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
     data = load_json_object(EVENTS_FILE)
     events = data.setdefault("events", [])
@@ -224,6 +226,7 @@ def write_event(event_type, name, detail, event_time, keep, dry_run):
         "name": name,
         "detail": detail,
         "time": event_time,
+        "createdAt": created_at,
     }
 
     events.insert(0, event)

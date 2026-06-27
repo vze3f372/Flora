@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.9.5 - Recent Activity Relative Timestamps
+
+- Add generated `createdAt` timestamps to new recent activity events.
+- Display recent activity times relative to the current browser time.
+- Keep the existing `time` field as a fallback for older event data.
+- Preserve the current `Just now` display for events less than one minute old.
+- Refresh relative recent activity timestamps automatically in the browser.
+
 ## v0.9.4 - Live Twitch Trigger Recipes
 
 - Add Streamer.bot recipes for live Twitch raid, cheer, follow, and subscription triggers.

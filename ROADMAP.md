@@ -19,6 +19,14 @@
 
 
 
+## v0.9.5 - Recent Activity Relative Timestamps
+
+- Store machine-readable timestamps for recent activity events.
+- Render human-readable relative time in the browser panel.
+- Keep compatibility with existing event data.
+- Improve live readability during stream tests.
+- Refresh displayed relative times without reloading the whole panel.
+
 ## v0.9.4 - Live Twitch Trigger Recipes
 
 - Document real Twitch trigger wiring for Streamer.bot.
