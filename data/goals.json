@@ -2,5 +2,9 @@
   "followers": {
     "current": 42,
     "target": 100
+  },
+  "subscribers": {
+    "current": 0,
+    "target": 10
   }
 }

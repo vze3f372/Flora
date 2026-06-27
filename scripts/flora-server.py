@@ -431,25 +431,44 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         }
 
     def handle_sub(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
-        name = require_text(payload, "name", "userName")
+        name = require_text(payload, "name")
+        event_time = optional_text(payload, "time", "Just now")
+        keep = optional_int(payload, "keep", 25)
+        update_goal = optional_bool(payload, "updateGoal", False)
 
-        result = run_writer(
-            add_event_common_args(
+        results = [
+            run_writer(
                 [
                     "sub-event",
                     "--name",
                     name,
+                    "--time",
+                    event_time,
+                    "--keep",
+                    str(keep),
                 ],
-                payload,
-            ),
-            dry_run,
-        )
+                dry_run,
+            )
+        ]
+
+        if update_goal:
+            results.append(
+                run_writer(
+                    [
+                        "goal-increment",
+                        "--key",
+                        "subscribers",
+                        "--amount",
+                        "1",
+                    ],
+                    dry_run,
+                )
+            )
 
         return {
-            "ok": True,
             "action": "sub",
             "dryRun": dry_run,
-            "results": [result],
+            "results": results,
         }
 
     def handle_goal(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:

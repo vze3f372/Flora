@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.9.7 - Subscription Goal Option
+
+- Add a `subscribers` goal data entry.
+- Add a `sub-goal` panel configuration.
+- Support `updateGoal=true` on the Subscription API endpoint.
+- Allow live Subscription triggers to increment `subscribers.current`.
+- Document the Subscription Fetch URL for recent activity plus subscription goal updates.
+
 ## v0.9.6 - Follow Goal Auto-Increment
 
 - Add a `goal-increment` data writer command.

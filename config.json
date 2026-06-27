@@ -118,6 +118,21 @@
           "color": "#f0abfc"
         }
       }
+    },
+    "sub-goal": {
+      "type": "goal",
+      "title": "SUB GOAL",
+      "subtitle": "THANK YOU FOR THE SUPPORT",
+      "dataFile": "data/goals.json",
+      "goalKey": "subscribers",
+      "currentLabel": "Subs",
+      "targetLabel": "Goal",
+      "percentLabel": "Complete",
+      "numberFormat": "plain",
+      "completeMessage": "Sub goal reached!",
+      "showPercent": true,
+      "progressFill": "#5eead4",
+      "progressEmpty": "#16323a"
     }
   },
   "rotation": {

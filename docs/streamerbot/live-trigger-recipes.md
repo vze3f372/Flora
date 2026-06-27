@@ -291,3 +291,19 @@ Use `updateGoal=true` on the Follow Fetch URL to increment `followers.current` b
 ~~~text
 http://127.0.0.1:8000/api/follow?name=%userName%&updateGoal=true
 ~~~
+
+## Subscription goal auto-increment
+
+Use `updateGoal=true` on the Subscription Fetch URL to increment `subscribers.current` by 1.
+
+Dry-run:
+
+~~~text
+http://127.0.0.1:8000/api/sub?name=%userName%&updateGoal=true&dryRun=true
+~~~
+
+Live:
+
+~~~text
+http://127.0.0.1:8000/api/sub?name=%userName%&updateGoal=true
+~~~

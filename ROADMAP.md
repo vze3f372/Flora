@@ -19,6 +19,13 @@
 
 
 
+## v0.9.7 - Subscription Goal Option
+
+- Add an optional subscription goal panel.
+- Let Subscription triggers optionally update the subscription goal.
+- Keep the default Subscription endpoint recent-activity-only.
+- Use `updateGoal=true` for stream setups that want automatic local sub goal progress.
+
 ## v0.9.6 - Follow Goal Auto-Increment
 
 - Let Follow triggers optionally update the follower goal.
