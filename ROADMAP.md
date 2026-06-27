@@ -1,23 +1,23 @@
 # Flora Roadmap
 
+## v0.10.3 - Event Theme Editor
 
+- Add GUI controls for recent activity event labels and colors.
+- Allow raid, bits, follow, subscription, and custom event styles to be adjusted.
+- Keep event styling configuration compatible with existing `config.json` structure.
 
+## v0.10.2 - Panel Rotation Editor
 
+- Add GUI controls for panel rotation order.
+- Allow rotation duration and enabled panels to be changed from the admin UI.
+- Provide a preview URL for the rotation view.
 
+## v0.10.1 - Panel Style Editor
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+- Add GUI controls for panel colors, spacing, borders, and typography.
+- Support safe theme customization without editing CSS directly.
+- Preview style changes before saving them.
+- Preserve the existing hand-editable CSS structure for advanced users.
 
 ## v0.10.0 - Local Admin UI Foundation
 
@@ -27,25 +27,6 @@
 - Show copyable OBS browser source URLs for each panel.
 - Keep the admin UI local-only through `127.0.0.1`.
 - Validate configuration changes before saving them.
-
-## v0.10.1 - Panel Style Editor
-
-- Add GUI controls for panel colors, spacing, borders, and typography.
-- Support safe theme customization without editing CSS directly.
-- Preview style changes before saving them.
-- Preserve the existing hand-editable CSS structure for advanced users.
-
-## v0.10.2 - Panel Rotation Editor
-
-- Add GUI controls for panel rotation order.
-- Allow rotation duration and enabled panels to be changed from the admin UI.
-- Provide a preview URL for the rotation view.
-
-## v0.10.3 - Event Theme Editor
-
-- Add GUI controls for recent activity event labels and colors.
-- Allow raid, bits, follow, subscription, and custom event styles to be adjusted.
-- Keep event styling configuration compatible with existing `config.json` structure.
 
 ## v0.9.7 - Subscription Goal Option
 
