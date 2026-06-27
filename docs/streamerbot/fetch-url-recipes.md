@@ -187,3 +187,11 @@ For follow triggers that should also update the follower goal, add `updateGoal=t
 ~~~text
 http://127.0.0.1:8000/api/follow?name=%userName%&updateGoal=true
 ~~~
+
+## Subscription goal auto-increment
+
+For subscription triggers that should also update the subscription goal, add `updateGoal=true` to the Subscription Fetch URL.
+
+~~~text
+http://127.0.0.1:8000/api/sub?name=%userName%&updateGoal=true
+~~~
