@@ -19,6 +19,13 @@
 
 
 
+## v0.9.6 - Follow Goal Auto-Increment
+
+- Let Follow triggers optionally update the follower goal.
+- Keep the default Follow endpoint recent-activity-only.
+- Use `updateGoal=true` for stream setups that want automatic local goal progress.
+- Avoid relying on unavailable Streamer.bot follower-count variables.
+
 ## v0.9.5 - Recent Activity Relative Timestamps
 
 - Store machine-readable timestamps for recent activity events.

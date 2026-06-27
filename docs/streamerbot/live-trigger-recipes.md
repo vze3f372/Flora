@@ -283,3 +283,11 @@ git restore data/raids.json data/bits.json data/events.json data/goals.json
 python scripts/check.py
 python scripts/validate-config.py
 ~~~
+
+## Follow goal auto-increment
+
+Use `updateGoal=true` on the Follow Fetch URL to increment `followers.current` by 1.
+
+~~~text
+http://127.0.0.1:8000/api/follow?name=%userName%&updateGoal=true
+~~~

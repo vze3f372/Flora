@@ -2,6 +2,13 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.9.6 - Follow Goal Auto-Increment
+
+- Add a `goal-increment` data writer command.
+- Support `updateGoal=true` on the Follow API endpoint.
+- Allow live Follow triggers to increment `followers.current`.
+- Document the Follow Fetch URL for recent activity plus follower goal updates.
+
 ## v0.9.5 - Recent Activity Relative Timestamps
 
 - Add generated `createdAt` timestamps to new recent activity events.
