@@ -179,3 +179,11 @@ For recipes using real Twitch triggers, see:
 ~~~text
 docs/streamerbot/live-trigger-recipes.md
 ~~~
+
+## Follow goal auto-increment
+
+For follow triggers that should also update the follower goal, add `updateGoal=true` to the Follow Fetch URL.
+
+~~~text
+http://127.0.0.1:8000/api/follow?name=%userName%&updateGoal=true
+~~~

@@ -208,6 +208,51 @@ def pluralize(value, singular, plural=None):
     return plural or f"{singular}s"
 
 
+
+def increment_goal(args):
+    key = require_non_empty_text(args.key, "key")
+    amount = args.amount
+
+    data = load_json_object(GOALS_FILE)
+    row = data.setdefault(key, {})
+
+    if not isinstance(row, dict):
+        fail(f"data/goals.json.{key} must contain a JSON object")
+
+    current = row.get("current", 0)
+
+    if not isinstance(current, int):
+        fail(f"data/goals.json.{key}.current must be an integer")
+
+    row["current"] = current + amount
+
+    if "target" not in row:
+        fail("target is required when creating a new goal")
+
+    target = row["target"]
+
+    if not isinstance(target, int) or target <= 0:
+        fail(f"data/goals.json.{key}.target must be a positive integer")
+
+    save_json_object(GOALS_FILE, data, args.dry_run)
+
+    print(
+        json.dumps(
+            make_result(
+                "goal-increment",
+                dryRun=args.dry_run,
+                file="data/goals.json",
+                key=key,
+                amount=amount,
+                previous=current,
+                current=row["current"],
+                target=target,
+            ),
+            indent=2,
+        )
+    )
+
+
 def write_event(event_type, name, detail, event_time, keep, dry_run):
     event_type = require_non_empty_text(event_type, "type")
     name = require_non_empty_text(name, "name")
@@ -379,6 +424,15 @@ def build_parser():
     goal.add_argument("--target", type=positive_int("target"))
     add_dry_run_argument(goal)
     goal.set_defaults(func=update_goal)
+
+    goal_increment = subparsers.add_parser(
+        "goal-increment",
+        help="Increment the current value for one goal.",
+    )
+    goal_increment.add_argument("--key", required=True)
+    goal_increment.add_argument("--amount", type=positive_int("amount"), default=1)
+    add_dry_run_argument(goal_increment)
+    goal_increment.set_defaults(func=increment_goal)
 
     event = subparsers.add_parser(
         "event",

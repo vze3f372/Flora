@@ -54,6 +54,40 @@ def require_text(payload: dict[str, Any], *keys: str) -> str:
     raise ApiError(400, f"Missing required field: {joined}")
 
 
+
+
+def optional_int(payload: dict[str, Any], key: str, default: int) -> int:
+    value = payload.get(key)
+
+    if value is None or value == "":
+        return default
+
+    try:
+        return int(value)
+    except ValueError as error:
+        raise ValueError(f"{key} must be an integer") from error
+
+
+def optional_bool(payload: dict[str, Any], key: str, default: bool = False) -> bool:
+    value = payload.get(key)
+
+    if value is None or value == "":
+        return default
+
+    if isinstance(value, bool):
+        return value
+
+    normalized = str(value).strip().lower()
+
+    if normalized in {"1", "true", "yes", "y", "on"}:
+        return True
+
+    if normalized in {"0", "false", "no", "n", "off"}:
+        return False
+
+    raise ValueError(f"{key} must be true or false")
+
+
 def optional_text(payload: dict[str, Any], key: str, default: str) -> str:
     value = payload.get(key)
 
@@ -356,25 +390,44 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         }
 
     def handle_follow(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
-        name = require_text(payload, "name", "userName")
+        name = require_text(payload, "name")
+        event_time = optional_text(payload, "time", "Just now")
+        keep = optional_int(payload, "keep", 25)
+        update_goal = optional_bool(payload, "updateGoal", False)
 
-        result = run_writer(
-            add_event_common_args(
+        results = [
+            run_writer(
                 [
                     "follow-event",
                     "--name",
                     name,
+                    "--time",
+                    event_time,
+                    "--keep",
+                    str(keep),
                 ],
-                payload,
-            ),
-            dry_run,
-        )
+                dry_run,
+            )
+        ]
+
+        if update_goal:
+            results.append(
+                run_writer(
+                    [
+                        "goal-increment",
+                        "--key",
+                        "followers",
+                        "--amount",
+                        "1",
+                    ],
+                    dry_run,
+                )
+            )
 
         return {
-            "ok": True,
             "action": "follow",
             "dryRun": dry_run,
-            "results": [result],
+            "results": results,
         }
 
     def handle_sub(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
