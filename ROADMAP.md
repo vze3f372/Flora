@@ -19,6 +19,14 @@
 
 
 
+## v0.9.3 - Streamer.bot Fetch URL Setup Polish
+
+- Make the Streamer.bot setup path clearer.
+- Prefer Fetch URL over C# HTTP code for Wine/Linux.
+- Document the first manual trigger test.
+- Add variable troubleshooting guidance.
+- Prepare for live Twitch trigger wiring.
+
 ## v0.9.2 - Streamer.bot Fetch URL Compatibility
 
 - Support Streamer.bot's built-in Fetch URL sub-action.
@@ -31,7 +39,7 @@
 
 - Add a localhost API bridge for Streamer.bot.
 - Avoid direct Wine-to-Linux Python command execution.
-- Route Streamer.bot events through HTTP POST requests.
+- Route Streamer.bot events through the local Flora HTTP API.
 - Reuse the existing Flora JSON writer.
 - Add dry-run testing for real Streamer.bot actions.
 - Document raid, bits, follow, sub, goal, and custom event actions.
