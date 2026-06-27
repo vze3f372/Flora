@@ -2,6 +2,7 @@ let scrollController = null;
 let lastRenderSignature = "";
 let rotationIndex = 0;
 let rotationTimer = null;
+const EVENT_TIME_REFRESH_INTERVAL_MS = 15000;
 
 const PANEL_RENDERERS = {
   table: renderTablePanel,
@@ -616,6 +617,88 @@ function renderTablePanel(type, panelConfig, data) {
 }
 
 
+function parseEventTimestamp(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function formatRelativeEventTime(date, now = new Date()) {
+  const elapsedSeconds = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 1000));
+
+  if (elapsedSeconds < 60) {
+    return "Just now";
+  }
+
+  const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+
+  if (elapsedMinutes < 60) {
+    return `${elapsedMinutes}m ago`;
+  }
+
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+
+  if (elapsedHours < 24) {
+    return `${elapsedHours}h ago`;
+  }
+
+  const elapsedDays = Math.floor(elapsedHours / 24);
+
+  if (elapsedDays === 1) {
+    return "Yesterday";
+  }
+
+  if (elapsedDays < 7) {
+    return `${elapsedDays}d ago`;
+  }
+
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatEventTime(event) {
+  const createdAt = parseEventTimestamp(event.createdAt);
+
+  if (createdAt) {
+    return formatRelativeEventTime(createdAt);
+  }
+
+  return event.time || "";
+}
+
+function setEventTimeText(element, nextText) {
+  if (element.textContent === nextText) {
+    return;
+  }
+
+  element.textContent = nextText;
+}
+
+function refreshEventTimes() {
+  const timeElements = document.querySelectorAll(".events-panel-time");
+
+  for (const element of timeElements) {
+    const createdAt = parseEventTimestamp(element.dataset.createdAt);
+    const nextText = createdAt
+      ? formatRelativeEventTime(createdAt)
+      : element.dataset.fallbackTime || "";
+
+    setEventTimeText(element, nextText);
+  }
+}
+
+window.setInterval(refreshEventTimes, EVENT_TIME_REFRESH_INTERVAL_MS);
+
 function renderEventsPanel(type, panelConfig, data) {
   const dataError = validateEventsData(data);
 
@@ -656,7 +739,7 @@ function renderEventsPanel(type, panelConfig, data) {
         <div class="events-panel-type" style="--event-type-color: ${escapeHtml(eventColor)}">${escapeHtml(eventLabel)}</div>
         <div class="events-panel-name">${escapeHtml(event.name)}</div>
         <div class="events-panel-detail">${escapeHtml(event.detail)}</div>
-        <div class="events-panel-time">${escapeHtml(event.time)}</div>
+        <div class="events-panel-time" data-created-at="${escapeHtml(event.createdAt || "")}" data-fallback-time="${escapeHtml(event.time || "")}">${escapeHtml(formatEventTime(event))}</div>
       </article>
     `;
   }).join("");
