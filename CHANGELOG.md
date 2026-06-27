@@ -2,6 +2,14 @@
 
 All notable changes to Flora will be documented in this file.
 
+## v0.9.3 - Streamer.bot Fetch URL Setup Polish
+
+- Add a Fetch URL quickstart for Streamer.bot.
+- Document a dry-run-first manual raid test action.
+- Clarify that Fetch URL is the recommended Streamer.bot path under Wine.
+- Add setup notes for trigger-based testing.
+- Add response-variable and troubleshooting guidance.
+
 ## v0.9.2 - Streamer.bot Fetch URL Compatibility
 
 - Add GET-compatible Flora API handling for Streamer.bot Fetch URL.

@@ -165,3 +165,10 @@ viewerCount must be an integer
 ~~~
 
 Streamer.bot probably did not replace the variable. Test with a manual URL first, then replace one value at a time with Streamer.bot variables.
+## Quickstart
+
+For the recommended first Streamer.bot test action, see:
+
+~~~text
+docs/streamerbot/fetch-url-quickstart.md
+~~~
