@@ -195,22 +195,38 @@ function renderPanelError(title, message) {
   track.classList.add("is-static");
 }
 
+const TABLE_SORT_MODES = {
+  totalViewers: ["viewers", "raids"],
+  raidCount: ["raids", "viewers"],
+  biggestRaid: ["biggestRaid", "viewers"],
+  totalBits: ["bits", "cheers"],
+  cheerCount: ["cheers", "bits"],
+  biggestCheer: ["biggestCheer", "bits"],
+};
+
+function getTableSortFields(panelConfig) {
+  const modeFields = TABLE_SORT_MODES[panelConfig.sortMode];
+
+  if (Array.isArray(modeFields)) {
+    return modeFields;
+  }
+
+  return [panelConfig.sortBy, panelConfig.sortThenBy].filter(Boolean);
+}
+
 function sortEntries(entries, panelConfig) {
-  const primary = panelConfig.sortBy;
-  const secondary = panelConfig.sortThenBy;
+  const sortFields = getTableSortFields(panelConfig);
 
   return entries.sort((a, b) => {
-    const primaryDiff = getNumber(b[1][primary]) - getNumber(a[1][primary]);
+    for (const field of sortFields) {
+      const diff = getNumber(b[1][field]) - getNumber(a[1][field]);
 
-    if (primaryDiff !== 0) {
-      return primaryDiff;
+      if (diff !== 0) {
+        return diff;
+      }
     }
 
-    if (!secondary) {
-      return 0;
-    }
-
-    return getNumber(b[1][secondary]) - getNumber(a[1][secondary]);
+    return 0;
   });
 }
 
@@ -244,7 +260,7 @@ function validateTableData(data, panelConfig) {
     return "Panel data must be a JSON object.";
   }
 
-  const sortFields = [panelConfig.sortBy, panelConfig.sortThenBy].filter(Boolean);
+  const sortFields = getTableSortFields(panelConfig);
   const columnFields = panelConfig.columns
     .map(column => column.field)
     .filter(Boolean);

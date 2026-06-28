@@ -136,6 +136,7 @@ def update_raid(args):
 
     row["viewers"] = int(row.get("viewers", 0)) + args.viewers
     row["raids"] = int(row.get("raids", 0)) + args.raids
+    row["biggestRaid"] = max(int(row.get("biggestRaid", 0)), args.viewers)
 
     save_json_object(RAIDS_FILE, data, args.dry_run)
 
@@ -146,6 +147,7 @@ def update_raid(args):
         name=name,
         viewers=row["viewers"],
         raids=row["raids"],
+        biggestRaid=row["biggestRaid"],
     ))
 
 
@@ -160,6 +162,7 @@ def update_bits(args):
 
     row["bits"] = int(row.get("bits", 0)) + args.bits
     row["cheers"] = int(row.get("cheers", 0)) + args.cheers
+    row["biggestCheer"] = max(int(row.get("biggestCheer", 0)), args.bits)
 
     save_json_object(BITS_FILE, data, args.dry_run)
 
@@ -170,6 +173,7 @@ def update_bits(args):
         name=name,
         bits=row["bits"],
         cheers=row["cheers"],
+        biggestCheer=row["biggestCheer"],
     ))
 
 

@@ -2,16 +2,19 @@
   "the_almighty_alex": {
     "raids": 1,
     "viewers": 42,
-    "lastRaid": "2026-06-26 14:06:59"
+    "lastRaid": "2026-06-26 14:06:59",
+    "biggestRaid": 42
   },
   "vz3po": {
     "raids": 2,
     "viewers": 84,
-    "lastRaid": "2026-06-26 14:48:08"
+    "lastRaid": "2026-06-26 14:48:08",
+    "biggestRaid": 84
   },
   "cptnoobert": {
     "raids": 1,
     "viewers": 42,
-    "lastRaid": "2026-06-26 15:22:15"
+    "lastRaid": "2026-06-26 15:22:15",
+    "biggestRaid": 42
   }
 }

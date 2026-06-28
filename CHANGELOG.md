@@ -1,3 +1,18 @@
+## v0.12.1 - Leaderboard Sort Modes
+
+- Added biggest single raid tracking with `biggestRaid`.
+- Added biggest single cheer tracking with `biggestCheer`.
+- Backfilled existing raid and bits rows with legacy best-estimate values.
+- Added raid leaderboard panel variants:
+  - `raids` for total raid viewers
+  - `raids-count` for number of raids
+  - `raids-biggest` for biggest individual raid
+- Added bits leaderboard panel variants:
+  - `bits` for total bits
+  - `bits-count` for number of cheers
+  - `bits-biggest` for biggest individual cheer
+- Kept Streamer.bot event URLs unchanged; OBS panel URLs now decide which ranked view is displayed.
+
 # Changelog
 
 ## v0.12.0 - Streamer.bot Action Builder

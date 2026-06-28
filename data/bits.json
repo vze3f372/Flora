@@ -1,14 +1,17 @@
 {
   "ExampleUser01": {
     "bits": 2500,
-    "cheers": 12
+    "cheers": 12,
+    "biggestCheer": 2500
   },
   "ExampleUser02": {
     "bits": 1750,
-    "cheers": 9
+    "cheers": 9,
+    "biggestCheer": 1750
   },
   "ExampleUser03": {
     "bits": 900,
-    "cheers": 4
+    "cheers": 4,
+    "biggestCheer": 900
   }
 }

@@ -4,7 +4,7 @@
   "panels": {
     "raids": {
       "title": "TOP RAIDERS",
-      "subtitle": "THANK YOU FOR THE SUPPORT",
+      "subtitle": "MOST VIEWERS FROM RAIDS",
       "dataFile": "data/raids.json",
       "maxRows": 10,
       "sortBy": "viewers",
@@ -15,7 +15,7 @@
           "field": "viewers",
           "className": "primary-number",
           "align": "center",
-          "width": "150px"
+          "width": "140px"
         },
         {
           "label": "Raids",
@@ -23,6 +23,13 @@
           "className": "secondary-number",
           "align": "center",
           "width": "110px"
+        },
+        {
+          "label": "Biggest",
+          "field": "biggestRaid",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "120px"
         }
       ],
       "scroll": {
@@ -34,11 +41,12 @@
       "type": "table",
       "emptyMessage": "No raids recorded yet",
       "rankLabel": "Rank",
-      "nameLabel": "Raider"
+      "nameLabel": "Raider",
+      "sortMode": "totalViewers"
     },
     "bits": {
       "title": "TOP BITS",
-      "subtitle": "THANK YOU FOR THE SUPPORT",
+      "subtitle": "MOST BITS GIVEN",
       "dataFile": "data/bits.json",
       "maxRows": 10,
       "sortBy": "bits",
@@ -49,7 +57,7 @@
           "field": "bits",
           "className": "primary-number",
           "align": "center",
-          "width": "150px"
+          "width": "140px"
         },
         {
           "label": "Cheers",
@@ -57,6 +65,13 @@
           "className": "secondary-number",
           "align": "center",
           "width": "110px"
+        },
+        {
+          "label": "Biggest",
+          "field": "biggestCheer",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "120px"
         }
       ],
       "scroll": {
@@ -68,7 +83,8 @@
       "type": "table",
       "emptyMessage": "No bits recorded yet",
       "rankLabel": "Rank",
-      "nameLabel": "User"
+      "nameLabel": "User",
+      "sortMode": "totalBits"
     },
     "follower-goal": {
       "type": "goal",
@@ -133,6 +149,174 @@
       "showPercent": true,
       "progressFill": "#5eead4",
       "progressEmpty": "#16323a"
+    },
+    "raids-count": {
+      "title": "MOST RAIDS",
+      "subtitle": "RAID COUNT LEADERBOARD",
+      "dataFile": "data/raids.json",
+      "maxRows": 10,
+      "sortBy": "raids",
+      "sortThenBy": "viewers",
+      "columns": [
+        {
+          "label": "Raids",
+          "field": "raids",
+          "className": "primary-number",
+          "align": "center",
+          "width": "120px"
+        },
+        {
+          "label": "Viewers",
+          "field": "viewers",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Biggest",
+          "field": "biggestRaid",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "120px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "type": "table",
+      "emptyMessage": "No raids recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "Raider",
+      "sortMode": "raidCount"
+    },
+    "raids-biggest": {
+      "title": "BIGGEST RAIDS",
+      "subtitle": "LARGEST SINGLE RAID",
+      "dataFile": "data/raids.json",
+      "maxRows": 10,
+      "sortBy": "biggestRaid",
+      "sortThenBy": "viewers",
+      "columns": [
+        {
+          "label": "Biggest",
+          "field": "biggestRaid",
+          "className": "primary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Viewers",
+          "field": "viewers",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Raids",
+          "field": "raids",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "110px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "type": "table",
+      "emptyMessage": "No raids recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "Raider",
+      "sortMode": "biggestRaid"
+    },
+    "bits-count": {
+      "title": "MOST CHEERS",
+      "subtitle": "CHEER COUNT LEADERBOARD",
+      "dataFile": "data/bits.json",
+      "maxRows": 10,
+      "sortBy": "cheers",
+      "sortThenBy": "bits",
+      "columns": [
+        {
+          "label": "Cheers",
+          "field": "cheers",
+          "className": "primary-number",
+          "align": "center",
+          "width": "120px"
+        },
+        {
+          "label": "Bits",
+          "field": "bits",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Biggest",
+          "field": "biggestCheer",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "120px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "type": "table",
+      "emptyMessage": "No bits recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "User",
+      "sortMode": "cheerCount"
+    },
+    "bits-biggest": {
+      "title": "BIGGEST CHEERS",
+      "subtitle": "LARGEST SINGLE CHEER",
+      "dataFile": "data/bits.json",
+      "maxRows": 10,
+      "sortBy": "biggestCheer",
+      "sortThenBy": "bits",
+      "columns": [
+        {
+          "label": "Biggest",
+          "field": "biggestCheer",
+          "className": "primary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Bits",
+          "field": "bits",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Cheers",
+          "field": "cheers",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "110px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "type": "table",
+      "emptyMessage": "No bits recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "User",
+      "sortMode": "biggestCheer"
     }
   },
   "rotation": {
