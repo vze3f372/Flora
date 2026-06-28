@@ -63,6 +63,41 @@ http://127.0.0.1:8000/panel.html?type=follower-goal
 http://127.0.0.1:8000/panel.html?type=sub-goal
 ```
 
+## Panel Layout Presets
+
+The Admin UI includes a **Panel Layout Presets** card for applying built-in layout presets.
+
+Layout presets update existing configuration fields only:
+
+- leaderboard row limits
+- recent activity event limits
+- leaderboard scroll speed
+- default rotation settings
+- named rotation groups
+
+Before applying a layout preset, Flora creates a timestamped backup of:
+
+    config.json
+
+Layout presets do not change:
+
+- panel colors
+- recent activity event labels or colors
+- goals
+- runtime data
+- avatar cache files
+- Streamer.bot action URLs
+
+Built-in layout presets include:
+
+- Balanced
+- Compact
+- Leaderboard Focus
+- Goals and Activity
+
+After applying a layout preset, refresh OBS browser sources or browser panel pages to see updated layout behavior.
+
+
 ## Panel Theme Presets
 
 The Admin UI includes a **Panel Theme Presets** card for applying built-in panel color presets.

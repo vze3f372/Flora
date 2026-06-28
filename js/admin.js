@@ -1510,6 +1510,176 @@ if (runtimeResetButton && runtimeResetStatus && runtimeResetConfirmation) {
 
 
 
+
+// FLORA_LAYOUT_PRESETS_UI_START
+const floraLayoutPresetSelect = document.getElementById("layout-preset-select");
+const floraLayoutPresetPreview = document.getElementById("layout-preset-preview");
+const floraLayoutPresetStatus = document.getElementById("layout-preset-status");
+const floraReloadLayoutPresetsButton = document.getElementById("reload-layout-presets-button");
+const floraApplyLayoutPresetButton = document.getElementById("apply-layout-preset-button");
+
+const floraLayoutPresetState = {
+  presets: [],
+};
+
+function floraSelectedLayoutPreset() {
+  return floraLayoutPresetState.presets.find((preset) => preset.id === floraLayoutPresetSelect.value) || null;
+}
+
+function floraRenderLayoutPresetPreview() {
+  const preset = floraSelectedLayoutPreset();
+
+  floraLayoutPresetPreview.replaceChildren();
+
+  if (!preset) {
+    const note = document.createElement("p");
+    note.className = "form-note";
+    note.textContent = "No layout preset selected.";
+    floraLayoutPresetPreview.append(note);
+    floraApplyLayoutPresetButton.disabled = true;
+    return;
+  }
+
+  const card = document.createElement("div");
+  card.className = "theme-preset-preview-card";
+
+  const title = document.createElement("h3");
+  title.textContent = preset.name;
+
+  const description = document.createElement("p");
+  description.textContent = preset.description;
+
+  const details = document.createElement("ul");
+  details.className = "layout-preset-details";
+
+  const rows = [
+    `Leaderboard rows: ${preset.tableMaxRows}`,
+    `Recent events: ${preset.eventMaxEvents}`,
+    `Scroll speed: ${preset.scrollSpeedPixelsPerSecond}px/s`,
+    `Default rotation: ${preset.rotation.enabled ? "enabled" : "disabled"} · ${preset.rotation.panelCount} panels · start ${preset.rotation.startPanel}`,
+  ];
+
+  for (const [name, rotation] of Object.entries(preset.rotations || {})) {
+    rows.push(`Named rotation ${name}: ${rotation.enabled ? "enabled" : "disabled"} · ${rotation.panelCount} panels · start ${rotation.startPanel}`);
+  }
+
+  for (const row of rows) {
+    const item = document.createElement("li");
+    item.textContent = row;
+    details.append(item);
+  }
+
+  card.append(title, description, details);
+  floraLayoutPresetPreview.append(card);
+
+  floraApplyLayoutPresetButton.disabled = false;
+}
+
+function floraRenderLayoutPresets(presets) {
+  floraLayoutPresetState.presets = Array.isArray(presets) ? presets : [];
+  floraLayoutPresetSelect.replaceChildren();
+
+  if (!floraLayoutPresetState.presets.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "No layout presets available";
+    floraLayoutPresetSelect.append(option);
+    floraLayoutPresetStatus.textContent = "No layout presets available.";
+    floraApplyLayoutPresetButton.disabled = true;
+    floraRenderLayoutPresetPreview();
+    return;
+  }
+
+  for (const preset of floraLayoutPresetState.presets) {
+    const option = document.createElement("option");
+    option.value = preset.id;
+    option.textContent = preset.name;
+    floraLayoutPresetSelect.append(option);
+  }
+
+  floraLayoutPresetStatus.textContent = `${floraLayoutPresetState.presets.length} built-in layout presets available.`;
+  floraRenderLayoutPresetPreview();
+}
+
+async function floraLoadLayoutPresets() {
+  const data = await getJson("/api/admin/layout-presets");
+  floraRenderLayoutPresets(data.presets);
+}
+
+async function floraApplyLayoutPreset() {
+  const preset = floraSelectedLayoutPreset();
+
+  if (!preset) {
+    setStatus("No layout preset is selected.", "error");
+    floraLayoutPresetStatus.textContent = "No layout preset is selected.";
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Apply layout preset "${preset.name}"?\n\nThis updates row limits, recent event limits, scroll speed, and rotations.\n\nFlora will back up config.json before applying the preset.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  floraApplyLayoutPresetButton.disabled = true;
+  floraLayoutPresetStatus.textContent = `Applying ${preset.name}...`;
+
+  try {
+    const data = await postJson("/api/admin/layout-presets/apply", {
+      presetId: preset.id,
+    });
+
+    availablePanels = data.config?.panels || availablePanels;
+    populateRotation(data.rotation);
+    namedRotations = data.rotations || namedRotations;
+
+    if (typeof renderNamedRotationOptions === "function") {
+      renderNamedRotationOptions();
+    }
+
+    floraRenderLayoutPresets(data.presets);
+    floraLayoutPresetSelect.value = data.preset.id;
+    floraRenderLayoutPresetPreview();
+
+    floraLayoutPresetStatus.textContent = `Applied: ${data.preset.name}`;
+    setStatus(`Applied layout preset ${data.preset.name}. Refresh OBS browser sources to see updated panel layout behavior.`, "success");
+  } catch (error) {
+    floraLayoutPresetStatus.textContent = `Layout preset failed: ${error.message}`;
+    setStatus(error.message, "error");
+  } finally {
+    floraApplyLayoutPresetButton.disabled = false;
+  }
+}
+
+if (
+  floraLayoutPresetSelect &&
+  floraLayoutPresetPreview &&
+  floraLayoutPresetStatus &&
+  floraReloadLayoutPresetsButton &&
+  floraApplyLayoutPresetButton
+) {
+  floraLayoutPresetSelect.addEventListener("change", floraRenderLayoutPresetPreview);
+
+  floraReloadLayoutPresetsButton.addEventListener("click", () => {
+    floraLoadLayoutPresets().catch((error) => {
+      floraLayoutPresetStatus.textContent = `Could not load layout presets: ${error.message}`;
+      setStatus(error.message, "error");
+    });
+  });
+
+  floraApplyLayoutPresetButton.addEventListener("click", () => {
+    floraApplyLayoutPreset().catch((error) => setStatus(error.message, "error"));
+  });
+
+  floraLoadLayoutPresets().catch((error) => {
+    floraLayoutPresetStatus.textContent = `Could not load layout presets: ${error.message}`;
+  });
+}
+// FLORA_LAYOUT_PRESETS_UI_END
+
+
 // FLORA_THEME_PRESETS_UI_START
 const floraThemePresetSelect = document.getElementById("theme-preset-select");
 const floraThemePresetPreview = document.getElementById("theme-preset-preview");
