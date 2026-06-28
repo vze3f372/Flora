@@ -292,6 +292,105 @@
     </section>
 
     <section class="card">
+      <h2>Streamer.bot Action Builder</h2>
+      <p class="form-note">
+        Build a Streamer.bot Fetch URL by mapping Streamer.bot variables to Flora data roles.
+      </p>
+
+      <div class="action-builder-grid">
+        <label>
+          Trigger preset
+          <select id="action-builder-type">
+            <option value="raid">Raid</option>
+            <option value="bits">Bits / Cheer</option>
+            <option value="follow">Follow</option>
+            <option value="sub">Subscription</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+
+        <label id="action-builder-target-wrap">
+          Flora target
+          <select id="action-builder-target">
+            <option value="raid">Raid leaderboard</option>
+            <option value="bits">Bits leaderboard</option>
+            <option value="follow">Follower goal</option>
+            <option value="sub">Subscriber goal</option>
+          </select>
+        </label>
+
+        <label>
+          Name variable preset
+          <select id="action-builder-name-preset">
+            <option value="%userName%">%userName%</option>
+            <option value="%user%">%user%</option>
+            <option value="%displayName%">%displayName%</option>
+            <option value="%rawInput%">%rawInput%</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </label>
+
+        <label>
+          Name variable
+          <input id="action-builder-name" type="text" value="%userName%">
+        </label>
+
+        <label id="action-builder-amount-preset-wrap">
+          Amount variable preset
+          <select id="action-builder-amount-preset">
+            <option value="%viewers%">%viewers%</option>
+            <option value="%bits%">%bits%</option>
+            <option value="%amount%">%amount%</option>
+            <option value="%rawInput%">%rawInput%</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </label>
+
+        <label id="action-builder-amount-wrap">
+          Amount variable
+          <input id="action-builder-amount" type="text" value="%viewers%">
+        </label>
+
+        <label id="action-builder-amount-role-wrap">
+          Amount role
+          <select id="action-builder-amount-role">
+            <option value="viewers">viewers</option>
+            <option value="bits">bits</option>
+          </select>
+        </label>
+
+        <label class="checkbox-row" id="action-builder-update-goal-wrap">
+          <input id="action-builder-update-goal" type="checkbox" checked>
+          Update matching goal
+        </label>
+
+        <label class="checkbox-row" id="action-builder-cheers-wrap">
+          <input id="action-builder-cheers" type="checkbox" checked>
+          Count cheers
+        </label>
+      </div>
+
+      <label class="full-width-label">
+        Generated Fetch URL
+        <input id="action-builder-url" type="text" readonly>
+      </label>
+
+      <div class="button-row">
+        <button id="copy-action-builder-url" type="button" class="secondary-button">
+          Copy URL
+        </button>
+
+        <button id="preview-action-builder-url" type="button" class="secondary-button">
+          Preview URL
+        </button>
+      </div>
+
+      <p id="action-builder-status" class="form-note">
+        Select a trigger preset to generate a URL.
+      </p>
+    </section>
+
+    <section class="card">
       <h2>Streamer.bot Fetch URLs</h2>
       <div id="streamerbot-url-list" class="url-list"></div>
     </section>

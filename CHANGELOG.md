@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.12.0 - Streamer.bot Action Builder
+
+- Added a Streamer.bot Action Builder section to the local admin UI.
+- Added role-based Fetch URL generation for raids, bits, follows, and subscriptions.
+- Added common Streamer.bot variable presets such as `%userName%`, `%viewers%`, and `%bits%`.
+- Added Custom mode for mapping variables to existing Flora targets.
+- Added copy and preview buttons for generated Fetch URLs.
+
 ## v0.11.1 - Preset Preview and Management
 
 - Added selected preset preview support in the admin UI.

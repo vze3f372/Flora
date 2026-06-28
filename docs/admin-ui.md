@@ -281,3 +281,20 @@ Recommended server address:
 Do not expose the admin page publicly without adding proper authentication and access controls.
 
 The admin API validates known goal keys, rotation panel names, style color values, and event theme keys before writing configuration changes.
+
+## Streamer.bot Action Builder
+
+The local admin page includes a Streamer.bot Action Builder for generating Fetch URLs for Streamer.bot actions.
+
+The builder supports preset mappings for:
+
+- raids
+- bits / cheers
+- follows
+- subscriptions
+
+The builder also includes a Custom mode for mapping common Streamer.bot variables to existing Flora targets. Variables are mapped to data roles such as name and amount, rather than directly to display columns.
+
+Generated URLs can be copied into a Streamer.bot Fetch action. The preview button opens the generated URL in a browser tab, which is useful for testing with temporary test values.
+
+When testing from a browser, replace Streamer.bot placeholders such as `%userName%`, `%viewers%`, and `%bits%` with temporary test values to avoid writing literal placeholder strings into the local data files.
