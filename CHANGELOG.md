@@ -1,3 +1,11 @@
+## v0.13.2 - OBS Source Quick Copy
+
+- Added an OBS Source URLs card to the Admin UI.
+- Added copy and preview buttons for single panel browser source URLs.
+- Added copy and preview buttons for default and named rotation browser source URLs.
+- Generated OBS source URLs from the current Admin page origin.
+- Documented OBS source URL quick-copy behavior.
+
 ## v0.13.1 - Panel Layout Presets
 
 - Added built-in panel layout presets to the Admin UI.

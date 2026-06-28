@@ -441,6 +441,33 @@ Do not expose the admin page publicly without adding proper authentication and a
 
 The admin API validates known goal keys, rotation panel names, style color values, and event theme keys before writing configuration changes.
 
+## OBS Source URLs
+
+The Admin UI includes an **OBS Source URLs** card for quickly copying browser source URLs.
+
+The card includes copy and preview actions for:
+
+- Raid leaderboard
+- Raid count leaderboard
+- Biggest raid leaderboard
+- Bits leaderboard
+- Cheer count leaderboard
+- Biggest cheer leaderboard
+- Follower goal
+- Subscriber goal
+- Recent events
+- Default rotation
+- Fast default rotation
+- Leaderboards rotation
+- Goals rotation
+
+The URLs are generated from the current Admin page origin. For the default local server this means URLs start with:
+
+    http://127.0.0.1:8000
+
+Use the copied URLs as OBS browser source URLs.
+
+
 ## Streamer.bot Action Builder
 
 The local admin page includes a Streamer.bot Action Builder for generating Fetch URLs for Streamer.bot actions.

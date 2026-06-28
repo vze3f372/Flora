@@ -875,3 +875,38 @@ select:focus {
 .layout-preset-details li + li {
   margin-top: 4px;
 }
+
+/* v0.13.2 OBS source quick copy */
+
+.obs-source-list {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 20px;
+}
+
+.obs-source-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) minmax(260px, 2fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 10px;
+}
+
+.obs-source-title {
+  font-weight: 800;
+  color: var(--text);
+}
+
+.obs-source-url {
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+@media (max-width: 920px) {
+  .obs-source-row {
+    grid-template-columns: 1fr;
+  }
+}
