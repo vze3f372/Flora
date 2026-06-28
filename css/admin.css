@@ -816,3 +816,50 @@ select:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* v0.13.0 theme presets */
+
+.theme-preset-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: end;
+  margin: 14px 0;
+}
+
+.theme-preset-preview {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 14px;
+  margin: 12px 0 18px;
+}
+
+.theme-preset-preview-card h3 {
+  margin: 0 0 6px;
+}
+
+.theme-preset-preview-card p {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.theme-preset-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-preset-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 760px) {
+  .theme-preset-grid {
+    grid-template-columns: 1fr;
+  }
+}

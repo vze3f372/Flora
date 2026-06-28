@@ -124,6 +124,40 @@
       </form>
     </section>
 
+    <section class="card" id="theme-preset-card">
+      <h2>Panel Theme Presets</h2>
+      <p class="form-note">
+        Apply a built-in panel color preset. Flora backs up config.json before applying a preset.
+      </p>
+
+      <div class="theme-preset-grid">
+        <label>
+          Theme preset
+          <select id="theme-preset-select"></select>
+        </label>
+
+        <div>
+          <button id="reload-theme-presets-button" type="button" class="secondary-button">
+            Reload Presets
+          </button>
+        </div>
+      </div>
+
+      <div id="theme-preset-preview" class="theme-preset-preview">
+        <p class="form-note">No theme preset selected.</p>
+      </div>
+
+      <div class="button-row">
+        <button id="apply-theme-preset-button" type="button">
+          Apply Theme Preset
+        </button>
+      </div>
+
+      <p id="theme-preset-status" class="form-note">
+        No theme preset has been applied in this session.
+      </p>
+    </section>
+
     <section class="card">
       <h2>Panel Style</h2>
       <form id="style-form" class="style-grid">

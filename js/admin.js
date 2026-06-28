@@ -1509,6 +1509,166 @@ if (runtimeResetButton && runtimeResetStatus && runtimeResetConfirmation) {
 // FLORA_RUNTIME_RESET_UI_END
 
 
+
+// FLORA_THEME_PRESETS_UI_START
+const floraThemePresetSelect = document.getElementById("theme-preset-select");
+const floraThemePresetPreview = document.getElementById("theme-preset-preview");
+const floraThemePresetStatus = document.getElementById("theme-preset-status");
+const floraReloadThemePresetsButton = document.getElementById("reload-theme-presets-button");
+const floraApplyThemePresetButton = document.getElementById("apply-theme-preset-button");
+
+const floraThemePresetState = {
+  presets: [],
+};
+
+function floraSelectedThemePreset() {
+  return floraThemePresetState.presets.find((preset) => preset.id === floraThemePresetSelect.value) || null;
+}
+
+function floraCreateThemeSwatch(name, value) {
+  const swatch = document.createElement("span");
+  swatch.className = "theme-preset-swatch";
+  swatch.title = `${name}: ${value}`;
+  swatch.style.background = value;
+  return swatch;
+}
+
+function floraRenderThemePresetPreview() {
+  const preset = floraSelectedThemePreset();
+
+  floraThemePresetPreview.replaceChildren();
+
+  if (!preset) {
+    const note = document.createElement("p");
+    note.className = "form-note";
+    note.textContent = "No theme preset selected.";
+    floraThemePresetPreview.append(note);
+    floraApplyThemePresetButton.disabled = true;
+    return;
+  }
+
+  const card = document.createElement("div");
+  card.className = "theme-preset-preview-card";
+
+  const title = document.createElement("h3");
+  title.textContent = preset.name;
+
+  const description = document.createElement("p");
+  description.textContent = preset.description;
+
+  const swatches = document.createElement("div");
+  swatches.className = "theme-preset-swatches";
+
+  const colors = preset.style?.colors || {};
+
+  for (const [name, value] of Object.entries(colors)) {
+    swatches.append(floraCreateThemeSwatch(name, value));
+  }
+
+  card.append(title, description, swatches);
+  floraThemePresetPreview.append(card);
+
+  floraApplyThemePresetButton.disabled = false;
+}
+
+function floraRenderThemePresets(presets) {
+  floraThemePresetState.presets = Array.isArray(presets) ? presets : [];
+  floraThemePresetSelect.replaceChildren();
+
+  if (!floraThemePresetState.presets.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "No theme presets available";
+    floraThemePresetSelect.append(option);
+    floraThemePresetStatus.textContent = "No theme presets available.";
+    floraApplyThemePresetButton.disabled = true;
+    floraRenderThemePresetPreview();
+    return;
+  }
+
+  for (const preset of floraThemePresetState.presets) {
+    const option = document.createElement("option");
+    option.value = preset.id;
+    option.textContent = preset.name;
+    floraThemePresetSelect.append(option);
+  }
+
+  floraThemePresetStatus.textContent = `${floraThemePresetState.presets.length} built-in theme presets available.`;
+  floraRenderThemePresetPreview();
+}
+
+async function floraLoadThemePresets() {
+  const data = await getJson("/api/admin/theme-presets");
+  floraRenderThemePresets(data.presets);
+}
+
+async function floraApplyThemePreset() {
+  const preset = floraSelectedThemePreset();
+
+  if (!preset) {
+    setStatus("No theme preset is selected.", "error");
+    floraThemePresetStatus.textContent = "No theme preset is selected.";
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Apply theme preset "${preset.name}"?\n\nFlora will back up config.json before applying the preset.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  floraApplyThemePresetButton.disabled = true;
+  floraThemePresetStatus.textContent = `Applying ${preset.name}...`;
+
+  try {
+    const data = await postJson("/api/admin/theme-presets/apply", {
+      presetId: preset.id,
+    });
+
+    populateStyle(data.style);
+    floraRenderThemePresets(data.presets);
+    floraThemePresetSelect.value = data.preset.id;
+    floraRenderThemePresetPreview();
+
+    floraThemePresetStatus.textContent = `Applied: ${data.preset.name}`;
+    setStatus(`Applied theme preset ${data.preset.name}. Refresh OBS browser sources to see the latest panel styling.`, "success");
+  } catch (error) {
+    floraThemePresetStatus.textContent = `Theme preset failed: ${error.message}`;
+    setStatus(error.message, "error");
+  } finally {
+    floraApplyThemePresetButton.disabled = false;
+  }
+}
+
+if (
+  floraThemePresetSelect &&
+  floraThemePresetPreview &&
+  floraThemePresetStatus &&
+  floraReloadThemePresetsButton &&
+  floraApplyThemePresetButton
+) {
+  floraThemePresetSelect.addEventListener("change", floraRenderThemePresetPreview);
+
+  floraReloadThemePresetsButton.addEventListener("click", () => {
+    floraLoadThemePresets().catch((error) => {
+      floraThemePresetStatus.textContent = `Could not load theme presets: ${error.message}`;
+      setStatus(error.message, "error");
+    });
+  });
+
+  floraApplyThemePresetButton.addEventListener("click", () => {
+    floraApplyThemePreset().catch((error) => setStatus(error.message, "error"));
+  });
+
+  floraLoadThemePresets().catch((error) => {
+    floraThemePresetStatus.textContent = `Could not load theme presets: ${error.message}`;
+  });
+}
+// FLORA_THEME_PRESETS_UI_END
+
+
 // FLORA_PRESETS_UI_START
 const floraPresetName = document.getElementById("preset-name");
 const floraPresetNote = document.getElementById("preset-note");
