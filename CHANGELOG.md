@@ -1,3 +1,12 @@
+## v0.12.5 - Server Launcher
+
+- Added `scripts/flora-launcher.py` for starting the Flora server only when it is not already running.
+- Added cross-platform server startup support for Streamer.bot Run a Program actions.
+- Added `start-server-windows.bat` for Windows startup.
+- Added `start-server-wine.bat` for Streamer.bot running under Wine on Linux.
+- Added server launcher documentation.
+- Added server log output at `logs/flora-server.log`.
+
 ## v0.12.4 - Avatar Action Builder
 
 - Added an optional Twitch avatar URL checkbox to the Streamer.bot Action Builder.
