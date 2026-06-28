@@ -1,3 +1,18 @@
+# Changelog
+
+
+## v0.13.3 - Documentation Audit and Cleanup
+
+- Rewrote the README as the current project landing page.
+- Updated server launcher documentation for Linux, Windows, and Streamer.bot through Wine.
+- Updated `start-server-linux.sh` to use the Flora launcher.
+- Made `start-server-wine.bat` less path-specific by deriving the Unix path from the batch file location.
+- Replaced the stale roadmap with a current project status and future-work outline.
+- Added a current Admin UI feature summary to the Admin UI documentation.
+- Cleaned escaped URL characters from Streamer.bot documentation examples.
+- Marked the old raid table panel document as a legacy reference.
+- Fixed changelog heading placement.
+
 ## v0.13.2 - OBS Source Quick Copy
 
 - Added an OBS Source URLs card to the Admin UI.
@@ -113,7 +128,6 @@
   - `bits-biggest` for biggest individual cheer
 - Kept Streamer.bot event URLs unchanged; OBS panel URLs now decide which ranked view is displayed.
 
-# Changelog
 
 ## v0.12.0 - Streamer.bot Action Builder
 

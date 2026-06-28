@@ -25,11 +25,11 @@ GET http://127.0.0.1:8000/api/health
 Panel examples:
 
 ~~~text
-http://127.0.0.1:8000/panel.html\?type\=raids
-http://127.0.0.1:8000/panel.html\?type\=bits
-http://127.0.0.1:8000/panel.html\?type\=follower-goal
-http://127.0.0.1:8000/panel.html\?type\=recent-events
-http://127.0.0.1:8000/panel.html\?rotation\=true\&duration\=3
+http://127.0.0.1:8000/panel.html?type=raids
+http://127.0.0.1:8000/panel.html?type=bits
+http://127.0.0.1:8000/panel.html?type=follower-goal
+http://127.0.0.1:8000/panel.html?type=recent-events
+http://127.0.0.1:8000/panel.html?rotation=true&duration=3
 ~~~
 
 ## Dry-run mode
@@ -39,7 +39,7 @@ Add `dryRun=true` to an API URL to test the action without changing JSON files.
 Example:
 
 ~~~text
-http://127.0.0.1:8000/api/raid\?dryRun\=true
+http://127.0.0.1:8000/api/raid?dryRun=true
 ~~~
 
 ## Raid action

@@ -52,13 +52,13 @@ Twitch → Raid → Raid
 Dry-run Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/raid\?name\=%userName%\&viewers\=%viewers%\&dryRun\=true
+http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewers%&dryRun=true
 ~~~
 
 Live Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/raid\?name\=%userName%\&viewers\=%viewers%
+http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewers%
 ~~~
 
 Expected result:
@@ -71,8 +71,8 @@ data/events.json gets a newest-first raid event.
 Panels:
 
 ~~~text
-http://127.0.0.1:8000/panel.html\?type\=raids
-http://127.0.0.1:8000/panel.html\?type\=recent-events
+http://127.0.0.1:8000/panel.html?type=raids
+http://127.0.0.1:8000/panel.html?type=recent-events
 ~~~
 
 Important:
@@ -93,13 +93,13 @@ Twitch → Chat → Cheer
 Dry-run Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/bits\?name\=%userName%\&bits\=%bits%\&cheers\=1\&dryRun\=true
+http://127.0.0.1:8000/api/bits?name=%userName%&bits=%bits%&cheers=1&dryRun=true
 ~~~
 
 Live Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/bits\?name\=%userName%\&bits\=%bits%\&cheers\=1
+http://127.0.0.1:8000/api/bits?name=%userName%&bits=%bits%&cheers=1
 ~~~
 
 Expected result:
@@ -112,8 +112,8 @@ data/events.json gets a newest-first bits event.
 Panels:
 
 ~~~text
-http://127.0.0.1:8000/panel.html\?type\=bits
-http://127.0.0.1:8000/panel.html\?type\=recent-events
+http://127.0.0.1:8000/panel.html?type=bits
+http://127.0.0.1:8000/panel.html?type=recent-events
 ~~~
 
 If `%bits%` is not replaced, inspect Action History for the exact Cheer trigger variable name and update the URL.
@@ -129,13 +129,13 @@ Twitch → Channel → Follow
 Dry-run Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/follow\?name\=%userName%\&dryRun\=true
+http://127.0.0.1:8000/api/follow?name=%userName%&dryRun=true
 ~~~
 
 Live Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/follow\?name\=%userName%
+http://127.0.0.1:8000/api/follow?name=%userName%
 ~~~
 
 Expected result:
@@ -147,7 +147,7 @@ data/events.json gets a newest-first follow event.
 Panel:
 
 ~~~text
-http://127.0.0.1:8000/panel.html\?type\=recent-events
+http://127.0.0.1:8000/panel.html?type=recent-events
 ~~~
 
 ## Subscription trigger
@@ -161,13 +161,13 @@ Twitch → Subscriptions → Subscription
 Dry-run Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/sub\?name\=%userName%\&dryRun\=true
+http://127.0.0.1:8000/api/sub?name=%userName%&dryRun=true
 ~~~
 
 Live Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/sub\?name\=%userName%
+http://127.0.0.1:8000/api/sub?name=%userName%
 ~~~
 
 Expected result:
@@ -179,7 +179,7 @@ data/events.json gets a newest-first subscription event.
 Panel:
 
 ~~~text
-http://127.0.0.1:8000/panel.html\?type\=recent-events
+http://127.0.0.1:8000/panel.html?type=recent-events
 ~~~
 
 Optional subscription detail variable to inspect:
@@ -195,13 +195,13 @@ This action is not usually tied to the Follow trigger directly unless you alread
 Manual dry-run Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/goal\?key\=followers\&current\=55\&target\=100\&dryRun\=true
+http://127.0.0.1:8000/api/goal?key=followers&current=55&target=100&dryRun=true
 ~~~
 
 Manual live Fetch URL:
 
 ~~~text
-http://127.0.0.1:8000/api/goal\?key\=followers\&current\=55\&target\=100
+http://127.0.0.1:8000/api/goal?key=followers&current=55&target=100
 ~~~
 
 Expected result:
@@ -213,7 +213,7 @@ data/goals.json updates the followers goal.
 Panel:
 
 ~~~text
-http://127.0.0.1:8000/panel.html\?type\=follower-goal
+http://127.0.0.1:8000/panel.html?type=follower-goal
 ~~~
 
 If using a real follower count variable, first inspect Action History to confirm the exact variable name.
@@ -247,31 +247,31 @@ Use these to prove the Flora side works before testing trigger variables.
 Raid:
 
 ~~~text
-http://127.0.0.1:8000/api/raid\?name\=ManualRaidTest\&viewers\=12\&dryRun\=true
+http://127.0.0.1:8000/api/raid?name=ManualRaidTest&viewers=12&dryRun=true
 ~~~
 
 Bits:
 
 ~~~text
-http://127.0.0.1:8000/api/bits\?name\=ManualBitsTest\&bits\=100\&cheers\=1\&dryRun\=true
+http://127.0.0.1:8000/api/bits?name=ManualBitsTest&bits=100&cheers=1&dryRun=true
 ~~~
 
 Follow:
 
 ~~~text
-http://127.0.0.1:8000/api/follow\?name\=ManualFollowTest\&dryRun\=true
+http://127.0.0.1:8000/api/follow?name=ManualFollowTest&dryRun=true
 ~~~
 
 Sub:
 
 ~~~text
-http://127.0.0.1:8000/api/sub\?name\=ManualSubTest\&dryRun\=true
+http://127.0.0.1:8000/api/sub?name=ManualSubTest&dryRun=true
 ~~~
 
 Goal:
 
 ~~~text
-http://127.0.0.1:8000/api/goal\?key\=followers\&current\=55\&target\=100\&dryRun\=true
+http://127.0.0.1:8000/api/goal?key=followers&current=55&target=100&dryRun=true
 ~~~
 
 ## Restore after live tests

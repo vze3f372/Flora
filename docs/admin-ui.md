@@ -1,5 +1,25 @@
 # Flora Local Admin UI
 
+## Current Admin UI Feature Summary
+
+The Admin UI currently provides local controls for:
+
+- server status and common URLs
+- goal values
+- panel style colors
+- panel theme presets
+- panel layout presets
+- default panel rotation
+- named rotation groups
+- recent activity event labels and colors
+- runtime data reset
+- runtime backup restore
+- config/goals backup restore
+- local admin setup presets
+- OBS source URL quick-copy
+- Streamer.bot Fetch URL generation
+
+
 Flora includes a local browser-based admin page for managing common stream panel settings without manually editing JSON files.
 
 The admin page is served by the local Flora server and is intended to run on `127.0.0.1`.

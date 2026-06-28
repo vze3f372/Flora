@@ -1,4 +1,7 @@
-# Raid Table Panel Setup
+# Legacy Raid Table Panel Reference
+
+> This is a legacy low-level reference for the raid table data format. For normal Streamer.bot setup, use `setup-checklist.md` and the Admin UI Streamer.bot Action Builder instead.
+
 
 This document describes how to configure Streamer.bot to provide raid data for Flora.
 
