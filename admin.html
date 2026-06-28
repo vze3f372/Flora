@@ -360,6 +360,60 @@
       <div id="obs-url-list" class="url-list"></div>
     </section>
 
+    <section class="card" id="runtime-reset-card">
+      <h2>Fresh Start / Reset Runtime Data</h2>
+      <p class="form-note">
+        Reset selected runtime data before a new stream, event, or demo. Flora creates a backup before changing anything.
+      </p>
+
+      <div class="runtime-reset-grid">
+        <label class="checkbox-row">
+          <input id="runtime-reset-raids" type="checkbox">
+          Raid leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-bits" type="checkbox">
+          Bits leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-events" type="checkbox">
+          Recent events
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-avatar-cache" type="checkbox">
+          Avatar cache metadata
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-avatar-images" type="checkbox">
+          Avatar image files
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-goals-progress" type="checkbox">
+          Reset goal progress to zero
+        </label>
+      </div>
+
+      <label>
+        Type RESET to confirm
+        <input id="runtime-reset-confirmation" type="text" placeholder="RESET">
+      </label>
+
+      <div class="button-row">
+        <button id="runtime-reset-button" type="button" class="danger-button">
+          Create Backup and Reset Selected Data
+        </button>
+      </div>
+
+      <p id="runtime-reset-status" class="form-note">
+        No runtime data has been reset in this session.
+      </p>
+    </section>
+
     <section class="card">
       <h2>Streamer.bot Action Builder</h2>
       <p class="form-note">

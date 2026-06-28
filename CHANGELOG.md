@@ -1,3 +1,12 @@
+## v0.12.7 - Fresh Start Runtime Reset
+
+- Added an Admin UI Fresh Start / Reset Runtime Data card.
+- Added `/api/admin/runtime-reset` for resetting selected runtime data.
+- Added backups before runtime reset actions under `backups/runtime-reset/`.
+- Added reset support for raid leaderboard data, bits leaderboard data, recent events, avatar cache metadata, avatar image files, and goal progress.
+- Preserved goal targets while resetting goal current values to zero.
+- Required typed `RESET` confirmation before performing runtime reset actions.
+
 ## v0.12.6 - Streamer.bot Setup Checklist
 
 - Added a Streamer.bot setup checklist covering Flora server startup, OBS browser source URLs, Streamer.bot Fetch URL actions, avatar support, testing, and troubleshooting.

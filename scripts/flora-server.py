@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 import subprocess
 import sys
 import urllib.request
@@ -1508,6 +1509,177 @@ def _flora_admin_handle_preset_delete_post(handler) -> bool:
 # FLORA_PRESET_MANAGEMENT_API_END
 
 
+
+# FLORA_RUNTIME_RESET_START
+
+def _flora_admin_runtime_reset_timestamp() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+
+
+def _flora_admin_runtime_reset_selected(payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("Expected a JSON object.")
+
+    confirmation = str(payload.get("confirmation", "")).strip()
+
+    if confirmation != "RESET":
+        raise ValueError('Confirmation must be exactly "RESET".')
+
+    reset = payload.get("reset", payload)
+
+    if not isinstance(reset, dict):
+        raise ValueError("reset must be a JSON object.")
+
+    return {
+        "raids": bool(reset.get("raids")),
+        "bits": bool(reset.get("bits")),
+        "events": bool(reset.get("events")),
+        "avatarCache": bool(reset.get("avatarCache")),
+        "avatarImages": bool(reset.get("avatarImages")),
+        "goalsProgress": bool(reset.get("goalsProgress")),
+    }
+
+
+def _flora_admin_runtime_backup_dir() -> Path:
+    backup_dir = _flora_admin_repo_root() / "backups" / "runtime-reset" / _flora_admin_runtime_reset_timestamp()
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    return backup_dir
+
+
+def _flora_admin_runtime_backup_file(source: Path, backup_dir: Path, label: str) -> str | None:
+    if not source.exists():
+        return None
+
+    backup_path = backup_dir / label
+    backup_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, backup_path)
+
+    return backup_path.relative_to(_flora_admin_repo_root()).as_posix()
+
+
+def _flora_admin_runtime_backup_avatar_images(avatar_dir: Path, backup_dir: Path) -> list[str]:
+    if not avatar_dir.exists():
+        return []
+
+    copied = []
+    image_backup_dir = backup_dir / "assets__avatars"
+    image_backup_dir.mkdir(parents=True, exist_ok=True)
+
+    for item in sorted(avatar_dir.iterdir()):
+        if not item.is_file():
+            continue
+
+        backup_path = image_backup_dir / item.name
+        shutil.copy2(item, backup_path)
+        copied.append(backup_path.relative_to(_flora_admin_repo_root()).as_posix())
+
+    return copied
+
+
+def _flora_admin_runtime_reset_goals(goals: dict) -> dict:
+    if not isinstance(goals, dict):
+        raise ValueError("data/goals.json must contain a JSON object.")
+
+    next_goals = {}
+
+    for key, value in goals.items():
+        if not isinstance(value, dict):
+            next_goals[key] = value
+            continue
+
+        next_goal = dict(value)
+        next_goal["current"] = 0
+        next_goals[key] = next_goal
+
+    return next_goals
+
+
+def _flora_admin_handle_runtime_reset_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        selected = _flora_admin_runtime_reset_selected(payload)
+
+        if not any(selected.values()):
+            raise ValueError("Select at least one runtime data item to reset.")
+
+        repo_root = _flora_admin_repo_root()
+        backup_dir = _flora_admin_runtime_backup_dir()
+        data_dir = repo_root / "data"
+        avatar_dir = repo_root / "assets" / "avatars"
+
+        backups = []
+        reset_items = []
+
+        if selected["raids"]:
+            path = data_dir / "raids.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__raids.json"))
+            _flora_admin_write_json(path, {})
+            reset_items.append("Raid leaderboard")
+
+        if selected["bits"]:
+            path = data_dir / "bits.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__bits.json"))
+            _flora_admin_write_json(path, {})
+            reset_items.append("Bits leaderboard")
+
+        if selected["events"]:
+            path = data_dir / "events.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__events.json"))
+            _flora_admin_write_json(path, {"events": []})
+            reset_items.append("Recent events")
+
+        if selected["avatarCache"]:
+            path = data_dir / "avatar-cache.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__avatar-cache.json"))
+            _flora_admin_write_json(path, {})
+            reset_items.append("Avatar cache metadata")
+
+        avatar_image_backups = []
+
+        if selected["avatarImages"]:
+            avatar_image_backups = _flora_admin_runtime_backup_avatar_images(avatar_dir, backup_dir)
+            avatar_dir.mkdir(parents=True, exist_ok=True)
+
+            deleted_count = 0
+            for item in sorted(avatar_dir.iterdir()):
+                if item.is_file():
+                    item.unlink()
+                    deleted_count += 1
+
+            reset_items.append(f"Avatar image files ({deleted_count})")
+
+        if selected["goalsProgress"]:
+            path = data_dir / "goals.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__goals.json"))
+            goals = _flora_admin_read_json(path)
+            _flora_admin_write_json(path, _flora_admin_runtime_reset_goals(goals))
+            reset_items.append("Goal progress")
+
+        backups = [backup for backup in backups if backup]
+
+        _flora_admin_send_json(handler, {
+            "ok": True,
+            "reset": reset_items,
+            "backupDir": backup_dir.relative_to(repo_root).as_posix(),
+            "backups": backups,
+            "avatarImageBackups": avatar_image_backups,
+        })
+
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+    except Exception as error:
+        _flora_admin_send_error(handler, 500, str(error))
+
+    return True
+
+# FLORA_RUNTIME_RESET_END
+
 def _flora_admin_handle_get(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
     repo_root = _flora_admin_repo_root()
@@ -1803,6 +1975,9 @@ def _flora_admin_handle_mark_working_post(handler) -> bool:
 
 def _flora_admin_handle_post(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
+
+    if request_path == "/api/admin/runtime-reset":
+        return _flora_admin_handle_runtime_reset_post(handler)
 
     if request_path == "/api/admin/backups/restore":
         return _flora_admin_handle_backup_restore_post(handler)
