@@ -1,5 +1,12 @@
 # Flora Roadmap
 
+## v0.11.1 - Preset Preview and Management
+
+- Status: Active implementation branch for preset polish.
+- Preview selected preset contents before import.
+- Delete local preset files from the admin UI.
+- Improve import confirmation with preset details.
+
 ## v0.11.0 - Presets Export/Import
 
 - Status: Active implementation branch for named local presets.

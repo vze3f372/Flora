@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.11.1 - Preset Preview and Management
+
+- Added selected preset preview support in the admin UI.
+- Added preset detail and delete admin endpoints.
+- Added style, rotation, event theme, and goals summary before import.
+- Added local preset deletion from the admin UI.
+- Improved preset import confirmation with selected preset details.
+
 ## v0.11.0 - Presets Export/Import
 
 - Added local admin preset export support.

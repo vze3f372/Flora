@@ -1028,7 +1028,9 @@ const floraExportPresetButton = document.getElementById("export-preset-button");
 const floraReloadPresetsButton = document.getElementById("reload-presets-button");
 const floraPresetSelect = document.getElementById("preset-select");
 const floraPresetStatus = document.getElementById("preset-status");
+const floraPresetPreview = document.getElementById("preset-preview");
 const floraImportPresetButton = document.getElementById("import-preset-button");
+const floraDeletePresetButton = document.getElementById("delete-preset-button");
 
 const floraPresetState = {
   presets: [],
@@ -1051,6 +1053,77 @@ function floraSelectedPreset() {
   return floraPresetState.presets.find((preset) => preset.filename === floraPresetSelect.value) || null;
 }
 
+function floraRenderPresetPreview(detail) {
+  if (!detail || !detail.preview) {
+    floraPresetPreview.innerHTML = `<p class="form-note">Select a preset to preview its contents.</p>`;
+    return;
+  }
+
+  const preview = detail.preview;
+  const colors = preview.style?.colors || {};
+  const colorEntries = Object.entries(colors).slice(0, 12);
+  const goals = preview.goals?.items || [];
+
+  const colorSwatches = colorEntries
+    .map(([name, value]) => `<span class="preset-color-swatch" title="${name}: ${value}" style="background: ${value}"></span>`)
+    .join("");
+
+  const goalText = goals.length
+    ? goals.map((goal) => `${goal.label || goal.key}: ${goal.current ?? "?"}/${goal.target ?? "?"}`).join("<br>")
+    : "No goals";
+
+  floraPresetPreview.innerHTML = `
+    <div class="preset-preview-grid">
+      <div class="preset-preview-card">
+        <h3>Style</h3>
+        <p>${preview.style?.colorCount ?? 0} colors</p>
+        <div class="preset-color-swatches">${colorSwatches}</div>
+      </div>
+
+      <div class="preset-preview-card">
+        <h3>Rotation</h3>
+        <p>${preview.rotation?.enabled ? "Enabled" : "Disabled"}</p>
+        <p>Start: ${preview.rotation?.startPanel || "not set"}</p>
+        <p>${preview.rotation?.panelCount ?? 0} panels</p>
+      </div>
+
+      <div class="preset-preview-card">
+        <h3>Event Theme</h3>
+        <p>${preview.eventTheme?.eventTypeCount ?? 0} event types</p>
+        <p>${(preview.eventTheme?.eventTypes || []).join(", ") || "No event types"}</p>
+      </div>
+
+      <div class="preset-preview-card">
+        <h3>Goals</h3>
+        <p>${goalText}</p>
+      </div>
+    </div>
+  `;
+}
+
+async function floraLoadPresetDetail() {
+  const preset = floraSelectedPreset();
+
+  if (!preset) {
+    floraPresetStatus.textContent = "Select a preset.";
+    floraPresetPreview.innerHTML = `<p class="form-note">Select a preset to preview its contents.</p>`;
+    floraImportPresetButton.disabled = true;
+    floraDeletePresetButton.disabled = true;
+    return null;
+  }
+
+  const data = await postJson("/api/admin/presets/detail", {
+    filename: preset.filename,
+  });
+
+  floraPresetStatus.textContent = `Selected: ${preset.path}`;
+  floraRenderPresetPreview(data.preset);
+  floraImportPresetButton.disabled = false;
+  floraDeletePresetButton.disabled = false;
+
+  return data.preset;
+}
+
 function floraRenderPresets(presets) {
   floraPresetState.presets = Array.isArray(presets) ? presets : [];
   floraPresetSelect.replaceChildren();
@@ -1062,7 +1135,9 @@ function floraRenderPresets(presets) {
     floraPresetSelect.append(option);
 
     floraPresetStatus.textContent = "No presets exported yet.";
+    floraPresetPreview.innerHTML = `<p class="form-note">No presets exported yet.</p>`;
     floraImportPresetButton.disabled = true;
+    floraDeletePresetButton.disabled = true;
     return;
   }
 
@@ -1073,11 +1148,14 @@ function floraRenderPresets(presets) {
     floraPresetSelect.append(option);
   }
 
-  const current = floraSelectedPreset();
-  floraPresetStatus.textContent = current
-    ? `Selected: ${current.path}`
-    : "Select a preset.";
-  floraImportPresetButton.disabled = false;
+  floraImportPresetButton.disabled = true;
+  floraDeletePresetButton.disabled = true;
+
+  floraLoadPresetDetail().catch((error) => {
+    floraPresetStatus.textContent = `Could not load preset preview: ${error.message}`;
+    floraImportPresetButton.disabled = true;
+    floraDeletePresetButton.disabled = true;
+  });
 }
 
 async function floraLoadPresets() {
@@ -1099,7 +1177,7 @@ async function floraExportPreset() {
   setStatus(`Exported preset ${data.preset.name}.`, "success");
 }
 
-async function floraImportPreset() {
+async function floraDeletePreset() {
   const preset = floraSelectedPreset();
 
   if (!preset) {
@@ -1108,7 +1186,37 @@ async function floraImportPreset() {
   }
 
   const confirmed = window.confirm(
-    `Import preset "${preset.name}"?\n\n${preset.path}\n\nFlora will back up the current config and goals before importing.`
+    `Delete preset "${preset.name}"?\n\n${preset.path}\n\nThis removes the local preset file. It does not change the current Flora setup.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const data = await postJson("/api/admin/presets/delete", {
+    filename: preset.filename,
+  });
+
+  floraRenderPresets(data.presets);
+  setStatus(`Deleted preset ${data.deleted.name}.`, "success");
+}
+
+async function floraImportPreset() {
+  const preset = floraSelectedPreset();
+
+  if (!preset) {
+    setStatus("No preset is selected.", "error");
+    return;
+  }
+
+  const detail = await floraLoadPresetDetail();
+  const preview = detail?.preview || {};
+  const rotationStatus = preview.rotation?.enabled ? "enabled" : "disabled";
+  const goalCount = preview.goals?.goalCount ?? 0;
+  const eventTypeCount = preview.eventTheme?.eventTypeCount ?? 0;
+
+  const confirmed = window.confirm(
+    `Import preset "${preset.name}"?\n\n${preset.path}\n\nRotation: ${rotationStatus}\nEvent types: ${eventTypeCount}\nGoals: ${goalCount}\n\nFlora will back up the current config and goals before importing.`
   );
 
   if (!confirmed) {
@@ -1136,7 +1244,9 @@ if (
   floraReloadPresetsButton &&
   floraPresetSelect &&
   floraPresetStatus &&
-  floraImportPresetButton
+  floraPresetPreview &&
+  floraImportPresetButton &&
+  floraDeletePresetButton
 ) {
   floraReloadPresetsButton.addEventListener("click", () => {
     floraLoadPresets().catch((error) => setStatus(error.message, "error"));
@@ -1150,14 +1260,22 @@ if (
     floraImportPreset().catch((error) => setStatus(error.message, "error"));
   });
 
+  floraDeletePresetButton.addEventListener("click", () => {
+    floraDeletePreset().catch((error) => setStatus(error.message, "error"));
+  });
+
   floraPresetSelect.addEventListener("change", () => {
-    const preset = floraSelectedPreset();
-    floraPresetStatus.textContent = preset ? `Selected: ${preset.path}` : "Select a preset.";
+    floraLoadPresetDetail().catch((error) => {
+      floraPresetStatus.textContent = `Could not load preset preview: ${error.message}`;
+      floraImportPresetButton.disabled = true;
+      floraDeletePresetButton.disabled = true;
+    });
   });
 
   floraLoadPresets().catch((error) => {
     floraPresetStatus.textContent = `Could not load presets: ${error.message}`;
     floraImportPresetButton.disabled = true;
+    floraDeletePresetButton.disabled = true;
   });
 }
 // FLORA_PRESETS_UI_END
