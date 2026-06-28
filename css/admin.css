@@ -655,3 +655,24 @@ select:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* v0.12.2 named rotation groups */
+
+.named-rotation-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.named-rotation-toolbar label {
+  display: grid;
+  gap: 6px;
+}
+
+@media (max-width: 1000px) {
+  .named-rotation-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

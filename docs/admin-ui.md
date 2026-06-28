@@ -322,3 +322,29 @@ http://127.0.0.1:8000/panel.html?type=bits-biggest
 The Streamer.bot fetch URLs remain unchanged. Streamer.bot updates the data, while the OBS browser source URL decides which leaderboard view is shown.
 
 Existing historical data is backfilled with a best estimate for biggest raid and biggest cheer. Future events track the true single-event maximum.
+
+## Named rotation groups
+
+Named rotation groups make it possible to create multiple independent rotating OBS browser sources.
+
+The default/global rotation still uses:
+
+    http://127.0.0.1:8000/panel.html?rotation=true
+
+Named rotations use the group name in the `rotation` query parameter:
+
+    http://127.0.0.1:8000/panel.html?rotation=leaderboards
+    http://127.0.0.1:8000/panel.html?rotation=goals
+    http://127.0.0.1:8000/panel.html?rotation=supporters
+
+Named rotation groups can be managed from the Admin UI under **Named Rotation Groups**.
+
+Each group can configure:
+
+- enabled/disabled status
+- start panel
+- transition duration
+- included panels
+- duration per included panel
+
+Rotation group names should use lowercase letters, numbers, and hyphens.

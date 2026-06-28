@@ -86,9 +86,54 @@ function getPanelConfig(config, type) {
   return config.panels?.[type] ?? config.leaderboards?.[type] ?? null;
 }
 
-function getRotationEntries(config) {
-  const rotation = config.rotation;
+function getRotationQueryValue() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("rotation");
+}
 
+function isDefaultRotationValue(value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  return normalized === "" || ["1", "true", "yes", "on"].includes(normalized);
+}
+
+function isDisabledRotationValue(value) {
+  return ["0", "false", "no", "off"].includes(String(value ?? "").trim().toLowerCase());
+}
+
+function getActiveRotation(config) {
+  if (!hasQueryValue("rotation")) {
+    return {
+      name: "default",
+      rotation: config.rotation ?? null
+    };
+  }
+
+  const rotationValue = getRotationQueryValue();
+
+  if (isDisabledRotationValue(rotationValue)) {
+    return {
+      name: "disabled",
+      rotation: null
+    };
+  }
+
+  if (isDefaultRotationValue(rotationValue)) {
+    return {
+      name: "default",
+      rotation: config.rotation ?? null
+    };
+  }
+
+  const rotationName = String(rotationValue).trim();
+
+  return {
+    name: rotationName,
+    rotation: config.rotations?.[rotationName] ?? null
+  };
+}
+
+function getRotationEntries(rotation) {
   if (!isObject(rotation) || !Array.isArray(rotation.panels)) {
     return [];
   }
@@ -105,18 +150,22 @@ function shouldUseRotation(config) {
     return false;
   }
 
-  return getQueryFlag("rotation") || config.rotation?.enabled === true;
+  if (hasQueryValue("rotation")) {
+    return !isDisabledRotationValue(getRotationQueryValue());
+  }
+
+  return config.rotation?.enabled === true;
 }
 
 function findRotationIndex(entries, panelName) {
   return entries.findIndex(entry => entry.panel === panelName);
 }
 
-function getRotationStartPanel(config) {
-  return getQueryValue("start", config.rotation?.startPanel ?? "");
+function getRotationStartPanel(rotation) {
+  return getQueryValue("start", rotation?.startPanel ?? "");
 }
 
-function normalizeRotationIndex(entries, config) {
+function normalizeRotationIndex(entries, rotation) {
   if (entries.length === 0) {
     rotationIndex = 0;
     return;
@@ -126,7 +175,7 @@ function normalizeRotationIndex(entries, config) {
     rotationIndex = 0;
   }
 
-  const startPanel = getRotationStartPanel(config);
+  const startPanel = getRotationStartPanel(rotation);
 
   if (!startPanel) {
     return;
@@ -154,8 +203,8 @@ function getRotationDurationMilliseconds(entry) {
   return safeDurationSeconds * 1000;
 }
 
-function getRotationTransitionMilliseconds(config) {
-  const transitionMilliseconds = Number(config.rotation?.transitionMilliseconds);
+function getRotationTransitionMilliseconds(rotation) {
+  const transitionMilliseconds = Number(rotation?.transitionMilliseconds);
 
   if (!Number.isFinite(transitionMilliseconds) || transitionMilliseconds < 0) {
     return 500;
@@ -865,8 +914,11 @@ function updateRotationDebug(result) {
   const panelNumber = result.index + 1;
   const panelTotal = result.entries.length;
   const durationSeconds = getRotationDurationMilliseconds(result.entry) / 1000;
+  const rotationName = result.rotationName && result.rotationName !== "default"
+    ? `${result.rotationName} `
+    : "";
 
-  debug.textContent = `rotation ${panelNumber}/${panelTotal}: ${result.entry.panel} · ${durationSeconds}s`;
+  debug.textContent = `rotation ${rotationName}${panelNumber}/${panelTotal}: ${result.entry.panel} · ${durationSeconds}s`;
 }
 
 async function renderRotationPanel(force = false, applyStartPanel = false) {
@@ -879,7 +931,15 @@ async function renderRotationPanel(force = false, applyStartPanel = false) {
   }
 
   const config = configResult.data;
-  const entries = getRotationEntries(config);
+  const activeRotation = getActiveRotation(config);
+  const rotation = activeRotation.rotation;
+  const entries = getRotationEntries(rotation);
+
+  if (!isObject(rotation)) {
+    lastRenderSignature = "";
+    renderPanelError("ROTATION ERROR", `Rotation group not found: ${activeRotation.name}`);
+    return null;
+  }
 
   if (entries.length === 0) {
     lastRenderSignature = "";
@@ -888,7 +948,7 @@ async function renderRotationPanel(force = false, applyStartPanel = false) {
   }
 
   if (applyStartPanel) {
-    normalizeRotationIndex(entries, config);
+    normalizeRotationIndex(entries, rotation);
   } else if (rotationIndex < 0 || rotationIndex >= entries.length) {
     rotationIndex = 0;
   }
@@ -900,6 +960,8 @@ async function renderRotationPanel(force = false, applyStartPanel = false) {
 
   return {
     config,
+    rotation,
+    rotationName: activeRotation.name,
     entries,
     entry,
     index: rotationIndex
@@ -908,7 +970,7 @@ async function renderRotationPanel(force = false, applyStartPanel = false) {
 
 async function transitionToNextRotationPanel(result) {
   const shell = getPanelShell();
-  const transitionMilliseconds = getRotationTransitionMilliseconds(result.config);
+  const transitionMilliseconds = getRotationTransitionMilliseconds(result.rotation);
 
   if (transitionMilliseconds > 0) {
     shell.classList.add("is-rotating-out");

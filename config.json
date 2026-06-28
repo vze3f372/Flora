@@ -358,5 +358,53 @@
       "success": "#22c55e",
       "error": "#fb7185"
     }
+  },
+  "rotations": {
+    "leaderboards": {
+      "enabled": true,
+      "panels": [
+        {
+          "panel": "raids",
+          "durationSeconds": 10
+        },
+        {
+          "panel": "raids-count",
+          "durationSeconds": 10
+        },
+        {
+          "panel": "raids-biggest",
+          "durationSeconds": 10
+        },
+        {
+          "panel": "bits",
+          "durationSeconds": 10
+        },
+        {
+          "panel": "bits-count",
+          "durationSeconds": 10
+        },
+        {
+          "panel": "bits-biggest",
+          "durationSeconds": 10
+        }
+      ],
+      "transitionMilliseconds": 500,
+      "startPanel": "raids"
+    },
+    "goals": {
+      "enabled": true,
+      "panels": [
+        {
+          "panel": "follower-goal",
+          "durationSeconds": 12
+        },
+        {
+          "panel": "sub-goal",
+          "durationSeconds": 12
+        }
+      ],
+      "transitionMilliseconds": 500,
+      "startPanel": "follower-goal"
+    }
   }
 }

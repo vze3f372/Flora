@@ -329,7 +329,7 @@
 - [ ] Full README
 - [ ] v1.0 release checkpoint
 
-## Planned: Named Rotation Groups
+## Completed: Named Rotation Groups
 
 Future rotation support should allow multiple named rotations instead of one global rotation list.
 
@@ -342,3 +342,7 @@ http://127.0.0.1:8000/panel.html?rotation=goals
 ```
 
 This would allow separate OBS sources for leaderboard rotations, goal rotations, recent-event rotations, or scene-specific panel groups.
+
+## Completed: Named Rotation Groups
+
+Named rotation groups make it possible to run multiple independent rotating OBS browser sources, such as leaderboard rotations, goal rotations, BRB loops, and ending-screen loops.
