@@ -150,3 +150,8 @@ config.json is valid
 - [Streamer.bot Fetch URL recipes](docs/streamerbot/fetch-url-recipes.md)
 - [Live Twitch trigger recipes](docs/streamerbot/live-trigger-recipes.md)
 - [Streamer.bot Fetch URL quickstart](docs/streamerbot/fetch-url-quickstart.md)
+
+## Local Admin UI
+
+Run the Flora server and open `http://127.0.0.1:8000/admin.html` to edit follower/subscriber goal values and copy OBS or Streamer.bot URLs without manually editing JSON files.
+

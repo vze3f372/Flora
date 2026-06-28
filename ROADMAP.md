@@ -21,6 +21,8 @@
 
 ## v0.10.0 - Local Admin UI Foundation
 
+- Status: Active implementation branch for the local admin UI foundation.
+
 - Add a local browser-based admin page served by Flora.
 - Provide a GUI for editing core panel configuration.
 - Allow goal current and target values to be edited without manually opening JSON files.
