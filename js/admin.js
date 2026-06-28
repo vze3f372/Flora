@@ -25,8 +25,32 @@ const DEFAULT_ROTATION = {
   startPanel: "bits",
 };
 
+const DEFAULT_EVENT_THEME = {
+  raid: {
+    label: "RAID",
+    color: "#5eead4",
+  },
+  bits: {
+    label: "BITS",
+    color: "#67e8f9",
+  },
+  follow: {
+    label: "FOLLOW",
+    color: "#86efac",
+  },
+  sub: {
+    label: "SUB",
+    color: "#f0abfc",
+  },
+  goal: {
+    label: "GOAL",
+    color: "#a78bfa",
+  },
+};
+
 let availablePanels = {};
 let currentRotation = DEFAULT_ROTATION;
+let currentEventTheme = DEFAULT_EVENT_THEME;
 
 const statusElement = document.getElementById("status");
 const reloadButton = document.getElementById("reload-button");
@@ -37,6 +61,9 @@ const rotationForm = document.getElementById("rotation-form");
 const resetRotationButton = document.getElementById("reset-rotation-button");
 const copyRotationUrlButton = document.getElementById("copy-rotation-url-button");
 const rotationPanelList = document.getElementById("rotation-panel-list");
+const eventThemeForm = document.getElementById("event-theme-form");
+const resetEventThemeButton = document.getElementById("reset-event-theme-button");
+const eventThemeList = document.getElementById("event-theme-list");
 
 const fields = {
   followersCurrent: document.getElementById("followers-current"),
@@ -382,6 +409,172 @@ async function copyRotationUrl() {
   setStatus("Copied Rotation URL.", "success");
 }
 
+
+function normalizeEventTheme(eventTheme) {
+  const source = eventTheme && typeof eventTheme === "object"
+    ? eventTheme
+    : DEFAULT_EVENT_THEME;
+
+  const normalized = {};
+
+  for (const [eventType, config] of Object.entries(source)) {
+    if (!config || typeof config !== "object") {
+      continue;
+    }
+
+    normalized[eventType] = {
+      label: typeof config.label === "string" && config.label.trim()
+        ? config.label.trim()
+        : eventType.toUpperCase(),
+      color: normalizeColor(config.color, DEFAULT_STYLE.colors.accent),
+    };
+  }
+
+  return normalized;
+}
+
+function eventThemeSortOrder(eventType) {
+  const order = ["raid", "bits", "follow", "sub", "goal", "custom"];
+  const index = order.indexOf(eventType);
+
+  return index === -1 ? order.length : index;
+}
+
+function populateEventTheme(eventTheme) {
+  currentEventTheme = normalizeEventTheme(eventTheme);
+  eventThemeList.replaceChildren();
+
+  const entries = Object.entries(currentEventTheme)
+    .sort(([left], [right]) => {
+      const leftOrder = eventThemeSortOrder(left);
+      const rightOrder = eventThemeSortOrder(right);
+
+      if (leftOrder !== rightOrder) {
+        return leftOrder - rightOrder;
+      }
+
+      return left.localeCompare(right);
+    });
+
+  for (const [eventType, config] of entries) {
+    const row = document.createElement("div");
+    row.className = "event-theme-row";
+    row.dataset.eventType = eventType;
+
+    const typeLabel = document.createElement("div");
+    typeLabel.className = "event-theme-type";
+    typeLabel.textContent = eventType;
+
+    const labelInputWrapper = document.createElement("label");
+    labelInputWrapper.className = "event-theme-label-control";
+
+    const labelText = document.createElement("span");
+    labelText.textContent = "Label";
+
+    const labelInput = document.createElement("input");
+    labelInput.type = "text";
+    labelInput.className = "event-theme-label";
+    labelInput.required = true;
+    labelInput.value = config.label;
+
+    labelInputWrapper.append(labelText, labelInput);
+
+    const colorInputWrapper = document.createElement("label");
+    colorInputWrapper.className = "event-theme-color-control";
+
+    const colorText = document.createElement("span");
+    colorText.textContent = "Color";
+
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.className = "event-theme-color";
+    colorInput.required = true;
+    colorInput.value = normalizeColor(config.color, DEFAULT_STYLE.colors.accent);
+
+    colorInputWrapper.append(colorText, colorInput);
+
+    const preview = document.createElement("div");
+    preview.className = "event-theme-preview";
+    preview.textContent = config.label;
+    preview.style.setProperty("--event-preview-color", colorInput.value);
+
+    labelInput.addEventListener("input", () => {
+      preview.textContent = labelInput.value || eventType.toUpperCase();
+    });
+
+    colorInput.addEventListener("input", () => {
+      preview.style.setProperty("--event-preview-color", colorInput.value);
+    });
+
+    row.append(typeLabel, labelInputWrapper, colorInputWrapper, preview);
+    eventThemeList.append(row);
+  }
+}
+
+function collectEventTheme() {
+  const rows = [...eventThemeList.querySelectorAll(".event-theme-row")];
+  const eventTypes = {};
+
+  for (const row of rows) {
+    const eventType = row.dataset.eventType;
+    const labelInput = row.querySelector(".event-theme-label");
+    const colorInput = row.querySelector(".event-theme-color");
+    const label = labelInput.value.trim();
+
+    if (!label) {
+      throw new Error(`${eventType} label must not be empty.`);
+    }
+
+    eventTypes[eventType] = {
+      label,
+      color: normalizeColor(colorInput.value, DEFAULT_STYLE.colors.accent),
+    };
+  }
+
+  if (Object.keys(eventTypes).length === 0) {
+    throw new Error("Event theme must contain at least one event type.");
+  }
+
+  return eventTypes;
+}
+
+async function saveEventTheme(event) {
+  event.preventDefault();
+
+  try {
+    const response = await fetchJson("/api/admin/event-theme", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ eventTypes: collectEventTheme() }),
+    });
+
+    populateEventTheme(response.eventTypes);
+    setStatus("Event theme saved. Refresh the recent activity panel to see the latest colors.", "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+async function resetEventThemeDefaults() {
+  try {
+    const response = await fetchJson("/api/admin/event-theme", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ eventTypes: DEFAULT_EVENT_THEME }),
+    });
+
+    populateEventTheme(response.eventTypes);
+    setStatus("Event theme defaults restored.", "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
   const payload = await response.json().catch(() => null);
@@ -397,16 +590,18 @@ async function fetchJson(url, options = {}) {
 async function loadAdminData() {
   setStatus("Loading admin data...", "muted");
 
-  const [config, goals, rotationData] = await Promise.all([
+  const [config, goals, rotationData, eventThemeData] = await Promise.all([
     fetchJson("/api/admin/config"),
     fetchJson("/api/admin/goals"),
     fetchJson("/api/admin/rotation"),
+    fetchJson("/api/admin/event-theme"),
   ]);
 
   availablePanels = rotationData.panels || config.panels || {};
   populateGoals(goals);
   populateStyle(config.style || DEFAULT_STYLE);
   populateRotation(rotationData.rotation || config.rotation || DEFAULT_ROTATION);
+  populateEventTheme(eventThemeData.eventTypes || DEFAULT_EVENT_THEME);
 
   const panelCount = config.panels && typeof config.panels === "object"
     ? Object.keys(config.panels).length
@@ -523,6 +718,8 @@ rotationForm.addEventListener("submit", saveRotation);
 resetRotationButton.addEventListener("click", resetRotationDefaults);
 copyRotationUrlButton.addEventListener("click", copyRotationUrl);
 rotationFields.startPanel.addEventListener("change", updateRotationUrl);
+eventThemeForm.addEventListener("submit", saveEventTheme);
+resetEventThemeButton.addEventListener("click", resetEventThemeDefaults);
 
 renderUrlList("obs-url-list", obsUrls);
 renderUrlList("streamerbot-url-list", streamerbotUrls);

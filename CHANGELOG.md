@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.10.3 - Event Theme Editor
+
+- Added recent activity event label/color controls to the local admin UI.
+- Added `/api/admin/event-theme` for validated event theme updates.
+- Reused the existing `panels.recent-events.eventTypes` configuration shape.
+- Kept existing event data and Streamer.bot endpoints unchanged.
+
 ## v0.10.2 - Panel Rotation Editor
 
 - Added rotation controls to the local admin UI.
