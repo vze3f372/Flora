@@ -360,6 +360,77 @@
       <div id="obs-url-list" class="url-list"></div>
     </section>
 
+    <section class="card" id="runtime-backup-restore-card">
+      <h2>Runtime Reset Backups</h2>
+      <p class="form-note">
+        Restore runtime data from backups created by the Fresh Start reset card. Flora creates another safety backup before restoring.
+      </p>
+
+      <div class="runtime-backup-grid">
+        <label>
+          Runtime backup
+          <select id="runtime-backup-select"></select>
+        </label>
+
+        <div>
+          <button id="reload-runtime-backups-button" type="button" class="secondary-button">
+            Reload Runtime Backups
+          </button>
+        </div>
+      </div>
+
+      <div id="runtime-backup-preview" class="runtime-backup-preview">
+        <p class="form-note">No runtime backup selected.</p>
+      </div>
+
+      <div class="runtime-reset-grid">
+        <label class="checkbox-row">
+          <input id="runtime-restore-raids" type="checkbox">
+          Raid leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-bits" type="checkbox">
+          Bits leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-events" type="checkbox">
+          Recent events
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-avatar-cache" type="checkbox">
+          Avatar cache metadata
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-avatar-images" type="checkbox">
+          Avatar image files
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-goals" type="checkbox">
+          Goals
+        </label>
+      </div>
+
+      <label>
+        Type RESTORE to confirm
+        <input id="runtime-restore-confirmation" type="text" placeholder="RESTORE">
+      </label>
+
+      <div class="button-row">
+        <button id="runtime-restore-button" type="button" class="danger-button">
+          Create Safety Backup and Restore Selected Data
+        </button>
+      </div>
+
+      <p id="runtime-restore-status" class="form-note">
+        No runtime data has been restored in this session.
+      </p>
+    </section>
+
     <section class="card" id="runtime-reset-card">
       <h2>Fresh Start / Reset Runtime Data</h2>
       <p class="form-note">

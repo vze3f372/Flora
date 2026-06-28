@@ -192,6 +192,36 @@ For stubborn browser caching, add a temporary query parameter:
 http://127.0.0.1:8000/panel.html?type=recent-events&v=test
 ```
 
+## Runtime Reset Backup Restore
+
+The Admin UI includes a **Runtime Reset Backups** card for restoring runtime data from backups created by the Fresh Start reset card.
+
+The restore card can restore:
+
+- Raid leaderboard data
+- Bits leaderboard data
+- Recent events
+- Avatar cache metadata
+- Avatar image files
+- Goals
+
+Before restoring selected data, Flora creates a safety backup under:
+
+    backups/runtime-restore/
+
+Runtime reset backups are read from:
+
+    backups/runtime-reset/
+
+The restore card requires typing:
+
+    RESTORE
+
+before the restore button will perform the action.
+
+This keeps reset and restore operations reversible while keeping runtime data backups separate from admin configuration backups.
+
+
 ## Fresh Start / Reset Runtime Data
 
 The Admin UI includes a **Fresh Start / Reset Runtime Data** card for returning runtime stream data to a clean default state.

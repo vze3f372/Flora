@@ -1,3 +1,12 @@
+## v0.12.8 - Runtime Backup Restore
+
+- Added a Runtime Reset Backups card to the Admin UI.
+- Added `/api/admin/runtime-backups` for listing runtime reset backups.
+- Added `/api/admin/runtime-backups/restore` for restoring selected runtime backup items.
+- Added safety backups before runtime restore actions under `backups/runtime-restore/`.
+- Added restore support for raid leaderboard data, bits leaderboard data, recent events, avatar cache metadata, avatar image files, and goals.
+- Required typed `RESTORE` confirmation before performing runtime restore actions.
+
 ## v0.12.7 - Fresh Start Runtime Reset
 
 - Added an Admin UI Fresh Start / Reset Runtime Data card.

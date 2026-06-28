@@ -157,6 +157,15 @@ async function postJson(url, payload) {
   return data;
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function setStatus(message, kind = "muted") {
   statusElement.textContent = message;
   statusElement.className = `status status-${kind}`;
@@ -1020,6 +1029,246 @@ loadAdminData().catch((error) => setStatus(error.message, "error"));
 loadBackups().catch((error) => {
   setStatus(`Could not load backup status: ${error.message}`, "error");
 });
+
+
+
+// FLORA_RUNTIME_BACKUP_RESTORE_UI_START
+const runtimeBackupSelect = document.getElementById("runtime-backup-select");
+const reloadRuntimeBackupsButton = document.getElementById("reload-runtime-backups-button");
+const runtimeBackupPreview = document.getElementById("runtime-backup-preview");
+const runtimeRestoreButton = document.getElementById("runtime-restore-button");
+const runtimeRestoreStatus = document.getElementById("runtime-restore-status");
+const runtimeRestoreConfirmation = document.getElementById("runtime-restore-confirmation");
+const runtimeRestoreFields = {
+  raids: document.getElementById("runtime-restore-raids"),
+  bits: document.getElementById("runtime-restore-bits"),
+  events: document.getElementById("runtime-restore-events"),
+  avatarCache: document.getElementById("runtime-restore-avatar-cache"),
+  avatarImages: document.getElementById("runtime-restore-avatar-images"),
+  goals: document.getElementById("runtime-restore-goals"),
+};
+
+const runtimeBackupState = {
+  backups: [],
+};
+
+function formatRuntimeBackupDate(name) {
+  const match = String(name || "").match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
+
+  if (!match) {
+    return String(name || "");
+  }
+
+  const [, year, month, day, hour, minute, second] = match;
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second} UTC`;
+}
+
+function selectedRuntimeBackup() {
+  return runtimeBackupState.backups.find((backup) => backup.path === runtimeBackupSelect.value) || null;
+}
+
+function runtimeBackupItemMap(backup) {
+  const map = {};
+
+  for (const item of backup?.items || []) {
+    map[item.key] = item;
+  }
+
+  return map;
+}
+
+function runtimeRestoreSelection() {
+  return {
+    raids: Boolean(runtimeRestoreFields.raids?.checked),
+    bits: Boolean(runtimeRestoreFields.bits?.checked),
+    events: Boolean(runtimeRestoreFields.events?.checked),
+    avatarCache: Boolean(runtimeRestoreFields.avatarCache?.checked),
+    avatarImages: Boolean(runtimeRestoreFields.avatarImages?.checked),
+    goals: Boolean(runtimeRestoreFields.goals?.checked),
+  };
+}
+
+function runtimeRestoreSelectionLabels(options) {
+  const labels = [];
+
+  if (options.raids) labels.push("raid leaderboard");
+  if (options.bits) labels.push("bits leaderboard");
+  if (options.events) labels.push("recent events");
+  if (options.avatarCache) labels.push("avatar cache metadata");
+  if (options.avatarImages) labels.push("avatar image files");
+  if (options.goals) labels.push("goals");
+
+  return labels;
+}
+
+function syncRuntimeRestoreAvailability() {
+  const backup = selectedRuntimeBackup();
+  const available = runtimeBackupItemMap(backup);
+
+  for (const [key, field] of Object.entries(runtimeRestoreFields)) {
+    if (!field) {
+      continue;
+    }
+
+    const isAvailable = Boolean(available[key]);
+    field.disabled = !isAvailable;
+
+    if (!isAvailable) {
+      field.checked = false;
+    }
+  }
+}
+
+function renderRuntimeBackupPreview() {
+  const backup = selectedRuntimeBackup();
+
+  if (!backup) {
+    runtimeBackupPreview.innerHTML = `<p class="form-note">No runtime backup selected.</p>`;
+    syncRuntimeRestoreAvailability();
+    return;
+  }
+
+  const items = backup.items || [];
+  const itemList = items.length
+    ? items.map((item) => {
+        const extra = item.kind === "directory" ? ` (${item.fileCount ?? 0} files)` : "";
+        return `<li>${escapeHtml(item.label)}${extra}</li>`;
+      }).join("")
+    : "<li>No restorable items found.</li>";
+
+  runtimeBackupPreview.innerHTML = `
+    <div class="runtime-backup-preview-card">
+      <h3>${escapeHtml(formatRuntimeBackupDate(backup.name))}</h3>
+      <p>${escapeHtml(backup.path)}</p>
+      <ul>${itemList}</ul>
+    </div>
+  `;
+
+  syncRuntimeRestoreAvailability();
+}
+
+function renderRuntimeBackups(backups) {
+  runtimeBackupState.backups = Array.isArray(backups) ? backups : [];
+  runtimeBackupSelect.replaceChildren();
+
+  if (!runtimeBackupState.backups.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "No runtime reset backups available";
+    runtimeBackupSelect.append(option);
+    runtimeBackupPreview.innerHTML = `<p class="form-note">No runtime reset backups available.</p>`;
+    runtimeRestoreButton.disabled = true;
+    return;
+  }
+
+  for (const backup of runtimeBackupState.backups) {
+    const option = document.createElement("option");
+    option.value = backup.path;
+    option.textContent = `${formatRuntimeBackupDate(backup.name)} — ${backup.items.length} item(s)`;
+    runtimeBackupSelect.append(option);
+  }
+
+  runtimeRestoreButton.disabled = false;
+  renderRuntimeBackupPreview();
+}
+
+async function loadRuntimeBackups() {
+  const data = await getJson("/api/admin/runtime-backups");
+  renderRuntimeBackups(data.backups);
+}
+
+async function restoreRuntimeBackup() {
+  const backup = selectedRuntimeBackup();
+  const restore = runtimeRestoreSelection();
+  const labels = runtimeRestoreSelectionLabels(restore);
+  const confirmation = runtimeRestoreConfirmation.value.trim();
+
+  if (!backup) {
+    setStatus("No runtime backup is selected.", "error");
+    runtimeRestoreStatus.textContent = "No runtime backup is selected.";
+    return;
+  }
+
+  if (!labels.length) {
+    setStatus("Select at least one runtime backup item to restore.", "error");
+    runtimeRestoreStatus.textContent = "Nothing selected.";
+    return;
+  }
+
+  if (confirmation !== "RESTORE") {
+    setStatus('Type RESTORE to confirm the runtime backup restore.', "error");
+    runtimeRestoreStatus.textContent = 'Confirmation must be exactly "RESTORE".';
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Restore selected runtime data from this backup?\n\n${backup.path}\n\n${labels.join("\n")}\n\nFlora will create a safety backup first.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  runtimeRestoreButton.disabled = true;
+  runtimeRestoreStatus.textContent = "Creating safety backup and restoring selected data...";
+
+  try {
+    const data = await postJson("/api/admin/runtime-backups/restore", {
+      backupDir: backup.path,
+      confirmation,
+      restore,
+    });
+
+    runtimeRestoreStatus.textContent = `Restore complete. Safety backup: ${data.safetyBackupDir}`;
+    setStatus(`Runtime restore complete: ${data.restored.map((item) => item.label).join(", ")}.`, "success");
+
+    runtimeRestoreConfirmation.value = "";
+
+    for (const field of Object.values(runtimeRestoreFields)) {
+      if (field) {
+        field.checked = false;
+      }
+    }
+
+    const goals = await getJson("/api/admin/goals");
+    populateGoals(goals);
+
+    renderRuntimeBackups(data.backups);
+  } catch (error) {
+    runtimeRestoreStatus.textContent = `Runtime restore failed: ${error.message}`;
+    setStatus(error.message, "error");
+  } finally {
+    runtimeRestoreButton.disabled = false;
+  }
+}
+
+if (
+  runtimeBackupSelect &&
+  reloadRuntimeBackupsButton &&
+  runtimeBackupPreview &&
+  runtimeRestoreButton &&
+  runtimeRestoreStatus &&
+  runtimeRestoreConfirmation
+) {
+  runtimeBackupSelect.addEventListener("change", renderRuntimeBackupPreview);
+
+  reloadRuntimeBackupsButton.addEventListener("click", () => {
+    loadRuntimeBackups().catch((error) => {
+      runtimeRestoreStatus.textContent = `Could not load runtime backups: ${error.message}`;
+      setStatus(error.message, "error");
+    });
+  });
+
+  runtimeRestoreButton.addEventListener("click", () => {
+    restoreRuntimeBackup().catch((error) => setStatus(error.message, "error"));
+  });
+
+  loadRuntimeBackups().catch((error) => {
+    runtimeRestoreStatus.textContent = `Could not load runtime backups: ${error.message}`;
+  });
+}
+// FLORA_RUNTIME_BACKUP_RESTORE_UI_END
 
 
 // FLORA_RUNTIME_RESET_UI_START
