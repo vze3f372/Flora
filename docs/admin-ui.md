@@ -192,6 +192,43 @@ For stubborn browser caching, add a temporary query parameter:
 http://127.0.0.1:8000/panel.html?type=recent-events&v=test
 ```
 
+## Fresh Start / Reset Runtime Data
+
+The Admin UI includes a **Fresh Start / Reset Runtime Data** card for returning runtime stream data to a clean default state.
+
+This is useful before a new stream, event, demo, or test run.
+
+The card can reset:
+
+- Raid leaderboard data
+- Bits leaderboard data
+- Recent events
+- Avatar cache metadata
+- Avatar image files
+- Goal progress
+
+Flora creates a backup before resetting selected data.
+
+Runtime reset backups are stored under:
+
+    backups/runtime-reset/
+
+Reset behavior:
+
+    data/raids.json        -> {}
+    data/bits.json         -> {}
+    data/events.json       -> { "events": [] }
+    data/avatar-cache.json -> {}
+    assets/avatars/        -> selected image files removed
+    data/goals.json        -> goal targets preserved, current values set to 0
+
+The card requires typing:
+
+    RESET
+
+before the reset button will perform the action.
+
+
 ## Presets
 
 The local admin page includes a Presets section for saving and reusing admin-managed setups.

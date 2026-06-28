@@ -1021,6 +1021,108 @@ loadBackups().catch((error) => {
   setStatus(`Could not load backup status: ${error.message}`, "error");
 });
 
+
+// FLORA_RUNTIME_RESET_UI_START
+const runtimeResetButton = document.getElementById("runtime-reset-button");
+const runtimeResetStatus = document.getElementById("runtime-reset-status");
+const runtimeResetConfirmation = document.getElementById("runtime-reset-confirmation");
+const runtimeResetFields = {
+  raids: document.getElementById("runtime-reset-raids"),
+  bits: document.getElementById("runtime-reset-bits"),
+  events: document.getElementById("runtime-reset-events"),
+  avatarCache: document.getElementById("runtime-reset-avatar-cache"),
+  avatarImages: document.getElementById("runtime-reset-avatar-images"),
+  goalsProgress: document.getElementById("runtime-reset-goals-progress"),
+};
+
+function selectedRuntimeResetOptions() {
+  return {
+    raids: Boolean(runtimeResetFields.raids?.checked),
+    bits: Boolean(runtimeResetFields.bits?.checked),
+    events: Boolean(runtimeResetFields.events?.checked),
+    avatarCache: Boolean(runtimeResetFields.avatarCache?.checked),
+    avatarImages: Boolean(runtimeResetFields.avatarImages?.checked),
+    goalsProgress: Boolean(runtimeResetFields.goalsProgress?.checked),
+  };
+}
+
+function runtimeResetSelectionLabels(options) {
+  const labels = [];
+
+  if (options.raids) labels.push("raid leaderboard");
+  if (options.bits) labels.push("bits leaderboard");
+  if (options.events) labels.push("recent events");
+  if (options.avatarCache) labels.push("avatar cache metadata");
+  if (options.avatarImages) labels.push("avatar image files");
+  if (options.goalsProgress) labels.push("goal progress");
+
+  return labels;
+}
+
+async function runRuntimeReset() {
+  const reset = selectedRuntimeResetOptions();
+  const labels = runtimeResetSelectionLabels(reset);
+  const confirmation = runtimeResetConfirmation.value.trim();
+
+  if (!labels.length) {
+    setStatus("Select at least one runtime data item to reset.", "error");
+    runtimeResetStatus.textContent = "Nothing selected.";
+    return;
+  }
+
+  if (confirmation !== "RESET") {
+    setStatus('Type RESET to confirm the runtime data reset.', "error");
+    runtimeResetStatus.textContent = 'Confirmation must be exactly "RESET".';
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Reset selected runtime data?\n\n${labels.join("\n")}\n\nFlora will create a backup first.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  runtimeResetButton.disabled = true;
+  runtimeResetStatus.textContent = "Creating backup and resetting selected data...";
+
+  try {
+    const data = await postJson("/api/admin/runtime-reset", {
+      confirmation,
+      reset,
+    });
+
+    runtimeResetStatus.textContent = `Reset complete. Backup: ${data.backupDir}`;
+    setStatus(`Runtime reset complete: ${data.reset.join(", ")}.`, "success");
+
+    runtimeResetConfirmation.value = "";
+
+    for (const field of Object.values(runtimeResetFields)) {
+      if (field) {
+        field.checked = false;
+      }
+    }
+
+    const goals = await getJson("/api/admin/goals");
+    populateGoals(goals);
+    await loadBackups();
+  } catch (error) {
+    runtimeResetStatus.textContent = `Runtime reset failed: ${error.message}`;
+    setStatus(error.message, "error");
+  } finally {
+    runtimeResetButton.disabled = false;
+  }
+}
+
+if (runtimeResetButton && runtimeResetStatus && runtimeResetConfirmation) {
+  runtimeResetButton.addEventListener("click", () => {
+    runRuntimeReset().catch((error) => setStatus(error.message, "error"));
+  });
+}
+// FLORA_RUNTIME_RESET_UI_END
+
+
 // FLORA_PRESETS_UI_START
 const floraPresetName = document.getElementById("preset-name");
 const floraPresetNote = document.getElementById("preset-note");
