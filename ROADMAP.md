@@ -14,6 +14,8 @@
 
 ## v0.10.1 - Panel Style Editor
 
+- Status: Active implementation branch for admin-managed panel style tokens.
+
 - Add GUI controls for panel colors, spacing, borders, and typography.
 - Support safe theme customization without editing CSS directly.
 - Preview style changes before saving them.

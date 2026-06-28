@@ -153,5 +153,5 @@ config.json is valid
 
 ## Local Admin UI
 
-Run the Flora server and open `http://127.0.0.1:8000/admin.html` to edit follower/subscriber goal values and copy OBS or Streamer.bot URLs without manually editing JSON files.
+Run the Flora server and open `http://127.0.0.1:8000/admin.html` to edit follower/subscriber goal values, adjust panel colors, and copy OBS or Streamer.bot URLs without manually editing JSON files.
 

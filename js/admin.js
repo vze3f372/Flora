@@ -1,12 +1,40 @@
+const DEFAULT_STYLE = {
+  colors: {
+    background: "#0f172a",
+    panel: "#111827",
+    panelAlt: "#182235",
+    text: "#f8fafc",
+    muted: "#94a3b8",
+    accent: "#38bdf8",
+    border: "#293548",
+    success: "#22c55e",
+    error: "#fb7185",
+  },
+};
+
 const statusElement = document.getElementById("status");
 const reloadButton = document.getElementById("reload-button");
 const goalsForm = document.getElementById("goals-form");
+const styleForm = document.getElementById("style-form");
+const resetStyleButton = document.getElementById("reset-style-button");
 
 const fields = {
   followersCurrent: document.getElementById("followers-current"),
   followersTarget: document.getElementById("followers-target"),
   subscribersCurrent: document.getElementById("subscribers-current"),
   subscribersTarget: document.getElementById("subscribers-target"),
+};
+
+const styleFields = {
+  background: document.getElementById("style-background"),
+  panel: document.getElementById("style-panel"),
+  panelAlt: document.getElementById("style-panel-alt"),
+  text: document.getElementById("style-text"),
+  muted: document.getElementById("style-muted"),
+  accent: document.getElementById("style-accent"),
+  border: document.getElementById("style-border"),
+  success: document.getElementById("style-success"),
+  error: document.getElementById("style-error"),
 };
 
 const obsUrls = [
@@ -55,6 +83,38 @@ function populateGoals(goals) {
   fields.subscribersTarget.value = goals.subscribers.target ?? 0;
 }
 
+function normalizeColor(value, fallback) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+
+  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  return fallback;
+}
+
+function populateStyle(style) {
+  const colors = style?.colors || {};
+
+  for (const [key, input] of Object.entries(styleFields)) {
+    input.value = normalizeColor(colors[key], DEFAULT_STYLE.colors[key]);
+  }
+}
+
+function collectStyle() {
+  const colors = {};
+
+  for (const [key, input] of Object.entries(styleFields)) {
+    colors[key] = normalizeColor(input.value, DEFAULT_STYLE.colors[key]);
+  }
+
+  return { colors };
+}
+
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
   const payload = await response.json().catch(() => null);
@@ -76,8 +136,12 @@ async function loadAdminData() {
   ]);
 
   populateGoals(goals);
+  populateStyle(config.style || DEFAULT_STYLE);
 
-  const panelCount = Array.isArray(config.panels) ? config.panels.length : "unknown";
+  const panelCount = config.panels && typeof config.panels === "object"
+    ? Object.keys(config.panels).length
+    : "unknown";
+
   setStatus(`Connected. Loaded config.json and data/goals.json. Panel count: ${panelCount}.`, "success");
 }
 
@@ -107,6 +171,42 @@ async function saveGoals(event) {
     });
 
     setStatus("Goals saved.", "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+async function saveStyle(event) {
+  event.preventDefault();
+
+  try {
+    await fetchJson("/api/admin/style", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ style: collectStyle() }),
+    });
+
+    setStatus("Style saved. Refresh OBS browser sources to see the latest panel styling.", "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+async function resetStyleDefaults() {
+  populateStyle(DEFAULT_STYLE);
+
+  try {
+    await fetchJson("/api/admin/style", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ style: DEFAULT_STYLE }),
+    });
+
+    setStatus("Style defaults restored.", "success");
   } catch (error) {
     setStatus(error.message, "error");
   }
@@ -147,6 +247,8 @@ reloadButton.addEventListener("click", () => {
 });
 
 goalsForm.addEventListener("submit", saveGoals);
+styleForm.addEventListener("submit", saveStyle);
+resetStyleButton.addEventListener("click", resetStyleDefaults);
 
 renderUrlList("obs-url-list", obsUrls);
 renderUrlList("streamerbot-url-list", streamerbotUrls);
