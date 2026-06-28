@@ -224,6 +224,106 @@ def _flora_admin_backup_json(path: Path) -> Path | None:
 
     return backup_path
 
+
+
+def _flora_admin_backup_target_path(target: str) -> Path:
+    repo_root = _flora_admin_repo_root()
+
+    if target == "config":
+        return repo_root / "config.json"
+
+    if target == "goals":
+        return repo_root / "data" / "goals.json"
+
+    raise ValueError(f"Unknown backup target: {target}")
+
+
+def _flora_admin_backup_target_prefix(target: str) -> str:
+    if target == "config":
+        return "config.json."
+
+    if target == "goals":
+        return "data__goals.json."
+
+    raise ValueError(f"Unknown backup target: {target}")
+
+
+def _flora_admin_backup_target_label(target: str) -> str:
+    if target == "config":
+        return "config.json"
+
+    if target == "goals":
+        return "data/goals.json"
+
+    raise ValueError(f"Unknown backup target: {target}")
+
+
+def _flora_admin_backup_dir() -> Path:
+    return _flora_admin_repo_root() / "backups" / "admin"
+
+
+def _flora_admin_latest_backup(target: str) -> Path | None:
+    backup_dir = _flora_admin_backup_dir()
+    prefix = _flora_admin_backup_target_prefix(target)
+
+    if not backup_dir.exists():
+        return None
+
+    backups = sorted(backup_dir.glob(f"{prefix}*.bak"))
+
+    if not backups:
+        return None
+
+    return backups[-1]
+
+
+def _flora_admin_backup_info(target: str) -> dict:
+    latest = _flora_admin_latest_backup(target)
+    label = _flora_admin_backup_target_label(target)
+
+    if latest is None:
+        return {
+            "target": target,
+            "label": label,
+            "available": False,
+            "path": None,
+            "modified": None,
+            "sizeBytes": None,
+        }
+
+    stat = latest.stat()
+
+    return {
+        "target": target,
+        "label": label,
+        "available": True,
+        "path": latest.relative_to(_flora_admin_repo_root()).as_posix(),
+        "modified": stat.st_mtime,
+        "sizeBytes": stat.st_size,
+    }
+
+
+def _flora_admin_restore_latest_backup(target: str) -> dict:
+    import shutil
+
+    latest = _flora_admin_latest_backup(target)
+
+    if latest is None:
+        raise FileNotFoundError(f"No backup exists for {target}")
+
+    destination = _flora_admin_backup_target_path(target)
+
+    if destination.exists():
+        _flora_admin_backup_json(destination)
+
+    shutil.copy2(latest, destination)
+
+    return {
+        "target": target,
+        "label": _flora_admin_backup_target_label(target),
+        "restoredFrom": latest.relative_to(_flora_admin_repo_root()).as_posix(),
+    }
+
 def _flora_admin_write_json(path: Path, payload: dict) -> None:
     _flora_admin_backup_json(path)
 
@@ -560,9 +660,56 @@ def _flora_admin_handle_event_theme_post(handler) -> bool:
     return True
 
 
+
+
+def _flora_admin_handle_backups_get(handler) -> bool:
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "backups": {
+            "config": _flora_admin_backup_info("config"),
+            "goals": _flora_admin_backup_info("goals"),
+        },
+    })
+    return True
+
+
+def _flora_admin_handle_backup_restore_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        target = str(payload.get("target", "")).strip()
+
+        if target not in {"config", "goals"}:
+            _flora_admin_send_error(handler, 400, "target must be config or goals")
+            return True
+
+        result = _flora_admin_restore_latest_backup(target)
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+        return True
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "restore": result,
+        "backups": {
+            "config": _flora_admin_backup_info("config"),
+            "goals": _flora_admin_backup_info("goals"),
+        },
+    })
+    return True
+
+
 def _flora_admin_handle_get(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
     repo_root = _flora_admin_repo_root()
+
+    if request_path == "/api/admin/backups":
+        return _flora_admin_handle_backups_get(handler)
 
     if request_path == "/api/admin/config":
         try:
@@ -770,6 +917,9 @@ def _flora_admin_handle_style_post(handler) -> bool:
 
 def _flora_admin_handle_post(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
+
+    if request_path == "/api/admin/backups/restore":
+        return _flora_admin_handle_backup_restore_post(handler)
 
     if request_path == "/api/admin/goals":
         return _flora_admin_handle_goals_post(handler)

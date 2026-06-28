@@ -465,3 +465,45 @@ select:focus {
     grid-template-columns: 1fr;
   }
 }
+
+.backup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.backup-card {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--panel-background-alt);
+  padding: 16px;
+}
+
+.backup-card h3 {
+  margin: 0 0 8px;
+}
+
+.backup-status {
+  color: var(--muted-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  min-height: 2.8em;
+  overflow-wrap: anywhere;
+}
+
+.danger-button {
+  border-color: rgba(251, 113, 133, 0.6);
+  background: rgba(251, 113, 133, 0.12);
+  color: #fecdd3;
+}
+
+.danger-button:hover:not(:disabled) {
+  background: rgba(251, 113, 133, 0.2);
+}
+
+@media (max-width: 760px) {
+  .backup-grid {
+    grid-template-columns: 1fr;
+  }
+}

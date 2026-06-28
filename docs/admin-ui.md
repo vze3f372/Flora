@@ -192,6 +192,34 @@ For stubborn browser caching, add a temporary query parameter:
 http://127.0.0.1:8000/panel.html?type=recent-events&v=test
 ```
 
+## Restore Backups
+
+The local admin page includes a Restore Backups section.
+
+It shows the latest available local admin backups for:
+
+- `config.json`
+- `data/goals.json`
+
+The restore buttons restore the latest backup for the selected file.
+
+Before restoring an older backup, Flora creates another backup of the current file. This means restore actions are reversible as long as the backup files remain available.
+
+Backup files are stored under:
+
+```text
+backups/admin/
+```
+
+Example backup files:
+
+```text
+backups/admin/config.json.20260628T143012123456Z.bak
+backups/admin/data__goals.json.20260628T143012123456Z.bak
+```
+
+Restore buttons use confirmation prompts before changing files.
+
 ## Admin write backups
 
 Before the local admin API writes to `config.json` or `data/goals.json`, Flora creates a timestamped backup under:
