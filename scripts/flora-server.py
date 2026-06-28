@@ -1100,6 +1100,163 @@ def _flora_admin_handle_preset_import_post(handler) -> bool:
 # FLORA_PRESET_API_END
 
 
+
+# FLORA_PRESET_MANAGEMENT_API_START
+
+def _flora_admin_preset_preview(payload: dict) -> dict:
+    data = payload.get("data", {})
+
+    if not isinstance(data, dict):
+        data = {}
+
+    style = data.get("style", {})
+    rotation = data.get("rotation", {})
+    event_types = data.get("eventTypes", {})
+    goals = data.get("goals", {})
+
+    if not isinstance(style, dict):
+        style = {}
+
+    if not isinstance(rotation, dict):
+        rotation = {}
+
+    if not isinstance(event_types, dict):
+        event_types = {}
+
+    if not isinstance(goals, dict):
+        goals = {}
+
+    colors = style.get("colors", {})
+
+    if not isinstance(colors, dict):
+        colors = {}
+
+    rotation_panels = rotation.get("panels", [])
+
+    if not isinstance(rotation_panels, list):
+        rotation_panels = []
+
+    goal_summaries = []
+
+    for key, value in goals.items():
+        if not isinstance(value, dict):
+            continue
+
+        goal_summaries.append({
+            "key": key,
+            "label": value.get("label", key),
+            "current": value.get("current"),
+            "target": value.get("target"),
+        })
+
+    return {
+        "style": {
+            "colorCount": len(colors),
+            "colors": colors,
+        },
+        "rotation": {
+            "enabled": bool(rotation.get("enabled", False)),
+            "startPanel": rotation.get("startPanel", ""),
+            "panelCount": len(rotation_panels),
+            "transitionMilliseconds": rotation.get("transitionMilliseconds"),
+        },
+        "eventTheme": {
+            "eventTypeCount": len(event_types),
+            "eventTypes": sorted(event_types.keys()),
+        },
+        "goals": {
+            "goalCount": len(goal_summaries),
+            "items": goal_summaries,
+        },
+    }
+
+
+def _flora_admin_read_preset(filename: str) -> dict:
+    preset_path = _flora_admin_preset_path(filename)
+
+    if not preset_path.exists():
+        raise FileNotFoundError(f"Preset does not exist: {filename}")
+
+    payload = json.loads(preset_path.read_text(encoding="utf-8"))
+
+    if payload.get("kind") != "flora-admin-preset":
+        raise ValueError("Preset kind is not flora-admin-preset.")
+
+    return {
+        "summary": _flora_admin_preset_summary(preset_path),
+        "preview": _flora_admin_preset_preview(payload),
+    }
+
+
+def _flora_admin_delete_preset(filename: str) -> dict:
+    preset_path = _flora_admin_preset_path(filename)
+
+    if not preset_path.exists():
+        raise FileNotFoundError(f"Preset does not exist: {filename}")
+
+    summary = _flora_admin_preset_summary(preset_path)
+    preset_path.unlink()
+
+    return summary
+
+
+def _flora_admin_handle_preset_detail_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        filename = str(payload.get("filename", "")).strip()
+
+        if not filename:
+            _flora_admin_send_error(handler, 400, "filename is required")
+            return True
+
+        preset = _flora_admin_read_preset(filename)
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+        return True
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "preset": preset,
+    })
+    return True
+
+
+def _flora_admin_handle_preset_delete_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        filename = str(payload.get("filename", "")).strip()
+
+        if not filename:
+            _flora_admin_send_error(handler, 400, "filename is required")
+            return True
+
+        deleted = _flora_admin_delete_preset(filename)
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+        return True
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "deleted": deleted,
+        "presets": _flora_admin_list_presets(),
+    })
+    return True
+
+# FLORA_PRESET_MANAGEMENT_API_END
+
+
 def _flora_admin_handle_get(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
     repo_root = _flora_admin_repo_root()
@@ -1401,6 +1558,12 @@ def _flora_admin_handle_post(handler) -> bool:
 
     if request_path == "/api/admin/presets/import":
         return _flora_admin_handle_preset_import_post(handler)
+
+    if request_path == "/api/admin/presets/detail":
+        return _flora_admin_handle_preset_detail_post(handler)
+
+    if request_path == "/api/admin/presets/delete":
+        return _flora_admin_handle_preset_delete_post(handler)
 
     if request_path == "/api/admin/backups/tag":
         return _flora_admin_handle_backup_tag_post(handler)

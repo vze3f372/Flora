@@ -212,6 +212,11 @@ presets/
 Importing a preset backs up the current `config.json` and `data/goals.json` before applying the selected preset.
 
 Presets are local files and are ignored by git.
+
+The Presets section can preview a selected preset before import. The preview summarizes style colors, rotation settings, recent activity event types, and included goals.
+
+Local presets can also be deleted from the Presets section. Deleting a preset only removes the local preset file and does not change the active Flora setup.
+
 ## Restore Backups
 
 The local admin page includes a Restore Backups section.
