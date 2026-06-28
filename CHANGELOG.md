@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.6 - Admin Restore Backups
+
+- Added local admin controls for restoring the latest `config.json` backup.
+- Added local admin controls for restoring the latest `data/goals.json` backup.
+- Added backup status display for the latest available admin backups.
+- Added confirmation prompts before restore actions.
+- Backed up the current file again before restoring from an older backup.
+
 ## v0.10.5 - Admin Preview Buttons
 
 - Added Open Preview buttons for OBS browser source URLs in the local admin UI.

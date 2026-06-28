@@ -153,6 +153,37 @@
     </section>
 
     <section class="card">
+      <h2>Restore Backups</h2>
+      <p class="form-note">Restore the latest local admin backup for configuration or goals.</p>
+
+      <div class="button-row">
+        <button id="reload-backups-button" type="button" class="secondary-button">Reload Backups</button>
+      </div>
+
+      <div class="backup-grid">
+        <article class="backup-card">
+          <h3>Config Backup</h3>
+          <p id="config-backup-status" class="backup-status">Loading...</p>
+          <button id="restore-config-backup-button" type="button" class="danger-button" disabled>
+            Restore Latest Config Backup
+          </button>
+        </article>
+
+        <article class="backup-card">
+          <h3>Goals Backup</h3>
+          <p id="goals-backup-status" class="backup-status">Loading...</p>
+          <button id="restore-goals-backup-button" type="button" class="danger-button" disabled>
+            Restore Latest Goals Backup
+          </button>
+        </article>
+      </div>
+
+      <p class="form-note">
+        Flora creates another backup of the current file before restoring the selected backup.
+      </p>
+    </section>
+
+    <section class="card">
       <h2>OBS Browser Source URLs</h2>
       <div id="obs-url-list" class="url-list"></div>
     </section>

@@ -59,6 +59,12 @@ const styleForm = document.getElementById("style-form");
 const resetStyleButton = document.getElementById("reset-style-button");
 const rotationForm = document.getElementById("rotation-form");
 const resetRotationButton = document.getElementById("reset-rotation-button");
+const reloadBackupsButton = document.getElementById("reload-backups-button");
+const restoreConfigBackupButton = document.getElementById("restore-config-backup-button");
+const restoreGoalsBackupButton = document.getElementById("restore-goals-backup-button");
+const configBackupStatus = document.getElementById("config-backup-status");
+const goalsBackupStatus = document.getElementById("goals-backup-status");
+
 const copyRotationUrlButton = document.getElementById("copy-rotation-url-button");
 const openRotationPreviewButton = document.getElementById("open-rotation-preview-button");
 const rotationPanelList = document.getElementById("rotation-panel-list");
@@ -110,6 +116,34 @@ const streamerbotUrls = [
 
 function absoluteUrl(path) {
   return `${window.location.origin}${path}`;
+}
+
+async function getJson(url) {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed with ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function postJson(url, payload) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || data.ok === false) {
+    throw new Error(data.error || `POST ${url} failed with ${response.status}`);
+  }
+
+  return data;
 }
 
 function setStatus(message, kind = "muted") {
@@ -683,6 +717,70 @@ async function resetStyleDefaults() {
   }
 }
 
+
+function formatBackupTime(value) {
+  if (!value) {
+    return "unknown time";
+  }
+
+  return new Date(value * 1000).toLocaleString();
+}
+
+function renderBackupStatus(target, info) {
+  const statusElement = target === "config" ? configBackupStatus : goalsBackupStatus;
+  const restoreButton = target === "config" ? restoreConfigBackupButton : restoreGoalsBackupButton;
+
+  if (!info || !info.available) {
+    statusElement.textContent = "No backup available yet.";
+    restoreButton.disabled = true;
+    return;
+  }
+
+  statusElement.textContent = `Latest: ${info.path} (${formatBackupTime(info.modified)})`;
+  restoreButton.disabled = false;
+}
+
+async function loadBackups() {
+  try {
+    const data = await getJson("/api/admin/backups");
+
+    if (!data.backups) {
+      throw new Error("Backup response did not include backups.");
+    }
+
+    renderBackupStatus("config", data.backups.config);
+    renderBackupStatus("goals", data.backups.goals);
+  } catch (error) {
+    configBackupStatus.textContent = `Could not load backup status: ${error.message}`;
+    goalsBackupStatus.textContent = `Could not load backup status: ${error.message}`;
+    restoreConfigBackupButton.disabled = true;
+    restoreGoalsBackupButton.disabled = true;
+    setStatus(`Could not load backup status: ${error.message}`, "error");
+  }
+}
+
+async function restoreBackup(target) {
+  const label = target === "config" ? "config.json" : "data/goals.json";
+  const confirmed = window.confirm(
+    `Restore the latest backup for ${label}? Flora will back up the current file before restoring.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const data = await postJson("/api/admin/backups/restore", { target });
+
+  await loadConfig();
+  await loadGoals();
+  await loadRotation();
+  await loadEventTheme();
+  await loadBackups();
+
+  setStatus(`Restored ${data.restore.label} from ${data.restore.restoredFrom}.`, "success");
+}
+
+
 function createCopyButton(input, label) {
   const button = document.createElement("button");
   button.type = "button";
@@ -744,6 +842,9 @@ styleForm.addEventListener("submit", saveStyle);
 resetStyleButton.addEventListener("click", resetStyleDefaults);
 rotationForm.addEventListener("submit", saveRotation);
 resetRotationButton.addEventListener("click", resetRotationDefaults);
+reloadBackupsButton.addEventListener("click", loadBackups);
+restoreConfigBackupButton.addEventListener("click", () => restoreBackup("config"));
+restoreGoalsBackupButton.addEventListener("click", () => restoreBackup("goals"));
 copyRotationUrlButton.addEventListener("click", copyRotationUrl);
 openRotationPreviewButton.addEventListener("click", openRotationPreview);
 rotationFields.startPanel.addEventListener("change", updateRotationUrl);
@@ -754,3 +855,8 @@ renderUrlList("obs-url-list", obsUrls, { preview: true });
 renderUrlList("streamerbot-url-list", streamerbotUrls);
 
 loadAdminData().catch((error) => setStatus(error.message, "error"));
+
+
+loadBackups().catch((error) => {
+  setStatus(`Could not load backup status: ${error.message}`, "error");
+});

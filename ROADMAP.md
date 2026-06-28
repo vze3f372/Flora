@@ -1,5 +1,14 @@
 # Flora Roadmap
 
+## v0.10.6 - Admin Restore Backups
+
+- Status: Active implementation branch for local admin backup restore controls.
+- Show latest available `config.json` backup status.
+- Show latest available `data/goals.json` backup status.
+- Restore latest config backup from the admin page.
+- Restore latest goals backup from the admin page.
+- Back up the current file again before restoring an older backup.
+
 ## v0.10.5 - Admin Preview Buttons
 
 - Status: Active implementation branch for local admin preview controls.
