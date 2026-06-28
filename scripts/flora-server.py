@@ -203,7 +203,30 @@ def _flora_admin_read_json(path: Path) -> dict:
         return json.load(handle)
 
 
+
+
+def _flora_admin_backup_json(path: Path) -> Path | None:
+    if not path.exists():
+        return None
+
+    from datetime import datetime, timezone
+    import shutil
+
+    repo_root = _flora_admin_repo_root()
+    backup_dir = repo_root / "backups" / "admin"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    relative_name = path.relative_to(repo_root).as_posix().replace("/", "__")
+    backup_path = backup_dir / f"{relative_name}.{timestamp}.bak"
+
+    shutil.copy2(path, backup_path)
+
+    return backup_path
+
 def _flora_admin_write_json(path: Path, payload: dict) -> None:
+    _flora_admin_backup_json(path)
+
     tmp_path = path.with_suffix(path.suffix + ".tmp")
     tmp_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     tmp_path.replace(path)

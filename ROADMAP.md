@@ -1,5 +1,13 @@
 # Flora Roadmap
 
+## v0.10.4 - Admin Write Backups
+
+- Status: Active implementation branch for local admin write safety.
+- Create timestamped backups before admin writes to `config.json`.
+- Create timestamped backups before admin writes to `data/goals.json`.
+- Store backups under `backups/admin/`.
+- Ignore backup files in git.
+
 ## v0.10.3 - Event Theme Editor
 
 - Status: Active implementation branch for admin-managed recent activity event themes.
