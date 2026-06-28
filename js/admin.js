@@ -64,6 +64,17 @@ const restoreConfigBackupButton = document.getElementById("restore-config-backup
 const restoreGoalsBackupButton = document.getElementById("restore-goals-backup-button");
 const configBackupStatus = document.getElementById("config-backup-status");
 const goalsBackupStatus = document.getElementById("goals-backup-status");
+const configBackupSelect = document.getElementById("config-backup-select");
+const goalsBackupSelect = document.getElementById("goals-backup-select");
+const configBackupTag = document.getElementById("config-backup-tag");
+const goalsBackupTag = document.getElementById("goals-backup-tag");
+const configBackupNote = document.getElementById("config-backup-note");
+const goalsBackupNote = document.getElementById("goals-backup-note");
+const tagConfigBackupButton = document.getElementById("tag-config-backup-button");
+const tagGoalsBackupButton = document.getElementById("tag-goals-backup-button");
+const workingBackupTag = document.getElementById("working-backup-tag");
+const workingBackupNote = document.getElementById("working-backup-note");
+const markWorkingBackupButton = document.getElementById("mark-working-backup-button");
 
 const copyRotationUrlButton = document.getElementById("copy-rotation-url-button");
 const openRotationPreviewButton = document.getElementById("open-rotation-preview-button");
@@ -718,6 +729,11 @@ async function resetStyleDefaults() {
 }
 
 
+const backupState = {
+  config: null,
+  goals: null,
+};
+
 function formatBackupTime(value) {
   if (!value) {
     return "unknown time";
@@ -726,18 +742,115 @@ function formatBackupTime(value) {
   return new Date(value * 1000).toLocaleString();
 }
 
-function renderBackupStatus(target, info) {
-  const statusElement = target === "config" ? configBackupStatus : goalsBackupStatus;
-  const restoreButton = target === "config" ? restoreConfigBackupButton : restoreGoalsBackupButton;
+function backupElements(target) {
+  if (target === "config") {
+    return {
+      status: configBackupStatus,
+      select: configBackupSelect,
+      restoreButton: restoreConfigBackupButton,
+      tagButton: tagConfigBackupButton,
+      tagInput: configBackupTag,
+      noteInput: configBackupNote,
+    };
+  }
 
-  if (!info || !info.available) {
-    statusElement.textContent = "No backup available yet.";
-    restoreButton.disabled = true;
+  return {
+    status: goalsBackupStatus,
+    select: goalsBackupSelect,
+    restoreButton: restoreGoalsBackupButton,
+    tagButton: tagGoalsBackupButton,
+    tagInput: goalsBackupTag,
+    noteInput: goalsBackupNote,
+  };
+}
+
+function backupItemLabel(item) {
+  const time = formatBackupTime(item.modified);
+  const tag = item.tag ? ` [${item.tag}]` : "";
+  const note = item.note ? ` — ${item.note}` : "";
+
+  return `${time}${tag}${note}`;
+}
+
+function selectedBackupItem(target) {
+  const elements = backupElements(target);
+  const info = backupState[target];
+
+  if (!info || !Array.isArray(info.items)) {
+    return null;
+  }
+
+  return info.items.find((item) => item.path === elements.select.value) || null;
+}
+
+function syncBackupTagFields(target) {
+  const elements = backupElements(target);
+  const item = selectedBackupItem(target);
+
+  if (!item) {
+    elements.tagInput.value = "";
+    elements.noteInput.value = "";
     return;
   }
 
-  statusElement.textContent = `Latest: ${info.path} (${formatBackupTime(info.modified)})`;
-  restoreButton.disabled = false;
+  elements.tagInput.value = item.tag || "";
+  elements.noteInput.value = item.note || "";
+}
+
+function backupItemsFromInfo(info) {
+  if (Array.isArray(info?.items)) {
+    return info.items;
+  }
+
+  if (info?.available && info.path) {
+    return [
+      {
+        target: info.target,
+        label: info.label,
+        path: info.path,
+        modified: info.modified,
+        sizeBytes: info.sizeBytes,
+        tag: info.tag || "",
+        note: info.note || "",
+      },
+    ];
+  }
+
+  return [];
+}
+
+function renderBackupStatus(target, info) {
+  const elements = backupElements(target);
+  const items = backupItemsFromInfo(info);
+
+  backupState[target] = info || null;
+  elements.select.replaceChildren();
+
+  if (!items.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "No backups available";
+    elements.select.append(option);
+
+    elements.status.textContent = "No backup available yet.";
+    elements.restoreButton.disabled = true;
+    elements.tagButton.disabled = true;
+    syncBackupTagFields(target);
+    return;
+  }
+
+  for (const item of items) {
+    const option = document.createElement("option");
+    option.value = item.path;
+    option.textContent = backupItemLabel(item);
+    elements.select.append(option);
+  }
+
+  const latest = items[0];
+  elements.status.textContent = `Latest: ${latest.path}`;
+  elements.restoreButton.disabled = false;
+  elements.tagButton.disabled = false;
+  syncBackupTagFields(target);
 }
 
 async function loadBackups() {
@@ -755,21 +868,34 @@ async function loadBackups() {
     goalsBackupStatus.textContent = `Could not load backup status: ${error.message}`;
     restoreConfigBackupButton.disabled = true;
     restoreGoalsBackupButton.disabled = true;
+    tagConfigBackupButton.disabled = true;
+    tagGoalsBackupButton.disabled = true;
     setStatus(`Could not load backup status: ${error.message}`, "error");
   }
 }
 
 async function restoreBackup(target) {
+  const elements = backupElements(target);
+  const item = selectedBackupItem(target);
   const label = target === "config" ? "config.json" : "data/goals.json";
+
+  if (!item) {
+    setStatus(`No ${label} backup is selected.`, "error");
+    return;
+  }
+
   const confirmed = window.confirm(
-    `Restore the latest backup for ${label}? Flora will back up the current file before restoring.`
+    `Restore this backup for ${label}?\n\n${item.path}\n\nFlora will back up the current file before restoring.`
   );
 
   if (!confirmed) {
     return;
   }
 
-  const data = await postJson("/api/admin/backups/restore", { target });
+  const data = await postJson("/api/admin/backups/restore", {
+    target,
+    path: elements.select.value,
+  });
 
   await loadConfig();
   await loadGoals();
@@ -780,6 +906,35 @@ async function restoreBackup(target) {
   setStatus(`Restored ${data.restore.label} from ${data.restore.restoredFrom}.`, "success");
 }
 
+async function tagBackup(target) {
+  const elements = backupElements(target);
+  const item = selectedBackupItem(target);
+
+  if (!item) {
+    setStatus("No backup is selected.", "error");
+    return;
+  }
+
+  await postJson("/api/admin/backups/tag", {
+    target,
+    path: elements.select.value,
+    tag: elements.tagInput.value,
+    note: elements.noteInput.value,
+  });
+
+  await loadBackups();
+  setStatus("Saved backup tag.", "success");
+}
+
+async function markWorkingBackup() {
+  await postJson("/api/admin/backups/mark-working", {
+    tag: workingBackupTag.value || "known-good",
+    note: workingBackupNote.value,
+  });
+
+  await loadBackups();
+  setStatus("Marked current setup as working.", "success");
+}
 
 function createCopyButton(input, label) {
   const button = document.createElement("button");
@@ -843,6 +998,11 @@ resetStyleButton.addEventListener("click", resetStyleDefaults);
 rotationForm.addEventListener("submit", saveRotation);
 resetRotationButton.addEventListener("click", resetRotationDefaults);
 reloadBackupsButton.addEventListener("click", loadBackups);
+configBackupSelect.addEventListener("change", () => syncBackupTagFields("config"));
+goalsBackupSelect.addEventListener("change", () => syncBackupTagFields("goals"));
+tagConfigBackupButton.addEventListener("click", () => tagBackup("config"));
+tagGoalsBackupButton.addEventListener("click", () => tagBackup("goals"));
+markWorkingBackupButton.addEventListener("click", markWorkingBackup);
 restoreConfigBackupButton.addEventListener("click", () => restoreBackup("config"));
 restoreGoalsBackupButton.addEventListener("click", () => restoreBackup("goals"));
 copyRotationUrlButton.addEventListener("click", copyRotationUrl);

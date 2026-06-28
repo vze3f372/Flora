@@ -154,32 +154,85 @@
 
     <section class="card">
       <h2>Restore Backups</h2>
-      <p class="form-note">Restore the latest local admin backup for configuration or goals.</p>
+      <p class="form-note">Browse, tag, and restore local admin backups.</p>
 
-      <div class="button-row">
+      <div class="backup-working-row">
+        <label>
+          Working tag
+          <input id="working-backup-tag" type="text" value="known-good">
+        </label>
+        <label>
+          Note
+          <input id="working-backup-note" type="text" placeholder="Optional note for this working setup">
+        </label>
+        <button id="mark-working-backup-button" type="button" class="secondary-button">
+          Mark Current Setup as Working
+        </button>
         <button id="reload-backups-button" type="button" class="secondary-button">Reload Backups</button>
       </div>
 
       <div class="backup-grid">
         <article class="backup-card">
-          <h3>Config Backup</h3>
+          <h3>Config Backups</h3>
           <p id="config-backup-status" class="backup-status">Loading...</p>
-          <button id="restore-config-backup-button" type="button" class="danger-button" disabled>
-            Restore Latest Config Backup
-          </button>
+
+          <label>
+            Available backups
+            <select id="config-backup-select" class="backup-select"></select>
+          </label>
+
+          <label>
+            Tag
+            <input id="config-backup-tag" type="text" placeholder="known-good, before-test, etc.">
+          </label>
+
+          <label>
+            Note
+            <input id="config-backup-note" type="text" placeholder="Optional note">
+          </label>
+
+          <div class="button-row">
+            <button id="tag-config-backup-button" type="button" class="secondary-button" disabled>
+              Save Tag
+            </button>
+            <button id="restore-config-backup-button" type="button" class="danger-button" disabled>
+              Restore Selected Config Backup
+            </button>
+          </div>
         </article>
 
         <article class="backup-card">
-          <h3>Goals Backup</h3>
+          <h3>Goals Backups</h3>
           <p id="goals-backup-status" class="backup-status">Loading...</p>
-          <button id="restore-goals-backup-button" type="button" class="danger-button" disabled>
-            Restore Latest Goals Backup
-          </button>
+
+          <label>
+            Available backups
+            <select id="goals-backup-select" class="backup-select"></select>
+          </label>
+
+          <label>
+            Tag
+            <input id="goals-backup-tag" type="text" placeholder="known-good, before-test, etc.">
+          </label>
+
+          <label>
+            Note
+            <input id="goals-backup-note" type="text" placeholder="Optional note">
+          </label>
+
+          <div class="button-row">
+            <button id="tag-goals-backup-button" type="button" class="secondary-button" disabled>
+              Save Tag
+            </button>
+            <button id="restore-goals-backup-button" type="button" class="danger-button" disabled>
+              Restore Selected Goals Backup
+            </button>
+          </div>
         </article>
       </div>
 
       <p class="form-note">
-        Flora creates another backup of the current file before restoring the selected backup.
+        Restore actions create another backup of the current file before restoring the selected backup.
       </p>
     </section>
 

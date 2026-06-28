@@ -1,5 +1,13 @@
 # Flora Roadmap
 
+## v0.10.7 - Backup Browser and Tags
+
+- Status: Active implementation branch for selectable backups and metadata.
+- Show available config and goals backups in the admin page.
+- Restore a selected backup.
+- Add tags and notes for backup identification.
+- Add Mark Current Setup as Working.
+
 ## v0.10.6 - Admin Restore Backups
 
 - Status: Active implementation branch for local admin backup restore controls.
