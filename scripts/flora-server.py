@@ -1680,9 +1680,310 @@ def _flora_admin_handle_runtime_reset_post(handler) -> bool:
 
 # FLORA_RUNTIME_RESET_END
 
+
+# FLORA_RUNTIME_BACKUP_RESTORE_START
+
+_RUNTIME_BACKUP_RESTORE_ITEMS = {
+    "raids": {
+        "label": "Raid leaderboard",
+        "backup": "data__raids.json",
+        "destination": "data/raids.json",
+        "kind": "file",
+    },
+    "bits": {
+        "label": "Bits leaderboard",
+        "backup": "data__bits.json",
+        "destination": "data/bits.json",
+        "kind": "file",
+    },
+    "events": {
+        "label": "Recent events",
+        "backup": "data__events.json",
+        "destination": "data/events.json",
+        "kind": "file",
+    },
+    "avatarCache": {
+        "label": "Avatar cache metadata",
+        "backup": "data__avatar-cache.json",
+        "destination": "data/avatar-cache.json",
+        "kind": "file",
+    },
+    "goals": {
+        "label": "Goals",
+        "backup": "data__goals.json",
+        "destination": "data/goals.json",
+        "kind": "file",
+    },
+    "avatarImages": {
+        "label": "Avatar image files",
+        "backup": "assets__avatars",
+        "destination": "assets/avatars",
+        "kind": "directory",
+    },
+}
+
+
+def _flora_admin_runtime_backup_root() -> Path:
+    return _flora_admin_repo_root() / "backups" / "runtime-reset"
+
+
+def _flora_admin_runtime_restore_root() -> Path:
+    return _flora_admin_repo_root() / "backups" / "runtime-restore"
+
+
+def _flora_admin_runtime_backup_timestamp_from_dir(path: Path) -> str:
+    name = path.name
+
+    if len(name) >= 15 and "T" in name:
+        return name
+
+    return name
+
+
+def _flora_admin_runtime_backup_selected_path(selected_path: str) -> Path:
+    repo_root = _flora_admin_repo_root()
+    backup_root = _flora_admin_runtime_backup_root().resolve()
+    candidate = (repo_root / str(selected_path)).resolve()
+
+    if candidate.parent != backup_root:
+        raise ValueError("Runtime backup path must be inside backups/runtime-reset/.")
+
+    if not candidate.exists() or not candidate.is_dir():
+        raise FileNotFoundError(f"Runtime backup does not exist: {selected_path}")
+
+    return candidate
+
+
+def _flora_admin_runtime_backup_item_info(backup_dir: Path, key: str, spec: dict) -> dict | None:
+    backup_path = backup_dir / spec["backup"]
+
+    if spec["kind"] == "file":
+        if not backup_path.exists() or not backup_path.is_file():
+            return None
+
+        return {
+            "key": key,
+            "label": spec["label"],
+            "kind": "file",
+            "path": backup_path.relative_to(_flora_admin_repo_root()).as_posix(),
+            "size": backup_path.stat().st_size,
+        }
+
+    if spec["kind"] == "directory":
+        if not backup_path.exists() or not backup_path.is_dir():
+            return None
+
+        files = [item for item in backup_path.iterdir() if item.is_file()]
+
+        return {
+            "key": key,
+            "label": spec["label"],
+            "kind": "directory",
+            "path": backup_path.relative_to(_flora_admin_repo_root()).as_posix(),
+            "fileCount": len(files),
+            "size": sum(item.stat().st_size for item in files),
+        }
+
+    return None
+
+
+def _flora_admin_runtime_backup_summary(backup_dir: Path) -> dict:
+    stat = backup_dir.stat()
+    items = []
+
+    for key, spec in _RUNTIME_BACKUP_RESTORE_ITEMS.items():
+        item = _flora_admin_runtime_backup_item_info(backup_dir, key, spec)
+
+        if item:
+            items.append(item)
+
+    return {
+        "name": backup_dir.name,
+        "path": backup_dir.relative_to(_flora_admin_repo_root()).as_posix(),
+        "timestamp": _flora_admin_runtime_backup_timestamp_from_dir(backup_dir),
+        "modified": stat.st_mtime,
+        "items": items,
+    }
+
+
+def _flora_admin_runtime_backup_list() -> list[dict]:
+    backup_root = _flora_admin_runtime_backup_root()
+
+    if not backup_root.exists():
+        return []
+
+    backup_dirs = [
+        path
+        for path in backup_root.iterdir()
+        if path.is_dir()
+    ]
+
+    backup_dirs.sort(key=lambda path: path.name, reverse=True)
+
+    return [_flora_admin_runtime_backup_summary(path) for path in backup_dirs]
+
+
+def _flora_admin_handle_runtime_backups_get(handler) -> bool:
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "backups": _flora_admin_runtime_backup_list(),
+    })
+    return True
+
+
+def _flora_admin_runtime_restore_selected(payload: dict) -> tuple[Path, dict]:
+    if not isinstance(payload, dict):
+        raise ValueError("Expected a JSON object.")
+
+    confirmation = str(payload.get("confirmation", "")).strip()
+
+    if confirmation != "RESTORE":
+        raise ValueError('Confirmation must be exactly "RESTORE".')
+
+    backup_dir = _flora_admin_runtime_backup_selected_path(str(payload.get("backupDir", "")))
+
+    selected = payload.get("restore", payload.get("items", {}))
+
+    if not isinstance(selected, dict):
+        raise ValueError("restore must be a JSON object.")
+
+    selected_items = {
+        key: bool(selected.get(key))
+        for key in _RUNTIME_BACKUP_RESTORE_ITEMS
+    }
+
+    if not any(selected_items.values()):
+        raise ValueError("Select at least one runtime backup item to restore.")
+
+    return backup_dir, selected_items
+
+
+def _flora_admin_runtime_safety_backup_dir() -> Path:
+    backup_dir = _flora_admin_runtime_restore_root() / _flora_admin_runtime_reset_timestamp()
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    return backup_dir
+
+
+def _flora_admin_runtime_restore_file(source: Path, destination: Path, safety_dir: Path, safety_name: str) -> str | None:
+    import shutil
+
+    if not source.exists() or not source.is_file():
+        raise FileNotFoundError(f"Runtime backup file was not found: {source}")
+
+    if destination.exists():
+        safety_path = safety_dir / safety_name
+        safety_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(destination, safety_path)
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+
+    return destination.relative_to(_flora_admin_repo_root()).as_posix()
+
+
+def _flora_admin_runtime_restore_avatar_images(source_dir: Path, destination_dir: Path, safety_dir: Path) -> dict:
+    import shutil
+
+    if not source_dir.exists() or not source_dir.is_dir():
+        raise FileNotFoundError(f"Runtime avatar image backup was not found: {source_dir}")
+
+    safety_avatar_dir = safety_dir / "assets__avatars"
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    safety_avatar_dir.mkdir(parents=True, exist_ok=True)
+
+    current_count = 0
+
+    for item in sorted(destination_dir.iterdir()):
+        if item.is_file():
+            shutil.copy2(item, safety_avatar_dir / item.name)
+            item.unlink()
+            current_count += 1
+
+    restored_count = 0
+
+    for item in sorted(source_dir.iterdir()):
+        if item.is_file():
+            shutil.copy2(item, destination_dir / item.name)
+            restored_count += 1
+
+    return {
+        "currentBackedUp": current_count,
+        "restored": restored_count,
+        "destination": destination_dir.relative_to(_flora_admin_repo_root()).as_posix(),
+    }
+
+
+def _flora_admin_handle_runtime_backup_restore_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        backup_dir, selected = _flora_admin_runtime_restore_selected(payload)
+        repo_root = _flora_admin_repo_root()
+        safety_dir = _flora_admin_runtime_safety_backup_dir()
+
+        restored = []
+
+        for key, should_restore in selected.items():
+            if not should_restore:
+                continue
+
+            spec = _RUNTIME_BACKUP_RESTORE_ITEMS[key]
+            source = backup_dir / spec["backup"]
+            destination = repo_root / spec["destination"]
+
+            if spec["kind"] == "file":
+                restored_path = _flora_admin_runtime_restore_file(
+                    source=source,
+                    destination=destination,
+                    safety_dir=safety_dir,
+                    safety_name=spec["backup"],
+                )
+
+                restored.append({
+                    "key": key,
+                    "label": spec["label"],
+                    "path": restored_path,
+                })
+
+            elif spec["kind"] == "directory":
+                result = _flora_admin_runtime_restore_avatar_images(
+                    source_dir=source,
+                    destination_dir=destination,
+                    safety_dir=safety_dir,
+                )
+
+                restored.append({
+                    "key": key,
+                    "label": spec["label"],
+                    **result,
+                })
+
+        _flora_admin_send_json(handler, {
+            "ok": True,
+            "restored": restored,
+            "restoredFrom": backup_dir.relative_to(repo_root).as_posix(),
+            "safetyBackupDir": safety_dir.relative_to(repo_root).as_posix(),
+            "backups": _flora_admin_runtime_backup_list(),
+        })
+
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+    except Exception as error:
+        _flora_admin_send_error(handler, 500, str(error))
+
+    return True
+
+# FLORA_RUNTIME_BACKUP_RESTORE_END
+
 def _flora_admin_handle_get(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
     repo_root = _flora_admin_repo_root()
+
+    if request_path == "/api/admin/runtime-backups":
+        return _flora_admin_handle_runtime_backups_get(handler)
 
     if request_path == "/api/admin/backups":
         return _flora_admin_handle_backups_get(handler)
@@ -1975,6 +2276,9 @@ def _flora_admin_handle_mark_working_post(handler) -> bool:
 
 def _flora_admin_handle_post(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
+
+    if request_path == "/api/admin/runtime-backups/restore":
+        return _flora_admin_handle_runtime_backup_restore_post(handler)
 
     if request_path == "/api/admin/runtime-reset":
         return _flora_admin_handle_runtime_reset_post(handler)
