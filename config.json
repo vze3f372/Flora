@@ -151,6 +151,10 @@
         "durationSeconds": 12
       },
       {
+        "panel": "sub-goal",
+        "durationSeconds": 12
+      },
+      {
         "panel": "recent-events",
         "durationSeconds": 10
       }

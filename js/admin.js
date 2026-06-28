@@ -12,11 +12,31 @@ const DEFAULT_STYLE = {
   },
 };
 
+const DEFAULT_ROTATION = {
+  enabled: false,
+  panels: [
+    { panel: "raids", durationSeconds: 10 },
+    { panel: "bits", durationSeconds: 10 },
+    { panel: "follower-goal", durationSeconds: 12 },
+    { panel: "sub-goal", durationSeconds: 12 },
+    { panel: "recent-events", durationSeconds: 10 },
+  ],
+  transitionMilliseconds: 500,
+  startPanel: "bits",
+};
+
+let availablePanels = {};
+let currentRotation = DEFAULT_ROTATION;
+
 const statusElement = document.getElementById("status");
 const reloadButton = document.getElementById("reload-button");
 const goalsForm = document.getElementById("goals-form");
 const styleForm = document.getElementById("style-form");
 const resetStyleButton = document.getElementById("reset-style-button");
+const rotationForm = document.getElementById("rotation-form");
+const resetRotationButton = document.getElementById("reset-rotation-button");
+const copyRotationUrlButton = document.getElementById("copy-rotation-url-button");
+const rotationPanelList = document.getElementById("rotation-panel-list");
 
 const fields = {
   followersCurrent: document.getElementById("followers-current"),
@@ -35,6 +55,13 @@ const styleFields = {
   border: document.getElementById("style-border"),
   success: document.getElementById("style-success"),
   error: document.getElementById("style-error"),
+};
+
+const rotationFields = {
+  enabled: document.getElementById("rotation-enabled"),
+  startPanel: document.getElementById("rotation-start-panel"),
+  transitionMilliseconds: document.getElementById("rotation-transition"),
+  rotationUrl: document.getElementById("rotation-url"),
 };
 
 const obsUrls = [
@@ -115,6 +142,246 @@ function collectStyle() {
   return { colors };
 }
 
+
+function positiveNumberValue(input, label) {
+  const value = Number(input.value);
+
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(`${label} must be a positive number.`);
+  }
+
+  return value;
+}
+
+function nonNegativeIntegerValue(input, label) {
+  const value = Number(input.value);
+
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(`${label} must be a non-negative whole number.`);
+  }
+
+  return value;
+}
+
+function panelTitle(panelKey) {
+  const panel = availablePanels[panelKey];
+
+  if (panel && typeof panel === "object" && typeof panel.title === "string") {
+    return panel.title;
+  }
+
+  return panelKey;
+}
+
+function rotationEntryMap(rotation) {
+  const map = new Map();
+
+  for (const entry of rotation?.panels || []) {
+    if (entry && typeof entry.panel === "string") {
+      map.set(entry.panel, entry);
+    }
+  }
+
+  return map;
+}
+
+function rotationDefaultDuration(panelKey, rotation) {
+  const entry = rotationEntryMap(rotation).get(panelKey);
+
+  if (entry && Number.isFinite(Number(entry.durationSeconds)) && Number(entry.durationSeconds) > 0) {
+    return Number(entry.durationSeconds);
+  }
+
+  return 10;
+}
+
+function normalizeRotation(rotation) {
+  const source = rotation && typeof rotation === "object" ? rotation : DEFAULT_ROTATION;
+  const entries = Array.isArray(source.panels) ? source.panels : DEFAULT_ROTATION.panels;
+
+  return {
+    enabled: source.enabled === true,
+    panels: entries
+      .filter((entry) => entry && typeof entry.panel === "string")
+      .map((entry) => ({
+        panel: entry.panel,
+        durationSeconds: Number(entry.durationSeconds) > 0 ? Number(entry.durationSeconds) : 10,
+      })),
+    transitionMilliseconds: Number.isInteger(Number(source.transitionMilliseconds))
+      && Number(source.transitionMilliseconds) >= 0
+      ? Number(source.transitionMilliseconds)
+      : DEFAULT_ROTATION.transitionMilliseconds,
+    startPanel: typeof source.startPanel === "string"
+      ? source.startPanel
+      : DEFAULT_ROTATION.startPanel,
+  };
+}
+
+function populateRotationPanelList(rotation) {
+  rotationPanelList.replaceChildren();
+
+  const entryMap = rotationEntryMap(rotation);
+  const panelKeys = Object.keys(availablePanels);
+
+  for (const panelKey of panelKeys) {
+    const row = document.createElement("div");
+    row.className = "rotation-panel-row";
+    row.dataset.panel = panelKey;
+
+    const checkboxLabel = document.createElement("label");
+    checkboxLabel.className = "checkbox-label rotation-panel-checkbox";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "rotation-panel-enabled";
+    checkbox.checked = entryMap.has(panelKey);
+
+    const labelText = document.createElement("span");
+    labelText.textContent = `${panelTitle(panelKey)} (${panelKey})`;
+
+    checkboxLabel.append(checkbox, labelText);
+
+    const durationLabel = document.createElement("label");
+    durationLabel.className = "rotation-duration-label";
+
+    const durationText = document.createElement("span");
+    durationText.textContent = "Duration seconds";
+
+    const durationInput = document.createElement("input");
+    durationInput.type = "number";
+    durationInput.min = "1";
+    durationInput.step = "1";
+    durationInput.className = "rotation-panel-duration";
+    durationInput.value = rotationDefaultDuration(panelKey, rotation);
+
+    durationLabel.append(durationText, durationInput);
+    row.append(checkboxLabel, durationLabel);
+    rotationPanelList.append(row);
+  }
+}
+
+function populateRotationStartPanel(rotation) {
+  const panelKeys = Object.keys(availablePanels);
+  rotationFields.startPanel.replaceChildren();
+
+  for (const panelKey of panelKeys) {
+    const option = document.createElement("option");
+    option.value = panelKey;
+    option.textContent = `${panelTitle(panelKey)} (${panelKey})`;
+    rotationFields.startPanel.append(option);
+  }
+
+  if (panelKeys.includes(rotation.startPanel)) {
+    rotationFields.startPanel.value = rotation.startPanel;
+  } else if (panelKeys.length > 0) {
+    rotationFields.startPanel.value = panelKeys[0];
+  }
+}
+
+function updateRotationUrl() {
+  const start = rotationFields.startPanel.value;
+  const params = new URLSearchParams();
+  params.set("rotation", "true");
+
+  if (start) {
+    params.set("start", start);
+  }
+
+  rotationFields.rotationUrl.value = `${window.location.origin}/panel.html?${params.toString()}`;
+}
+
+function populateRotation(rotation) {
+  currentRotation = normalizeRotation(rotation);
+  rotationFields.enabled.checked = currentRotation.enabled;
+  rotationFields.transitionMilliseconds.value = currentRotation.transitionMilliseconds;
+  populateRotationStartPanel(currentRotation);
+  populateRotationPanelList(currentRotation);
+  updateRotationUrl();
+}
+
+function collectRotation() {
+  const rows = [...rotationPanelList.querySelectorAll(".rotation-panel-row")];
+  const panels = [];
+
+  for (const row of rows) {
+    const panel = row.dataset.panel;
+    const enabled = row.querySelector(".rotation-panel-enabled").checked;
+    const durationInput = row.querySelector(".rotation-panel-duration");
+
+    if (!enabled) {
+      continue;
+    }
+
+    panels.push({
+      panel,
+      durationSeconds: positiveNumberValue(durationInput, `${panel} durationSeconds`),
+    });
+  }
+
+  if (panels.length === 0) {
+    throw new Error("Rotation must include at least one panel.");
+  }
+
+  const startPanel = rotationFields.startPanel.value;
+
+  if (!startPanel || !availablePanels[startPanel]) {
+    throw new Error("Start panel must reference an existing panel.");
+  }
+
+  return {
+    enabled: rotationFields.enabled.checked,
+    panels,
+    transitionMilliseconds: nonNegativeIntegerValue(
+      rotationFields.transitionMilliseconds,
+      "transitionMilliseconds",
+    ),
+    startPanel,
+  };
+}
+
+async function saveRotation(event) {
+  event.preventDefault();
+
+  try {
+    const rotation = collectRotation();
+
+    const response = await fetchJson("/api/admin/rotation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ rotation }),
+    });
+
+    populateRotation(response.rotation);
+    setStatus("Rotation saved.", "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+async function resetRotationDefaults() {
+  try {
+    const response = await fetchJson("/api/admin/rotation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ rotation: DEFAULT_ROTATION }),
+    });
+
+    populateRotation(response.rotation);
+    setStatus("Rotation defaults restored.", "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+async function copyRotationUrl() {
+  await navigator.clipboard.writeText(rotationFields.rotationUrl.value);
+  setStatus("Copied Rotation URL.", "success");
+}
+
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
   const payload = await response.json().catch(() => null);
@@ -130,13 +397,16 @@ async function fetchJson(url, options = {}) {
 async function loadAdminData() {
   setStatus("Loading admin data...", "muted");
 
-  const [config, goals] = await Promise.all([
+  const [config, goals, rotationData] = await Promise.all([
     fetchJson("/api/admin/config"),
     fetchJson("/api/admin/goals"),
+    fetchJson("/api/admin/rotation"),
   ]);
 
+  availablePanels = rotationData.panels || config.panels || {};
   populateGoals(goals);
   populateStyle(config.style || DEFAULT_STYLE);
+  populateRotation(rotationData.rotation || config.rotation || DEFAULT_ROTATION);
 
   const panelCount = config.panels && typeof config.panels === "object"
     ? Object.keys(config.panels).length
@@ -249,6 +519,10 @@ reloadButton.addEventListener("click", () => {
 goalsForm.addEventListener("submit", saveGoals);
 styleForm.addEventListener("submit", saveStyle);
 resetStyleButton.addEventListener("click", resetStyleDefaults);
+rotationForm.addEventListener("submit", saveRotation);
+resetRotationButton.addEventListener("click", resetRotationDefaults);
+copyRotationUrlButton.addEventListener("click", copyRotationUrl);
+rotationFields.startPanel.addEventListener("change", updateRotationUrl);
 
 renderUrlList("obs-url-list", obsUrls);
 renderUrlList("streamerbot-url-list", streamerbotUrls);

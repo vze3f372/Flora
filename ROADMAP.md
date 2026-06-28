@@ -8,6 +8,8 @@
 
 ## v0.10.2 - Panel Rotation Editor
 
+- Status: Active implementation branch for admin-managed rotation settings.
+
 - Add GUI controls for panel rotation order.
 - Allow rotation duration and enabled panels to be changed from the admin UI.
 - Provide a preview URL for the rotation view.

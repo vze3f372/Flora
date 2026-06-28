@@ -228,6 +228,166 @@ def _flora_admin_get_path(handler) -> str:
     return urlparse(handler.path).path
 
 
+
+def _flora_admin_get_panels(config: dict) -> dict:
+    panels = config.get("panels")
+
+    if not isinstance(panels, dict) or not panels:
+        raise ValueError("config.json must define a non-empty panels object.")
+
+    return panels
+
+
+def _flora_admin_parse_positive_number(path: str, value) -> int | float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{path} must be a positive number.")
+
+    if value <= 0:
+        raise ValueError(f"{path} must be a positive number.")
+
+    return value
+
+
+def _flora_admin_parse_non_negative_integer(path: str, value) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{path} must be a non-negative whole number.")
+
+    if value < 0:
+        raise ValueError(f"{path} must be a non-negative whole number.")
+
+    return value
+
+
+def _flora_admin_normalize_rotation(payload: dict, panels: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("Expected a JSON object.")
+
+    rotation = payload.get("rotation", payload)
+
+    if not isinstance(rotation, dict):
+        raise ValueError("Expected a rotation object.")
+
+    enabled = rotation.get("enabled", False)
+
+    if not isinstance(enabled, bool):
+        raise ValueError("rotation.enabled must be true or false.")
+
+    transition_milliseconds = _flora_admin_parse_non_negative_integer(
+        "rotation.transitionMilliseconds",
+        rotation.get("transitionMilliseconds", 500),
+    )
+
+    start_panel = rotation.get("startPanel")
+
+    if not isinstance(start_panel, str) or not start_panel.strip():
+        raise ValueError("rotation.startPanel must be a non-empty string.")
+
+    start_panel = start_panel.strip()
+
+    if start_panel not in panels:
+        raise ValueError(f"rotation.startPanel references unknown panel: {start_panel}")
+
+    raw_entries = rotation.get("panels")
+
+    if not isinstance(raw_entries, list):
+        raise ValueError("rotation.panels must be a list.")
+
+    if not raw_entries:
+        raise ValueError("rotation.panels must contain at least one panel.")
+
+    entries = []
+    seen = set()
+
+    for index, entry in enumerate(raw_entries):
+        entry_path = f"rotation.panels[{index}]"
+
+        if not isinstance(entry, dict):
+            raise ValueError(f"{entry_path} must be an object.")
+
+        panel_name = entry.get("panel")
+
+        if not isinstance(panel_name, str) or not panel_name.strip():
+            raise ValueError(f"{entry_path}.panel must be a non-empty string.")
+
+        panel_name = panel_name.strip()
+
+        if panel_name not in panels:
+            raise ValueError(f"{entry_path}.panel references unknown panel: {panel_name}")
+
+        if panel_name in seen:
+            raise ValueError(f"rotation.panels contains duplicate panel: {panel_name}")
+
+        seen.add(panel_name)
+
+        entries.append({
+            "panel": panel_name,
+            "durationSeconds": _flora_admin_parse_positive_number(
+                f"{entry_path}.durationSeconds",
+                entry.get("durationSeconds"),
+            ),
+        })
+
+    return {
+        "enabled": enabled,
+        "panels": entries,
+        "transitionMilliseconds": transition_milliseconds,
+        "startPanel": start_panel,
+    }
+
+
+def _flora_admin_handle_rotation_get(handler) -> bool:
+    config_path = _flora_admin_repo_root() / "config.json"
+
+    try:
+        config = _flora_admin_read_json(config_path)
+        panels = _flora_admin_get_panels(config)
+    except FileNotFoundError:
+        _flora_admin_send_error(handler, 404, "config.json was not found.")
+        return True
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 500, f"config.json is invalid JSON: {error}")
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 500, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "rotation": config.get("rotation", {}),
+        "panels": panels,
+    })
+    return True
+
+
+def _flora_admin_handle_rotation_post(handler) -> bool:
+    config_path = _flora_admin_repo_root() / "config.json"
+
+    try:
+        payload = _flora_admin_read_request_json(handler)
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    try:
+        config = _flora_admin_read_json(config_path)
+        panels = _flora_admin_get_panels(config)
+        rotation = _flora_admin_normalize_rotation(payload, panels)
+        config["rotation"] = rotation
+        _flora_admin_write_json(config_path, config)
+    except FileNotFoundError:
+        _flora_admin_send_error(handler, 404, "config.json was not found.")
+        return True
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 500, f"config.json is invalid JSON: {error}")
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {"ok": True, "rotation": rotation, "panels": panels})
+    return True
+
+
 def _flora_admin_handle_get(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
     repo_root = _flora_admin_repo_root()
@@ -249,6 +409,9 @@ def _flora_admin_handle_get(handler) -> bool:
         except json.JSONDecodeError as error:
             _flora_admin_send_error(handler, 500, f"data/goals.json is invalid JSON: {error}")
         return True
+
+    if request_path == "/api/admin/rotation":
+        return _flora_admin_handle_rotation_get(handler)
 
     return False
 
@@ -438,6 +601,9 @@ def _flora_admin_handle_post(handler) -> bool:
 
     if request_path == "/api/admin/style":
         return _flora_admin_handle_style_post(handler)
+
+    if request_path == "/api/admin/rotation":
+        return _flora_admin_handle_rotation_post(handler)
 
     return False
 

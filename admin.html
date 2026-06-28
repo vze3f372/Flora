@@ -95,6 +95,47 @@
     </section>
 
     <section class="card">
+      <h2>Panel Rotation</h2>
+      <form id="rotation-form" class="rotation-form">
+        <label class="checkbox-label">
+          <input id="rotation-enabled" type="checkbox">
+          <span>Enable rotation by default</span>
+        </label>
+
+        <div class="rotation-grid">
+          <label>
+            <span>Start panel</span>
+            <select id="rotation-start-panel"></select>
+          </label>
+
+          <label>
+            <span>Transition milliseconds</span>
+            <input id="rotation-transition" type="number" min="0" step="100" required>
+          </label>
+        </div>
+
+        <div>
+          <h3 class="section-subtitle">Rotation panels</h3>
+          <div id="rotation-panel-list" class="rotation-panel-list"></div>
+        </div>
+
+        <div>
+          <h3 class="section-subtitle">Rotation URL</h3>
+          <div class="url-row single-url-row">
+            <div class="url-label">Rotation</div>
+            <input id="rotation-url" type="text" readonly>
+            <button id="copy-rotation-url-button" type="button">Copy</button>
+          </div>
+        </div>
+
+        <div class="actions split-actions">
+          <button id="save-rotation-button" type="submit">Save Rotation</button>
+          <button id="reset-rotation-button" type="button" class="secondary-button">Reset Rotation Defaults</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
       <h2>OBS Browser Source URLs</h2>
       <div id="obs-url-list" class="url-list"></div>
     </section>
