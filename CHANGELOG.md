@@ -1,3 +1,12 @@
+## v0.13.1 - Panel Layout Presets
+
+- Added built-in panel layout presets to the Admin UI.
+- Added `/api/admin/layout-presets` for listing built-in layout presets.
+- Added `/api/admin/layout-presets/apply` for applying selected layout presets.
+- Added config backup before applying a layout preset.
+- Added layout preset previews covering row limits, recent event limits, scroll speed, default rotation, and named rotations.
+- Included Balanced, Compact, Leaderboard Focus, and Goals and Activity presets.
+
 ## v0.13.0 - Panel Theme Presets
 
 - Added built-in panel theme presets to the Admin UI.

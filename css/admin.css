@@ -863,3 +863,15 @@ select:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* v0.13.1 layout presets */
+
+.layout-preset-details {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+}
+
+.layout-preset-details li + li {
+  margin-top: 4px;
+}

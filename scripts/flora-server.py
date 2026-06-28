@@ -2015,6 +2015,9 @@ def _flora_admin_handle_get(handler) -> bool:
     if request_path == "/api/admin/rotations":
         return _flora_admin_handle_rotations_get(handler)
 
+    if request_path == "/api/admin/layout-presets":
+        return _flora_admin_handle_layout_presets_get(handler)
+
     if request_path == "/api/admin/theme-presets":
         return _flora_admin_handle_theme_presets_get(handler)
 
@@ -2176,6 +2179,299 @@ def _flora_admin_handle_goals_post(handler) -> bool:
     return True
 
 
+
+
+# FLORA_LAYOUT_PRESETS_START
+
+_TABLE_PANEL_KEYS = (
+    "raids",
+    "bits",
+    "raids-count",
+    "raids-biggest",
+    "bits-count",
+    "bits-biggest",
+)
+
+
+_FLORA_ADMIN_LAYOUT_PRESETS = {
+    "balanced": {
+        "id": "balanced",
+        "name": "Balanced",
+        "description": "Default balanced layout for leaderboards, goals, and recent events.",
+        "tableMaxRows": 10,
+        "eventMaxEvents": 8,
+        "scrollSpeedPixelsPerSecond": 24,
+        "rotation": {
+            "enabled": False,
+            "panels": [
+                {"panel": "raids", "durationSeconds": 10},
+                {"panel": "bits", "durationSeconds": 10},
+                {"panel": "follower-goal", "durationSeconds": 12},
+                {"panel": "sub-goal", "durationSeconds": 12},
+                {"panel": "recent-events", "durationSeconds": 10},
+            ],
+            "transitionMilliseconds": 500,
+            "startPanel": "bits",
+        },
+        "rotations": {
+            "leaderboards": {
+                "enabled": True,
+                "panels": [
+                    {"panel": "raids", "durationSeconds": 10},
+                    {"panel": "raids-count", "durationSeconds": 10},
+                    {"panel": "raids-biggest", "durationSeconds": 10},
+                    {"panel": "bits", "durationSeconds": 10},
+                    {"panel": "bits-count", "durationSeconds": 10},
+                    {"panel": "bits-biggest", "durationSeconds": 10},
+                ],
+                "transitionMilliseconds": 500,
+                "startPanel": "raids",
+            },
+            "goals": {
+                "enabled": True,
+                "panels": [
+                    {"panel": "follower-goal", "durationSeconds": 12},
+                    {"panel": "sub-goal", "durationSeconds": 12},
+                ],
+                "transitionMilliseconds": 500,
+                "startPanel": "follower-goal",
+            },
+        },
+    },
+    "compact": {
+        "id": "compact",
+        "name": "Compact",
+        "description": "Shows fewer rows and faster rotation for small OBS sources.",
+        "tableMaxRows": 6,
+        "eventMaxEvents": 5,
+        "scrollSpeedPixelsPerSecond": 18,
+        "rotation": {
+            "enabled": False,
+            "panels": [
+                {"panel": "raids", "durationSeconds": 8},
+                {"panel": "bits", "durationSeconds": 8},
+                {"panel": "recent-events", "durationSeconds": 8},
+            ],
+            "transitionMilliseconds": 400,
+            "startPanel": "raids",
+        },
+        "rotations": {
+            "leaderboards": {
+                "enabled": True,
+                "panels": [
+                    {"panel": "raids", "durationSeconds": 8},
+                    {"panel": "bits", "durationSeconds": 8},
+                    {"panel": "raids-count", "durationSeconds": 8},
+                    {"panel": "bits-count", "durationSeconds": 8},
+                ],
+                "transitionMilliseconds": 400,
+                "startPanel": "raids",
+            },
+            "goals": {
+                "enabled": True,
+                "panels": [
+                    {"panel": "follower-goal", "durationSeconds": 10},
+                    {"panel": "sub-goal", "durationSeconds": 10},
+                ],
+                "transitionMilliseconds": 400,
+                "startPanel": "follower-goal",
+            },
+        },
+    },
+    "leaderboard-focus": {
+        "id": "leaderboard-focus",
+        "name": "Leaderboard Focus",
+        "description": "Prioritizes all leaderboard panels and keeps more rows visible.",
+        "tableMaxRows": 12,
+        "eventMaxEvents": 6,
+        "scrollSpeedPixelsPerSecond": 26,
+        "rotation": {
+            "enabled": True,
+            "panels": [
+                {"panel": "raids", "durationSeconds": 10},
+                {"panel": "raids-count", "durationSeconds": 10},
+                {"panel": "raids-biggest", "durationSeconds": 10},
+                {"panel": "bits", "durationSeconds": 10},
+                {"panel": "bits-count", "durationSeconds": 10},
+                {"panel": "bits-biggest", "durationSeconds": 10},
+            ],
+            "transitionMilliseconds": 500,
+            "startPanel": "raids",
+        },
+        "rotations": {
+            "leaderboards": {
+                "enabled": True,
+                "panels": [
+                    {"panel": "raids", "durationSeconds": 10},
+                    {"panel": "raids-count", "durationSeconds": 10},
+                    {"panel": "raids-biggest", "durationSeconds": 10},
+                    {"panel": "bits", "durationSeconds": 10},
+                    {"panel": "bits-count", "durationSeconds": 10},
+                    {"panel": "bits-biggest", "durationSeconds": 10},
+                ],
+                "transitionMilliseconds": 500,
+                "startPanel": "raids",
+            },
+            "goals": {
+                "enabled": True,
+                "panels": [
+                    {"panel": "follower-goal", "durationSeconds": 12},
+                    {"panel": "sub-goal", "durationSeconds": 12},
+                ],
+                "transitionMilliseconds": 500,
+                "startPanel": "follower-goal",
+            },
+        },
+    },
+    "goals-and-activity": {
+        "id": "goals-and-activity",
+        "name": "Goals and Activity",
+        "description": "Prioritizes goal panels and recent activity for community-focused scenes.",
+        "tableMaxRows": 8,
+        "eventMaxEvents": 10,
+        "scrollSpeedPixelsPerSecond": 22,
+        "rotation": {
+            "enabled": True,
+            "panels": [
+                {"panel": "follower-goal", "durationSeconds": 14},
+                {"panel": "sub-goal", "durationSeconds": 14},
+                {"panel": "recent-events", "durationSeconds": 12},
+            ],
+            "transitionMilliseconds": 500,
+            "startPanel": "follower-goal",
+        },
+        "rotations": {
+            "leaderboards": {
+                "enabled": True,
+                "panels": [
+                    {"panel": "raids", "durationSeconds": 10},
+                    {"panel": "bits", "durationSeconds": 10},
+                ],
+                "transitionMilliseconds": 500,
+                "startPanel": "raids",
+            },
+            "goals": {
+                "enabled": True,
+                "panels": [
+                    {"panel": "follower-goal", "durationSeconds": 14},
+                    {"panel": "sub-goal", "durationSeconds": 14},
+                    {"panel": "recent-events", "durationSeconds": 12},
+                ],
+                "transitionMilliseconds": 500,
+                "startPanel": "follower-goal",
+            },
+        },
+    },
+}
+
+
+def _flora_admin_layout_preset_summary(preset: dict) -> dict:
+    return {
+        "id": preset["id"],
+        "name": preset["name"],
+        "description": preset["description"],
+        "tableMaxRows": preset["tableMaxRows"],
+        "eventMaxEvents": preset["eventMaxEvents"],
+        "scrollSpeedPixelsPerSecond": preset["scrollSpeedPixelsPerSecond"],
+        "rotation": {
+            "enabled": bool(preset["rotation"].get("enabled", False)),
+            "panelCount": len(preset["rotation"].get("panels", [])),
+            "startPanel": preset["rotation"].get("startPanel", ""),
+            "transitionMilliseconds": preset["rotation"].get("transitionMilliseconds", 500),
+        },
+        "rotations": {
+            name: {
+                "enabled": bool(rotation.get("enabled", False)),
+                "panelCount": len(rotation.get("panels", [])),
+                "startPanel": rotation.get("startPanel", ""),
+            }
+            for name, rotation in preset.get("rotations", {}).items()
+        },
+    }
+
+
+def _flora_admin_layout_preset_list() -> list[dict]:
+    return [
+        _flora_admin_layout_preset_summary(preset)
+        for preset in _FLORA_ADMIN_LAYOUT_PRESETS.values()
+    ]
+
+
+def _flora_admin_apply_layout_panel_values(config: dict, preset: dict) -> None:
+    panels = _flora_admin_get_panels(config)
+
+    for panel_key in _TABLE_PANEL_KEYS:
+        panel = panels.get(panel_key)
+
+        if not isinstance(panel, dict):
+            continue
+
+        panel["maxRows"] = int(preset["tableMaxRows"])
+
+        scroll = panel.get("scroll")
+
+        if isinstance(scroll, dict):
+            scroll["speedPixelsPerSecond"] = int(preset["scrollSpeedPixelsPerSecond"])
+
+    recent_events = panels.get("recent-events")
+
+    if isinstance(recent_events, dict):
+        recent_events["maxEvents"] = int(preset["eventMaxEvents"])
+
+
+def _flora_admin_handle_layout_presets_get(handler) -> bool:
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "presets": _flora_admin_layout_preset_list(),
+    })
+    return True
+
+
+def _flora_admin_handle_layout_preset_apply_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        preset_id = str(payload.get("presetId", "")).strip()
+        preset = _FLORA_ADMIN_LAYOUT_PRESETS.get(preset_id)
+
+        if not preset:
+            raise ValueError(f"Unknown layout preset: {preset_id}")
+
+        repo_root = _flora_admin_repo_root()
+        config_path = repo_root / "config.json"
+        config = _flora_admin_read_json(config_path)
+        panels = _flora_admin_get_panels(config)
+
+        next_rotation = _flora_admin_normalize_rotation({"rotation": preset["rotation"]}, panels)
+        next_rotations = _flora_admin_normalize_rotations({"rotations": preset["rotations"]}, panels)
+
+        _flora_admin_apply_layout_panel_values(config, preset)
+        config["rotation"] = next_rotation
+        config["rotations"] = next_rotations
+
+        _flora_admin_backup_json(config_path)
+        _flora_admin_write_json(config_path, config)
+
+        _flora_admin_send_json(handler, {
+            "ok": True,
+            "preset": _flora_admin_layout_preset_summary(preset),
+            "config": config,
+            "rotation": next_rotation,
+            "rotations": next_rotations,
+            "presets": _flora_admin_layout_preset_list(),
+        })
+
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+    except Exception as error:
+        _flora_admin_send_error(handler, 500, str(error))
+
+    return True
+
+# FLORA_LAYOUT_PRESETS_END
 
 # FLORA_THEME_PRESETS_START
 
@@ -2472,6 +2768,9 @@ def _flora_admin_handle_post(handler) -> bool:
 
     if request_path == "/api/admin/goals":
         return _flora_admin_handle_goals_post(handler)
+
+    if request_path == "/api/admin/layout-presets/apply":
+        return _flora_admin_handle_layout_preset_apply_post(handler)
 
     if request_path == "/api/admin/theme-presets/apply":
         return _flora_admin_handle_theme_preset_apply_post(handler)
