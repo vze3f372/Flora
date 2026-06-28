@@ -388,6 +388,155 @@ def _flora_admin_handle_rotation_post(handler) -> bool:
     return True
 
 
+
+_FLORA_ADMIN_DEFAULT_EVENT_TYPES = {
+    "raid": {
+        "label": "RAID",
+        "color": "#5eead4",
+    },
+    "bits": {
+        "label": "BITS",
+        "color": "#67e8f9",
+    },
+    "follow": {
+        "label": "FOLLOW",
+        "color": "#86efac",
+    },
+    "sub": {
+        "label": "SUB",
+        "color": "#f0abfc",
+    },
+    "goal": {
+        "label": "GOAL",
+        "color": "#a78bfa",
+    },
+}
+
+
+def _flora_admin_get_recent_events_panel(config: dict) -> dict:
+    panels = _flora_admin_get_panels(config)
+    panel = panels.get("recent-events")
+
+    if not isinstance(panel, dict):
+        raise ValueError("config.json must define panels.recent-events.")
+
+    if panel.get("type") != "events":
+        raise ValueError("panels.recent-events must be an events panel.")
+
+    return panel
+
+
+def _flora_admin_get_event_types(panel: dict) -> dict:
+    event_types = panel.get("eventTypes")
+
+    if isinstance(event_types, dict) and event_types:
+        return event_types
+
+    return _FLORA_ADMIN_DEFAULT_EVENT_TYPES
+
+
+def _flora_admin_normalize_event_theme(payload: dict, existing_event_types: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("Expected a JSON object.")
+
+    event_types = payload.get("eventTypes", payload)
+
+    if not isinstance(event_types, dict):
+        raise ValueError("Expected an eventTypes object.")
+
+    if not event_types:
+        raise ValueError("eventTypes must contain at least one event type.")
+
+    existing_keys = set(existing_event_types)
+
+    for event_type in event_types:
+        if event_type not in existing_keys:
+            raise ValueError(f"Admin API cannot create unknown event type: {event_type}")
+
+    next_event_types = {
+        key: dict(value)
+        for key, value in existing_event_types.items()
+        if isinstance(value, dict)
+    }
+
+    for event_type, event_config in event_types.items():
+        if not isinstance(event_config, dict):
+            raise ValueError(f"eventTypes.{event_type} must be an object.")
+
+        label = event_config.get("label")
+        color = event_config.get("color")
+
+        if not isinstance(label, str) or not label.strip():
+            raise ValueError(f"eventTypes.{event_type}.label must be a non-empty string.")
+
+        next_event_types[event_type] = {
+            "label": label.strip(),
+            "color": _flora_admin_parse_hex_color(
+                f"eventTypes.{event_type}.color",
+                color,
+            ),
+        }
+
+    return next_event_types
+
+
+def _flora_admin_handle_event_theme_get(handler) -> bool:
+    config_path = _flora_admin_repo_root() / "config.json"
+
+    try:
+        config = _flora_admin_read_json(config_path)
+        panel = _flora_admin_get_recent_events_panel(config)
+        event_types = _flora_admin_get_event_types(panel)
+    except FileNotFoundError:
+        _flora_admin_send_error(handler, 404, "config.json was not found.")
+        return True
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 500, f"config.json is invalid JSON: {error}")
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 500, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "eventTypes": event_types,
+    })
+    return True
+
+
+def _flora_admin_handle_event_theme_post(handler) -> bool:
+    config_path = _flora_admin_repo_root() / "config.json"
+
+    try:
+        payload = _flora_admin_read_request_json(handler)
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    try:
+        config = _flora_admin_read_json(config_path)
+        panel = _flora_admin_get_recent_events_panel(config)
+        existing_event_types = _flora_admin_get_event_types(panel)
+        event_types = _flora_admin_normalize_event_theme(payload, existing_event_types)
+        panel["eventTypes"] = event_types
+        _flora_admin_write_json(config_path, config)
+    except FileNotFoundError:
+        _flora_admin_send_error(handler, 404, "config.json was not found.")
+        return True
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 500, f"config.json is invalid JSON: {error}")
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "eventTypes": event_types,
+    })
+    return True
+
+
 def _flora_admin_handle_get(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
     repo_root = _flora_admin_repo_root()
@@ -412,6 +561,9 @@ def _flora_admin_handle_get(handler) -> bool:
 
     if request_path == "/api/admin/rotation":
         return _flora_admin_handle_rotation_get(handler)
+
+    if request_path == "/api/admin/event-theme":
+        return _flora_admin_handle_event_theme_get(handler)
 
     return False
 
@@ -604,6 +756,9 @@ def _flora_admin_handle_post(handler) -> bool:
 
     if request_path == "/api/admin/rotation":
         return _flora_admin_handle_rotation_post(handler)
+
+    if request_path == "/api/admin/event-theme":
+        return _flora_admin_handle_event_theme_post(handler)
 
     return False
 

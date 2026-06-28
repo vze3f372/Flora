@@ -2,6 +2,8 @@
 
 ## v0.10.3 - Event Theme Editor
 
+- Status: Active implementation branch for admin-managed recent activity event themes.
+
 - Add GUI controls for recent activity event labels and colors.
 - Allow raid, bits, follow, subscription, and custom event styles to be adjusted.
 - Keep event styling configuration compatible with existing `config.json` structure.
