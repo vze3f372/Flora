@@ -133,32 +133,32 @@ def validate_table_panel(panel, panel_path):
     validate_columns(panel.get("columns"), f"{panel_path}.columns")
 
 
-def validate_rotation(rotation, panels):
-    require_object(rotation, "rotation")
+def validate_rotation(rotation, panels, path="rotation"):
+    require_object(rotation, path)
 
     if "enabled" in rotation:
-        require_boolean(rotation["enabled"], "rotation.enabled")
+        require_boolean(rotation["enabled"], f"{path}.enabled")
 
     if "transitionMilliseconds" in rotation:
         require_non_negative_number(
             rotation["transitionMilliseconds"],
-            "rotation.transitionMilliseconds",
+            f"{path}.transitionMilliseconds",
         )
 
     if "startPanel" in rotation:
-        require_non_empty_string(rotation["startPanel"], "rotation.startPanel")
+        require_non_empty_string(rotation["startPanel"], f"{path}.startPanel")
 
         if rotation["startPanel"] not in panels:
-            fail(f"rotation.startPanel references unknown panel: {rotation['startPanel']}")
+            fail(f"{path}.startPanel references unknown panel: {rotation['startPanel']}")
 
     entries = rotation.get("panels")
-    require_list(entries, "rotation.panels")
+    require_list(entries, f"{path}.panels")
 
     if not entries:
-        fail("rotation.panels must contain at least one panel")
+        fail(f"{path}.panels must contain at least one panel")
 
     for index, entry in enumerate(entries):
-        entry_path = f"rotation.panels[{index}]"
+        entry_path = f"{path}.panels[{index}]"
         require_object(entry, entry_path)
 
         panel_name = entry.get("panel")
@@ -169,6 +169,15 @@ def validate_rotation(rotation, panels):
 
         require_positive_number(entry.get("durationSeconds"), f"{entry_path}.durationSeconds")
 
+
+def validate_rotations(rotations, panels):
+    require_object(rotations, "rotations")
+
+    for name, rotation in rotations.items():
+        if not isinstance(name, str) or not name.strip():
+            fail("rotations contains an empty rotation group name")
+
+        validate_rotation(rotation, panels, f"rotations.{name}")
 
 def validate_events_panel(panel, panel_path):
     validate_common_panel_fields(panel, panel_path)
@@ -288,6 +297,9 @@ def validate_config(config):
 
     if "rotation" in config:
         validate_rotation(config["rotation"], panels)
+
+    if "rotations" in config:
+        validate_rotations(config["rotations"], panels)
 
 
 def main():

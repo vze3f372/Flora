@@ -1,5 +1,3 @@
-from __future__ import annotations
-import json
 #!/usr/bin/env python3
 """Local Flora HTTP server.
 
@@ -7,9 +5,11 @@ Serves the OBS browser-source files and exposes local API endpoints that can be
 called by Streamer.bot actions.
 """
 
+from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -510,6 +510,106 @@ def _flora_admin_handle_rotation_post(handler) -> bool:
     _flora_admin_send_json(handler, {"ok": True, "rotation": rotation, "panels": panels})
     return True
 
+
+
+# FLORA_NAMED_ROTATIONS_API_START
+
+_FLORA_ROTATION_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
+
+
+def _flora_admin_normalize_rotation_name(name) -> str:
+    if not isinstance(name, str):
+        raise ValueError("Rotation group name must be a string.")
+
+    normalized = name.strip().lower()
+
+    if not _FLORA_ROTATION_NAME_PATTERN.fullmatch(normalized):
+        raise ValueError(
+            "Rotation group names must use lowercase letters, numbers, and hyphens only."
+        )
+
+    return normalized
+
+
+def _flora_admin_normalize_rotations(payload: dict, panels: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("Expected a JSON object.")
+
+    rotations = payload.get("rotations", payload)
+
+    if not isinstance(rotations, dict):
+        raise ValueError("rotations must be an object.")
+
+    normalized = {}
+
+    for raw_name, raw_rotation in rotations.items():
+        name = _flora_admin_normalize_rotation_name(raw_name)
+        normalized[name] = _flora_admin_normalize_rotation(
+            {"rotation": raw_rotation},
+            panels,
+        )
+
+    return normalized
+
+
+def _flora_admin_handle_rotations_get(handler) -> bool:
+    config_path = _flora_admin_repo_root() / "config.json"
+
+    try:
+        config = _flora_admin_read_json(config_path)
+        panels = _flora_admin_get_panels(config)
+    except FileNotFoundError:
+        _flora_admin_send_error(handler, 404, "config.json was not found.")
+        return True
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 500, f"config.json is invalid JSON: {error}")
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 500, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "rotations": config.get("rotations", {}),
+        "panels": panels,
+    })
+    return True
+
+
+def _flora_admin_handle_rotations_post(handler) -> bool:
+    config_path = _flora_admin_repo_root() / "config.json"
+
+    try:
+        payload = _flora_admin_read_request_json(handler)
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    try:
+        config = _flora_admin_read_json(config_path)
+        panels = _flora_admin_get_panels(config)
+        rotations = _flora_admin_normalize_rotations(payload, panels)
+        _flora_admin_backup_json(config_path)
+        config["rotations"] = rotations
+        _flora_admin_write_json(config_path, config)
+    except FileNotFoundError:
+        _flora_admin_send_error(handler, 404, "config.json was not found.")
+        return True
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 500, f"config.json is invalid JSON: {error}")
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "rotations": rotations,
+        "panels": panels,
+    })
+    return True
+
+# FLORA_NAMED_ROTATIONS_API_END
 
 
 _FLORA_ADMIN_DEFAULT_EVENT_TYPES = {
@@ -1288,6 +1388,9 @@ def _flora_admin_handle_get(handler) -> bool:
     if request_path == "/api/admin/rotation":
         return _flora_admin_handle_rotation_get(handler)
 
+    if request_path == "/api/admin/rotations":
+        return _flora_admin_handle_rotations_get(handler)
+
     if request_path == "/api/admin/event-theme":
         return _flora_admin_handle_event_theme_get(handler)
 
@@ -1579,6 +1682,9 @@ def _flora_admin_handle_post(handler) -> bool:
 
     if request_path == "/api/admin/rotation":
         return _flora_admin_handle_rotation_post(handler)
+
+    if request_path == "/api/admin/rotations":
+        return _flora_admin_handle_rotations_post(handler)
 
     if request_path == "/api/admin/event-theme":
         return _flora_admin_handle_event_theme_post(handler)

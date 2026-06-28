@@ -1,3 +1,17 @@
+## v0.12.2 - Named Rotation Groups
+
+- Added named rotation groups with `config.rotations`.
+- Added support for named rotation URLs:
+  - `?rotation=leaderboards`
+  - `?rotation=goals`
+  - `?rotation=<custom-name>`
+- Kept the existing default rotation behavior:
+  - `?rotation=true`
+- Added an Admin UI editor for named rotation groups.
+- Added support for creating, saving, previewing, copying, and deleting named rotation groups from the GUI.
+- Added `/api/admin/rotations` for reading and saving named rotation groups.
+- Updated config validation for named rotation groups.
+
 ## v0.12.1 - Leaderboard Sort Modes
 
 - Added biggest single raid tracking with `biggestRaid`.

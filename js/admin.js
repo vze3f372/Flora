@@ -1518,3 +1518,343 @@ if (
   floraActionBuilderApplyPreset();
 }
 // FLORA_ACTION_BUILDER_END
+
+// FLORA_NAMED_ROTATION_ADMIN_START
+
+const namedRotationSelect = document.getElementById("named-rotation-select");
+const namedRotationNewName = document.getElementById("named-rotation-new-name");
+const createNamedRotationButton = document.getElementById("create-named-rotation-button");
+const deleteNamedRotationButton = document.getElementById("delete-named-rotation-button");
+const namedRotationForm = document.getElementById("named-rotation-form");
+const namedRotationEnabled = document.getElementById("named-rotation-enabled");
+const namedRotationStartPanel = document.getElementById("named-rotation-start-panel");
+const namedRotationTransition = document.getElementById("named-rotation-transition");
+const namedRotationPanelList = document.getElementById("named-rotation-panel-list");
+const namedRotationUrl = document.getElementById("named-rotation-url");
+const copyNamedRotationUrlButton = document.getElementById("copy-named-rotation-url-button");
+const openNamedRotationPreviewButton = document.getElementById("open-named-rotation-preview-button");
+const namedRotationStatus = document.getElementById("named-rotation-status");
+
+let namedRotations = {};
+let namedRotationPanels = {};
+
+function normalizeNamedRotationName(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("_", "-")
+    .replaceAll(" ", "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function namedRotationPanelTitle(panelKey) {
+  const panel = namedRotationPanels[panelKey];
+
+  if (panel && typeof panel === "object" && typeof panel.title === "string") {
+    return panel.title;
+  }
+
+  return panelKey;
+}
+
+function namedRotationEntryMap(rotation) {
+  const map = new Map();
+
+  for (const entry of rotation?.panels || []) {
+    if (entry && typeof entry.panel === "string") {
+      map.set(entry.panel, entry);
+    }
+  }
+
+  return map;
+}
+
+function populateNamedRotationSelect(selectedName = "") {
+  namedRotationSelect.replaceChildren();
+
+  const names = Object.keys(namedRotations).sort();
+
+  for (const name of names) {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    namedRotationSelect.append(option);
+  }
+
+  if (names.includes(selectedName)) {
+    namedRotationSelect.value = selectedName;
+  } else if (names.length > 0) {
+    namedRotationSelect.value = names[0];
+  }
+}
+
+function updateNamedRotationUrl() {
+  const name = namedRotationSelect.value;
+
+  if (!name) {
+    namedRotationUrl.value = "";
+    return;
+  }
+
+  const params = new URLSearchParams();
+  params.set("rotation", name);
+  namedRotationUrl.value = `${window.location.origin}/panel.html?${params.toString()}`;
+}
+
+function populateNamedRotationStartPanel(rotation) {
+  namedRotationStartPanel.replaceChildren();
+
+  const panelKeys = Object.keys(namedRotationPanels);
+
+  for (const panelKey of panelKeys) {
+    const option = document.createElement("option");
+    option.value = panelKey;
+    option.textContent = `${namedRotationPanelTitle(panelKey)} (${panelKey})`;
+    namedRotationStartPanel.append(option);
+  }
+
+  if (panelKeys.includes(rotation?.startPanel)) {
+    namedRotationStartPanel.value = rotation.startPanel;
+  } else if (panelKeys.length > 0) {
+    namedRotationStartPanel.value = panelKeys[0];
+  }
+}
+
+function populateNamedRotationPanelList(rotation) {
+  namedRotationPanelList.replaceChildren();
+
+  const entryMap = namedRotationEntryMap(rotation);
+
+  for (const panelKey of Object.keys(namedRotationPanels)) {
+    const entry = entryMap.get(panelKey);
+
+    const row = document.createElement("div");
+    row.className = "rotation-panel-row";
+    row.dataset.panel = panelKey;
+
+    const checkboxLabel = document.createElement("label");
+    checkboxLabel.className = "checkbox-label rotation-panel-checkbox";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "named-rotation-panel-enabled";
+    checkbox.checked = Boolean(entry);
+
+    const checkboxText = document.createElement("span");
+    checkboxText.textContent = `${namedRotationPanelTitle(panelKey)} (${panelKey})`;
+
+    checkboxLabel.append(checkbox, checkboxText);
+
+    const durationLabel = document.createElement("label");
+    durationLabel.className = "rotation-duration-label";
+
+    const durationText = document.createElement("span");
+    durationText.textContent = "Duration seconds";
+
+    const durationInput = document.createElement("input");
+    durationInput.type = "number";
+    durationInput.min = "1";
+    durationInput.step = "1";
+    durationInput.className = "named-rotation-panel-duration";
+    durationInput.value = entry?.durationSeconds ?? 10;
+
+    durationLabel.append(durationText, durationInput);
+
+    row.append(checkboxLabel, durationLabel);
+    namedRotationPanelList.append(row);
+  }
+}
+
+function populateNamedRotationEditor() {
+  const name = namedRotationSelect.value;
+  const rotation = namedRotations[name];
+
+  if (!rotation) {
+    namedRotationEnabled.checked = false;
+    namedRotationTransition.value = 500;
+    namedRotationPanelList.replaceChildren();
+    namedRotationStartPanel.replaceChildren();
+    updateNamedRotationUrl();
+    namedRotationStatus.textContent = "No named rotation selected.";
+    return;
+  }
+
+  namedRotationEnabled.checked = rotation.enabled === true;
+  namedRotationTransition.value = rotation.transitionMilliseconds ?? 500;
+  populateNamedRotationStartPanel(rotation);
+  populateNamedRotationPanelList(rotation);
+  updateNamedRotationUrl();
+  namedRotationStatus.textContent = `Editing rotation group: ${name}`;
+}
+
+function collectNamedRotation() {
+  const rows = [...namedRotationPanelList.querySelectorAll(".rotation-panel-row")];
+  const panels = [];
+
+  for (const row of rows) {
+    const enabled = row.querySelector(".named-rotation-panel-enabled").checked;
+
+    if (!enabled) {
+      continue;
+    }
+
+    const durationInput = row.querySelector(".named-rotation-panel-duration");
+
+    panels.push({
+      panel: row.dataset.panel,
+      durationSeconds: positiveNumberValue(durationInput, `${row.dataset.panel} duration`),
+    });
+  }
+
+  if (panels.length === 0) {
+    throw new Error("Named rotation must include at least one panel.");
+  }
+
+  const startPanel = namedRotationStartPanel.value;
+
+  if (!panels.some((entry) => entry.panel === startPanel)) {
+    throw new Error("Start panel must be enabled in this named rotation group.");
+  }
+
+  return {
+    enabled: namedRotationEnabled.checked,
+    panels,
+    transitionMilliseconds: nonNegativeIntegerValue(
+      namedRotationTransition,
+      "Named rotation transition milliseconds",
+    ),
+    startPanel,
+  };
+}
+
+async function loadNamedRotations(selectedName = "") {
+  if (!namedRotationSelect) {
+    return;
+  }
+
+  const data = await getJson("/api/admin/rotations");
+  namedRotations = data.rotations || {};
+  namedRotationPanels = data.panels || {};
+  populateNamedRotationSelect(selectedName);
+  populateNamedRotationEditor();
+}
+
+async function saveNamedRotation(event) {
+  event.preventDefault();
+
+  const name = namedRotationSelect.value;
+
+  if (!name) {
+    throw new Error("Select or create a named rotation group first.");
+  }
+
+  namedRotations[name] = collectNamedRotation();
+
+  const data = await postJson("/api/admin/rotations", {
+    rotations: namedRotations,
+  });
+
+  namedRotations = data.rotations || {};
+  namedRotationPanels = data.panels || namedRotationPanels;
+  populateNamedRotationSelect(name);
+  populateNamedRotationEditor();
+  setStatus(`Saved named rotation group: ${name}`, "success");
+}
+
+async function createNamedRotation() {
+  const name = normalizeNamedRotationName(namedRotationNewName.value);
+
+  if (!name) {
+    throw new Error("Enter a rotation group name.");
+  }
+
+  if (namedRotations[name]) {
+    throw new Error(`Rotation group already exists: ${name}`);
+  }
+
+  const panelKeys = Object.keys(namedRotationPanels);
+  const startPanel = panelKeys.includes("raids") ? "raids" : panelKeys[0];
+
+  namedRotations[name] = {
+    enabled: true,
+    panels: [
+      {
+        panel: startPanel,
+        durationSeconds: 10,
+      },
+    ],
+    transitionMilliseconds: 500,
+    startPanel,
+  };
+
+  namedRotationNewName.value = "";
+
+  const data = await postJson("/api/admin/rotations", {
+    rotations: namedRotations,
+  });
+
+  namedRotations = data.rotations || {};
+  namedRotationPanels = data.panels || namedRotationPanels;
+  populateNamedRotationSelect(name);
+  populateNamedRotationEditor();
+  setStatus(`Created named rotation group: ${name}`, "success");
+}
+
+async function deleteNamedRotation() {
+  const name = namedRotationSelect.value;
+
+  if (!name) {
+    return;
+  }
+
+  if (!confirm(`Delete named rotation group "${name}"?`)) {
+    return;
+  }
+
+  delete namedRotations[name];
+
+  const data = await postJson("/api/admin/rotations", {
+    rotations: namedRotations,
+  });
+
+  namedRotations = data.rotations || {};
+  namedRotationPanels = data.panels || namedRotationPanels;
+  populateNamedRotationSelect();
+  populateNamedRotationEditor();
+  setStatus(`Deleted named rotation group: ${name}`, "success");
+}
+
+if (namedRotationSelect) {
+  namedRotationSelect.addEventListener("change", populateNamedRotationEditor);
+
+  namedRotationForm.addEventListener("submit", (event) => {
+    saveNamedRotation(event).catch((error) => setStatus(error.message, "error"));
+  });
+
+  createNamedRotationButton.addEventListener("click", () => {
+    createNamedRotation().catch((error) => setStatus(error.message, "error"));
+  });
+
+  deleteNamedRotationButton.addEventListener("click", () => {
+    deleteNamedRotation().catch((error) => setStatus(error.message, "error"));
+  });
+
+  copyNamedRotationUrlButton.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(namedRotationUrl.value);
+    setStatus("Copied named rotation URL.", "success");
+  });
+
+  openNamedRotationPreviewButton.addEventListener("click", () => {
+    window.open(namedRotationUrl.value, "_blank", "noopener,noreferrer");
+  });
+
+  namedRotationStartPanel.addEventListener("change", updateNamedRotationUrl);
+
+  loadNamedRotations().catch((error) => {
+    namedRotationStatus.textContent = `Could not load named rotations: ${error.message}`;
+  });
+}
+
+// FLORA_NAMED_ROTATION_ADMIN_END
