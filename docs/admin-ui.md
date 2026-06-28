@@ -348,3 +348,25 @@ Each group can configure:
 - duration per included panel
 
 Rotation group names should use lowercase letters, numbers, and hyphens.
+
+## User avatars
+
+Flora can display user avatars in leaderboard panels and recent event panels.
+
+Avatar support is optional. Existing Streamer.bot Fetch URL actions continue to work without changes. If no avatar is available for a user, Flora displays an initials fallback badge.
+
+To cache real Twitch avatars, add a Streamer.bot **Twitch → User → Get User Info For Target** sub-action before the Flora Fetch URL action.
+
+For raids, set the target user login to:
+
+    %userName%
+
+Then use an avatar-enabled Fetch URL:
+
+    http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewers%&avatarUrl=%targetUserProfileImageUrl%
+
+For bits, use:
+
+    http://127.0.0.1:8000/api/bits?name=%userName%&bits=%bits%&cheers=1&avatarUrl=%targetUserProfileImageUrl%
+
+Flora stores downloaded avatar images locally in `assets/avatars/` and stores avatar metadata in `data/avatar-cache.json`. These are runtime cache files and are ignored by Git.

@@ -1,3 +1,14 @@
+## v0.12.3 - User Avatar Cache
+
+- Added optional user avatar caching for stream events.
+- Added support for avatar URL fields such as `avatarUrl`, `avatar`, `profileImageUrl`, `profileImage`, and `userProfileImageUrl`.
+- Added local avatar image caching in `assets/avatars/`.
+- Added local avatar metadata cache in `data/avatar-cache.json`.
+- Added avatar display support for leaderboard panels.
+- Added avatar display support for recent events.
+- Added initials fallback badges when no avatar is cached.
+- Added no-cache headers for local development so browser and OBS sources refresh static assets more reliably.
+
 ## v0.12.2 - Named Rotation Groups
 
 - Added named rotation groups with `config.rotations`.

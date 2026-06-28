@@ -8,10 +8,12 @@ called by Streamer.bot actions.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
 import sys
+import urllib.request
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -20,6 +22,8 @@ from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 WRITER = ROOT / "scripts" / "flora-data.py"
+AVATAR_CACHE_FILE = ROOT / "data" / "avatar-cache.json"
+AVATAR_ASSETS_DIR = ROOT / "assets" / "avatars"
 
 
 class ApiError(Exception):
@@ -131,6 +135,153 @@ def optional_positive_int(payload: dict[str, Any], key: str, default: int) -> in
         raise ApiError(400, f"{key} must be greater than or equal to 1")
 
     return parsed
+
+
+# FLORA_AVATAR_CACHE_START
+
+_AVATAR_URL_FIELDS = (
+    "avatarUrl",
+    "avatar",
+    "profileImageUrl",
+    "profileImage",
+    "userProfileImageUrl",
+)
+
+
+def _flora_avatar_normalize_name(name: str) -> str:
+    return re.sub(r"[^a-z0-9_-]+", "-", name.strip().lower()).strip("-") or "unknown"
+
+
+def _flora_avatar_now() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _flora_avatar_cache_load() -> dict:
+    try:
+        data = json.loads(AVATAR_CACHE_FILE.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        return {}
+
+    return data if isinstance(data, dict) else {}
+
+
+def _flora_avatar_cache_write(data: dict) -> None:
+    AVATAR_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    AVATAR_CACHE_FILE.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def _flora_avatar_payload_url(payload: dict[str, Any]) -> str:
+    for field in _AVATAR_URL_FIELDS:
+        value = payload.get(field)
+
+        if value is None:
+            continue
+
+        text = str(value).strip()
+
+        if text:
+            return text
+
+    return ""
+
+
+def _flora_avatar_extension(url: str, content_type: str) -> str:
+    content_type = content_type.split(";", 1)[0].strip().lower()
+
+    if content_type == "image/png":
+        return ".png"
+
+    if content_type == "image/webp":
+        return ".webp"
+
+    if content_type in {"image/jpeg", "image/jpg"}:
+        return ".jpg"
+
+    suffix = Path(urlparse(url).path).suffix.lower()
+
+    if suffix in {".jpg", ".jpeg", ".png", ".webp"}:
+        return ".jpg" if suffix == ".jpeg" else suffix
+
+    return ".jpg"
+
+
+def _flora_avatar_download(url: str, safe_name: str) -> str:
+    parsed = urlparse(url)
+
+    if parsed.scheme not in {"http", "https"}:
+        raise ValueError("avatarUrl must be an http or https URL.")
+
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "FloraAvatarCache/1.0",
+        },
+    )
+
+    with urllib.request.urlopen(request, timeout=10) as response:
+        content_type = response.headers.get("Content-Type", "")
+        data = response.read(2_000_000)
+
+    if not data:
+        raise ValueError("avatarUrl returned an empty response.")
+
+    if content_type and not content_type.lower().startswith("image/"):
+        raise ValueError("avatarUrl must return an image content type.")
+
+    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:12]
+    extension = _flora_avatar_extension(url, content_type)
+    filename = f"{safe_name}-{digest}{extension}"
+    output_path = AVATAR_ASSETS_DIR / filename
+
+    AVATAR_ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(data)
+
+    return str(output_path.relative_to(ROOT))
+
+
+def cache_avatar_from_payload(name: str, payload: dict[str, Any], dry_run: bool) -> dict | None:
+    avatar_url = _flora_avatar_payload_url(payload)
+
+    if not avatar_url:
+        return None
+
+    safe_name = _flora_avatar_normalize_name(name)
+    display_name = str(payload.get("displayName", payload.get("display_name", name))).strip() or name
+
+    if dry_run:
+        return {
+            "name": safe_name,
+            "displayName": display_name,
+            "avatarUrl": avatar_url,
+            "dryRun": True,
+        }
+
+    cache = _flora_avatar_cache_load()
+    existing = cache.get(safe_name, {})
+
+    if isinstance(existing, dict) and existing.get("avatarUrl") == avatar_url and existing.get("avatarPath"):
+        avatar_path = existing["avatarPath"]
+    else:
+        avatar_path = _flora_avatar_download(avatar_url, safe_name)
+
+    row = {
+        "name": safe_name,
+        "displayName": display_name,
+        "avatarUrl": avatar_url,
+        "avatarPath": avatar_path,
+        "updatedAt": _flora_avatar_now(),
+    }
+
+    cache[safe_name] = row
+    _flora_avatar_cache_write(cache)
+
+    return row
+
+# FLORA_AVATAR_CACHE_END
 
 
 def run_writer(arguments: list[str], dry_run: bool) -> dict[str, Any]:
@@ -1703,6 +1854,9 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
         super().end_headers()
 
     def do_OPTIONS(self) -> None:
@@ -1827,6 +1981,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
     def handle_raid(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
         name = require_text(payload, "name", "userName")
         viewers = require_int(payload, "viewers", "viewerCount")
+        avatar = cache_avatar_from_payload(name, payload, dry_run)
 
         results = [
             run_writer(
@@ -1859,12 +2014,14 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             "action": "raid",
             "dryRun": dry_run,
             "results": results,
+            "avatar": avatar,
         }
 
     def handle_bits(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
         name = require_text(payload, "name", "userName")
         bits = require_int(payload, "bits")
         cheers = require_int(payload, "cheers") if "cheers" in payload else 1
+        avatar = cache_avatar_from_payload(name, payload, dry_run)
 
         results = [
             run_writer(
@@ -1899,10 +2056,12 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             "action": "bits",
             "dryRun": dry_run,
             "results": results,
+            "avatar": avatar,
         }
 
     def handle_follow(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
         name = require_text(payload, "name")
+        avatar = cache_avatar_from_payload(name, payload, dry_run)
         event_time = optional_text(payload, "time", "Just now")
         keep = optional_int(payload, "keep", 25)
         update_goal = optional_bool(payload, "updateGoal", False)
@@ -1940,10 +2099,12 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             "action": "follow",
             "dryRun": dry_run,
             "results": results,
+            "avatar": avatar,
         }
 
     def handle_sub(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
         name = require_text(payload, "name")
+        avatar = cache_avatar_from_payload(name, payload, dry_run)
         event_time = optional_text(payload, "time", "Just now")
         keep = optional_int(payload, "keep", 25)
         update_goal = optional_bool(payload, "updateGoal", False)
@@ -1981,6 +2142,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             "action": "sub",
             "dryRun": dry_run,
             "results": results,
+            "avatar": avatar,
         }
 
     def handle_goal(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
@@ -2012,6 +2174,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         event_type = require_text(payload, "type")
         name = require_text(payload, "name", "userName")
         detail = require_text(payload, "detail")
+        avatar = cache_avatar_from_payload(name, payload, dry_run)
 
         result = run_writer(
             add_event_common_args(
@@ -2034,6 +2197,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             "action": "event",
             "dryRun": dry_run,
             "results": [result],
+            "avatar": avatar,
         }
 
     def send_json(self, status: int, payload: Any) -> None:
