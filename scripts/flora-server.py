@@ -2015,6 +2015,9 @@ def _flora_admin_handle_get(handler) -> bool:
     if request_path == "/api/admin/rotations":
         return _flora_admin_handle_rotations_get(handler)
 
+    if request_path == "/api/admin/theme-presets":
+        return _flora_admin_handle_theme_presets_get(handler)
+
     if request_path == "/api/admin/event-theme":
         return _flora_admin_handle_event_theme_get(handler)
 
@@ -2173,6 +2176,169 @@ def _flora_admin_handle_goals_post(handler) -> bool:
     return True
 
 
+
+# FLORA_THEME_PRESETS_START
+
+_FLORA_ADMIN_THEME_PRESETS = {
+    "default-flora": {
+        "id": "default-flora",
+        "name": "Default Flora",
+        "description": "The default cyan and teal Flora panel style.",
+        "style": {
+            "colors": {
+                "background": "#020617",
+                "panel": "#111827",
+                "panelAlt": "#182235",
+                "text": "#f8fafc",
+                "muted": "#94a3b8",
+                "accent": "#22d3ee",
+                "border": "#334155",
+                "success": "#22c55e",
+                "error": "#ef4444",
+            }
+        },
+    },
+    "night-gold": {
+        "id": "night-gold",
+        "name": "Night Gold",
+        "description": "Dark panels with warm gold highlights.",
+        "style": {
+            "colors": {
+                "background": "#0b0806",
+                "panel": "#17100b",
+                "panelAlt": "#24180f",
+                "text": "#fff7ed",
+                "muted": "#c7a98a",
+                "accent": "#f59e0b",
+                "border": "#6b4e16",
+                "success": "#84cc16",
+                "error": "#ef4444",
+            }
+        },
+    },
+    "neon-purple": {
+        "id": "neon-purple",
+        "name": "Neon Purple",
+        "description": "High-energy purple and pink stream overlay colors.",
+        "style": {
+            "colors": {
+                "background": "#090014",
+                "panel": "#160026",
+                "panelAlt": "#23003d",
+                "text": "#faf5ff",
+                "muted": "#c4b5fd",
+                "accent": "#e879f9",
+                "border": "#7e22ce",
+                "success": "#34d399",
+                "error": "#fb7185",
+            }
+        },
+    },
+    "forest": {
+        "id": "forest",
+        "name": "Forest",
+        "description": "Muted green panels with natural contrast.",
+        "style": {
+            "colors": {
+                "background": "#03140d",
+                "panel": "#0b1f16",
+                "panelAlt": "#123524",
+                "text": "#ecfdf5",
+                "muted": "#9ab8a6",
+                "accent": "#4ade80",
+                "border": "#256d45",
+                "success": "#86efac",
+                "error": "#f87171",
+            }
+        },
+    },
+    "minimal-contrast": {
+        "id": "minimal-contrast",
+        "name": "Minimal Contrast",
+        "description": "Clean grayscale style with a bright blue accent.",
+        "style": {
+            "colors": {
+                "background": "#050505",
+                "panel": "#111111",
+                "panelAlt": "#1f1f1f",
+                "text": "#fafafa",
+                "muted": "#a3a3a3",
+                "accent": "#60a5fa",
+                "border": "#525252",
+                "success": "#22c55e",
+                "error": "#ef4444",
+            }
+        },
+    },
+}
+
+
+def _flora_admin_theme_preset_summary(preset: dict) -> dict:
+    colors = preset.get("style", {}).get("colors", {})
+
+    return {
+        "id": preset["id"],
+        "name": preset["name"],
+        "description": preset["description"],
+        "style": _flora_admin_normalize_style(preset.get("style", {})),
+        "colorCount": len(colors) if isinstance(colors, dict) else 0,
+    }
+
+
+def _flora_admin_theme_preset_list() -> list[dict]:
+    return [
+        _flora_admin_theme_preset_summary(preset)
+        for preset in _FLORA_ADMIN_THEME_PRESETS.values()
+    ]
+
+
+def _flora_admin_handle_theme_presets_get(handler) -> bool:
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "presets": _flora_admin_theme_preset_list(),
+    })
+    return True
+
+
+def _flora_admin_handle_theme_preset_apply_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        preset_id = str(payload.get("presetId", "")).strip()
+        preset = _FLORA_ADMIN_THEME_PRESETS.get(preset_id)
+
+        if not preset:
+            raise ValueError(f"Unknown theme preset: {preset_id}")
+
+        repo_root = _flora_admin_repo_root()
+        config_path = repo_root / "config.json"
+
+        config = _flora_admin_read_json(config_path)
+        next_style = _flora_admin_normalize_style(preset["style"])
+
+        _flora_admin_backup_json(config_path)
+        config["style"] = next_style
+        _flora_admin_write_json(config_path, config)
+
+        _flora_admin_send_json(handler, {
+            "ok": True,
+            "preset": _flora_admin_theme_preset_summary(preset),
+            "style": next_style,
+            "presets": _flora_admin_theme_preset_list(),
+        })
+
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+    except Exception as error:
+        _flora_admin_send_error(handler, 500, str(error))
+
+    return True
+
+# FLORA_THEME_PRESETS_END
+
 def _flora_admin_handle_style_post(handler) -> bool:
     try:
         payload = _flora_admin_read_request_json(handler)
@@ -2306,6 +2472,9 @@ def _flora_admin_handle_post(handler) -> bool:
 
     if request_path == "/api/admin/goals":
         return _flora_admin_handle_goals_post(handler)
+
+    if request_path == "/api/admin/theme-presets/apply":
+        return _flora_admin_handle_theme_preset_apply_post(handler)
 
     if request_path == "/api/admin/style":
         return _flora_admin_handle_style_post(handler)

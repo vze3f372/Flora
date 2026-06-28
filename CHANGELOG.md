@@ -1,3 +1,12 @@
+## v0.13.0 - Panel Theme Presets
+
+- Added built-in panel theme presets to the Admin UI.
+- Added `/api/admin/theme-presets` for listing built-in theme presets.
+- Added `/api/admin/theme-presets/apply` for applying selected theme presets.
+- Added config backup before applying a theme preset.
+- Added preset previews with color swatches.
+- Included Default Flora, Night Gold, Neon Purple, Forest, and Minimal Contrast presets.
+
 ## v0.12.9 - Admin Server Status
 
 - Added a Flora Server Status card to the Admin UI.

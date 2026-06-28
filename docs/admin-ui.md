@@ -63,6 +63,38 @@ http://127.0.0.1:8000/panel.html?type=follower-goal
 http://127.0.0.1:8000/panel.html?type=sub-goal
 ```
 
+## Panel Theme Presets
+
+The Admin UI includes a **Panel Theme Presets** card for applying built-in panel color presets.
+
+Theme presets update:
+
+    config.json -> style.colors
+
+Before applying a theme preset, Flora creates a timestamped backup of:
+
+    config.json
+
+Theme presets do not change:
+
+- panel rotation
+- recent activity event labels
+- goals
+- runtime data
+- avatar cache files
+- Streamer.bot action URLs
+
+Built-in theme presets include:
+
+- Default Flora
+- Night Gold
+- Neon Purple
+- Forest
+- Minimal Contrast
+
+After applying a theme preset, refresh OBS browser sources or browser panel pages to see the updated panel styling.
+
+
 ## Panel Style
 
 The Panel Style section edits theme color tokens stored in:
