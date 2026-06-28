@@ -298,3 +298,27 @@ The builder also includes a Custom mode for mapping common Streamer.bot variable
 Generated URLs can be copied into a Streamer.bot Fetch action. The preview button opens the generated URL in a browser tab, which is useful for testing with temporary test values.
 
 When testing from a browser, replace Streamer.bot placeholders such as `%userName%`, `%viewers%`, and `%bits%` with temporary test values to avoid writing literal placeholder strings into the local data files.
+
+## Leaderboard panel variants
+
+Flora supports multiple leaderboard panels reading from the same data file. This makes it possible to show different ranked views in OBS without changing Streamer.bot actions.
+
+Raid panel URLs:
+
+```text
+http://127.0.0.1:8000/panel.html?type=raids
+http://127.0.0.1:8000/panel.html?type=raids-count
+http://127.0.0.1:8000/panel.html?type=raids-biggest
+```
+
+Bits panel URLs:
+
+```text
+http://127.0.0.1:8000/panel.html?type=bits
+http://127.0.0.1:8000/panel.html?type=bits-count
+http://127.0.0.1:8000/panel.html?type=bits-biggest
+```
+
+The Streamer.bot fetch URLs remain unchanged. Streamer.bot updates the data, while the OBS browser source URL decides which leaderboard view is shown.
+
+Existing historical data is backfilled with a best estimate for biggest raid and biggest cheer. Future events track the true single-event maximum.

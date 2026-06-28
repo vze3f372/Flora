@@ -328,3 +328,17 @@
 - [ ] Windows testing
 - [ ] Full README
 - [ ] v1.0 release checkpoint
+
+## Planned: Named Rotation Groups
+
+Future rotation support should allow multiple named rotations instead of one global rotation list.
+
+Example URLs:
+
+```text
+http://127.0.0.1:8000/panel.html?rotation=true
+http://127.0.0.1:8000/panel.html?rotation=leaderboards
+http://127.0.0.1:8000/panel.html?rotation=goals
+```
+
+This would allow separate OBS sources for leaderboard rotations, goal rotations, recent-event rotations, or scene-specific panel groups.
