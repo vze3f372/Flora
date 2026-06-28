@@ -1,6 +1,15 @@
 # Changelog
 
 
+
+## v0.13.4 - Getting Started Guide
+
+- Added a from-scratch Getting Started guide.
+- Documented Python installation on Windows and Linux.
+- Documented PATH checks for `python`, `python3`, and `py -3`.
+- Documented cloning the repo, downloading a ZIP/release archive, starting Flora, opening the Admin UI, adding OBS browser sources, and wiring Streamer.bot.
+- Linked the guide from the README.
+
 ## v0.13.3 - Documentation Audit and Cleanup
 
 - Rewrote the README as the current project landing page.

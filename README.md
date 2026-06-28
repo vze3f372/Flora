@@ -176,6 +176,7 @@ config.json is valid
 
 Recommended entry points:
 
+- [Getting Started](docs/getting-started.md)
 - [Local Admin UI Guide](docs/admin-ui.md)
 - [Server Launcher Guide](docs/server-launcher.md)
 - [Streamer.bot Setup Checklist](docs/streamerbot/setup-checklist.md)
