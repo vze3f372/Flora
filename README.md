@@ -142,6 +142,8 @@ config.json is valid
 
 ## Documentation
 
+- [Local Admin UI Guide](docs/admin-ui.md)
+
 - `CHANGELOG.md`
 - `ROADMAP.md`
 - `docs/DESIGN.md`
