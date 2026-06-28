@@ -1296,6 +1296,10 @@ const floraActionBuilderUpdateGoal = document.getElementById("action-builder-upd
 const floraActionBuilderUpdateGoalWrap = document.getElementById("action-builder-update-goal-wrap");
 const floraActionBuilderCheers = document.getElementById("action-builder-cheers");
 const floraActionBuilderCheersWrap = document.getElementById("action-builder-cheers-wrap");
+const floraActionBuilderAvatar = document.getElementById("action-builder-avatar");
+const floraActionBuilderAvatarWrap = document.getElementById("action-builder-avatar-wrap");
+const floraActionBuilderAvatarVariable = document.getElementById("action-builder-avatar-variable");
+const floraActionBuilderAvatarVariableWrap = document.getElementById("action-builder-avatar-variable-wrap");
 const floraActionBuilderUrl = document.getElementById("action-builder-url");
 const floraCopyActionBuilderUrl = document.getElementById("copy-action-builder-url");
 const floraPreviewActionBuilderUrl = document.getElementById("preview-action-builder-url");
@@ -1321,6 +1325,7 @@ function floraActionBuilderApplyPreset() {
     floraActionBuilderAmountRole.value = "viewers";
     floraActionBuilderUpdateGoal.checked = false;
     floraActionBuilderCheers.checked = false;
+    floraActionBuilderAvatar.checked = false;
   }
 
   if (preset === "bits") {
@@ -1332,6 +1337,7 @@ function floraActionBuilderApplyPreset() {
     floraActionBuilderAmountRole.value = "bits";
     floraActionBuilderUpdateGoal.checked = false;
     floraActionBuilderCheers.checked = true;
+    floraActionBuilderAvatar.checked = false;
   }
 
   if (preset === "follow") {
@@ -1340,6 +1346,7 @@ function floraActionBuilderApplyPreset() {
     floraActionBuilderName.value = "%userName%";
     floraActionBuilderUpdateGoal.checked = true;
     floraActionBuilderCheers.checked = false;
+    floraActionBuilderAvatar.checked = false;
   }
 
   if (preset === "sub") {
@@ -1348,6 +1355,7 @@ function floraActionBuilderApplyPreset() {
     floraActionBuilderName.value = "%userName%";
     floraActionBuilderUpdateGoal.checked = true;
     floraActionBuilderCheers.checked = false;
+    floraActionBuilderAvatar.checked = false;
   }
 
   floraActionBuilderUpdateVisibility();
@@ -1361,6 +1369,7 @@ function floraActionBuilderUpdateVisibility() {
   const usesAmount = target === "raid" || target === "bits";
   const usesCheers = target === "bits";
   const usesGoalUpdate = target === "follow" || target === "sub";
+  const usesAvatar = target === "raid" || target === "bits" || target === "follow" || target === "sub";
 
   floraActionBuilderSetVisible(floraActionBuilderTargetWrap, isCustom);
   floraActionBuilderSetVisible(floraActionBuilderAmountPresetWrap, usesAmount);
@@ -1368,6 +1377,8 @@ function floraActionBuilderUpdateVisibility() {
   floraActionBuilderSetVisible(floraActionBuilderAmountRoleWrap, isCustom && usesAmount);
   floraActionBuilderSetVisible(floraActionBuilderCheersWrap, usesCheers);
   floraActionBuilderSetVisible(floraActionBuilderUpdateGoalWrap, usesGoalUpdate);
+  floraActionBuilderSetVisible(floraActionBuilderAvatarWrap, usesAvatar);
+  floraActionBuilderSetVisible(floraActionBuilderAvatarVariableWrap, usesAvatar && floraActionBuilderAvatar.checked);
 }
 
 function floraActionBuilderParameterValue(value) {
@@ -1378,10 +1389,15 @@ function floraActionBuilderBuildUrl() {
   const target = floraActionBuilderTarget.value;
   const name = floraActionBuilderParameterValue(floraActionBuilderName.value);
   const amount = floraActionBuilderParameterValue(floraActionBuilderAmount.value);
+  const avatarUrl = floraActionBuilderParameterValue(floraActionBuilderAvatarVariable.value);
   const params = new URLSearchParams();
 
   if (name) {
     params.set("name", name);
+  }
+
+  if (floraActionBuilderAvatar.checked && avatarUrl) {
+    params.set("avatarUrl", avatarUrl);
   }
 
   if (target === "raid") {
@@ -1433,7 +1449,10 @@ function floraActionBuilderGenerateUrl() {
 
   const preset = floraActionBuilderType.value;
   const modeText = preset === "custom" ? "Custom role mapping" : "Preset mapping";
-  floraActionBuilderStatus.textContent = `${modeText}: copy this URL into a Streamer.bot Fetch action.`;
+  const avatarNote = floraActionBuilderAvatar.checked
+    ? " Add Twitch → User → Get User Info For Target before the Fetch URL so %targetUserProfileImageUrl% is populated."
+    : "";
+  floraActionBuilderStatus.textContent = `${modeText}: copy this URL into a Streamer.bot Fetch action.${avatarNote}`;
 }
 
 function floraActionBuilderApplyVariablePreset(selectElement, inputElement) {
@@ -1457,6 +1476,8 @@ if (
   floraActionBuilderAmountRole &&
   floraActionBuilderUpdateGoal &&
   floraActionBuilderCheers &&
+  floraActionBuilderAvatar &&
+  floraActionBuilderAvatarVariable &&
   floraActionBuilderUrl &&
   floraCopyActionBuilderUrl &&
   floraPreviewActionBuilderUrl &&
@@ -1496,6 +1517,8 @@ if (
     floraActionBuilderAmountRole,
     floraActionBuilderUpdateGoal,
     floraActionBuilderCheers,
+    floraActionBuilderAvatar,
+    floraActionBuilderAvatarVariable,
   ].forEach((element) => {
     element.addEventListener("input", floraActionBuilderGenerateUrl);
     element.addEventListener("change", floraActionBuilderGenerateUrl);

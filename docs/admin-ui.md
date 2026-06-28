@@ -349,6 +349,37 @@ Each group can configure:
 
 Rotation group names should use lowercase letters, numbers, and hyphens.
 
+## Action Builder avatar URLs
+
+The Streamer.bot Action Builder can optionally add an `avatarUrl` parameter to generated Flora Fetch URLs.
+
+Enable:
+
+    Include Twitch avatar URL
+
+The default avatar URL variable is:
+
+    %targetUserProfileImageUrl%
+
+When this option is enabled, add this Streamer.bot sub-action before the Flora Fetch URL:
+
+    Twitch → User → Get User Info For Target
+
+For live user-triggered events, set the target user login to:
+
+    %userName%
+
+The generated raid URL will look like:
+
+    http://127.0.0.1:8000/api/raid?name=%userName%&avatarUrl=%targetUserProfileImageUrl%&viewers=%viewers%
+
+The generated bits URL will look like:
+
+    http://127.0.0.1:8000/api/bits?name=%userName%&avatarUrl=%targetUserProfileImageUrl%&bits=%bits%&cheers=1
+
+Avatar support is optional. Leave the checkbox disabled to generate the original non-avatar Fetch URLs.
+
+
 ## User avatars
 
 Flora can display user avatars in leaderboard panels and recent event panels.
