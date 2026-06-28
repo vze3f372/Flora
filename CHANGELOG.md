@@ -1,3 +1,10 @@
+## v0.12.4 - Avatar Action Builder
+
+- Added an optional Twitch avatar URL checkbox to the Streamer.bot Action Builder.
+- Added an avatar URL variable field with `%targetUserProfileImageUrl%` as the default.
+- Updated generated Fetch URLs to include `avatarUrl` when avatar support is enabled.
+- Added guidance that Streamer.bot should run **Twitch → User → Get User Info For Target** before the Flora Fetch URL when avatar support is enabled.
+
 ## v0.12.3 - User Avatar Cache
 
 - Added optional user avatar caching for stream events.
