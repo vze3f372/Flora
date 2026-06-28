@@ -1279,3 +1279,242 @@ if (
   });
 }
 // FLORA_PRESETS_UI_END
+
+// FLORA_ACTION_BUILDER_START
+const floraActionBuilderType = document.getElementById("action-builder-type");
+const floraActionBuilderTarget = document.getElementById("action-builder-target");
+const floraActionBuilderTargetWrap = document.getElementById("action-builder-target-wrap");
+const floraActionBuilderNamePreset = document.getElementById("action-builder-name-preset");
+const floraActionBuilderName = document.getElementById("action-builder-name");
+const floraActionBuilderAmountPreset = document.getElementById("action-builder-amount-preset");
+const floraActionBuilderAmountPresetWrap = document.getElementById("action-builder-amount-preset-wrap");
+const floraActionBuilderAmount = document.getElementById("action-builder-amount");
+const floraActionBuilderAmountWrap = document.getElementById("action-builder-amount-wrap");
+const floraActionBuilderAmountRole = document.getElementById("action-builder-amount-role");
+const floraActionBuilderAmountRoleWrap = document.getElementById("action-builder-amount-role-wrap");
+const floraActionBuilderUpdateGoal = document.getElementById("action-builder-update-goal");
+const floraActionBuilderUpdateGoalWrap = document.getElementById("action-builder-update-goal-wrap");
+const floraActionBuilderCheers = document.getElementById("action-builder-cheers");
+const floraActionBuilderCheersWrap = document.getElementById("action-builder-cheers-wrap");
+const floraActionBuilderUrl = document.getElementById("action-builder-url");
+const floraCopyActionBuilderUrl = document.getElementById("copy-action-builder-url");
+const floraPreviewActionBuilderUrl = document.getElementById("preview-action-builder-url");
+const floraActionBuilderStatus = document.getElementById("action-builder-status");
+
+function floraActionBuilderSetVisible(element, visible) {
+  if (!element) {
+    return;
+  }
+
+  element.hidden = !visible;
+}
+
+function floraActionBuilderApplyPreset() {
+  const preset = floraActionBuilderType.value;
+
+  if (preset === "raid") {
+    floraActionBuilderTarget.value = "raid";
+    floraActionBuilderNamePreset.value = "%userName%";
+    floraActionBuilderName.value = "%userName%";
+    floraActionBuilderAmountPreset.value = "%viewers%";
+    floraActionBuilderAmount.value = "%viewers%";
+    floraActionBuilderAmountRole.value = "viewers";
+    floraActionBuilderUpdateGoal.checked = false;
+    floraActionBuilderCheers.checked = false;
+  }
+
+  if (preset === "bits") {
+    floraActionBuilderTarget.value = "bits";
+    floraActionBuilderNamePreset.value = "%userName%";
+    floraActionBuilderName.value = "%userName%";
+    floraActionBuilderAmountPreset.value = "%bits%";
+    floraActionBuilderAmount.value = "%bits%";
+    floraActionBuilderAmountRole.value = "bits";
+    floraActionBuilderUpdateGoal.checked = false;
+    floraActionBuilderCheers.checked = true;
+  }
+
+  if (preset === "follow") {
+    floraActionBuilderTarget.value = "follow";
+    floraActionBuilderNamePreset.value = "%userName%";
+    floraActionBuilderName.value = "%userName%";
+    floraActionBuilderUpdateGoal.checked = true;
+    floraActionBuilderCheers.checked = false;
+  }
+
+  if (preset === "sub") {
+    floraActionBuilderTarget.value = "sub";
+    floraActionBuilderNamePreset.value = "%userName%";
+    floraActionBuilderName.value = "%userName%";
+    floraActionBuilderUpdateGoal.checked = true;
+    floraActionBuilderCheers.checked = false;
+  }
+
+  floraActionBuilderUpdateVisibility();
+  floraActionBuilderGenerateUrl();
+}
+
+function floraActionBuilderUpdateVisibility() {
+  const preset = floraActionBuilderType.value;
+  const target = floraActionBuilderTarget.value;
+  const isCustom = preset === "custom";
+  const usesAmount = target === "raid" || target === "bits";
+  const usesCheers = target === "bits";
+  const usesGoalUpdate = target === "follow" || target === "sub";
+
+  floraActionBuilderSetVisible(floraActionBuilderTargetWrap, isCustom);
+  floraActionBuilderSetVisible(floraActionBuilderAmountPresetWrap, usesAmount);
+  floraActionBuilderSetVisible(floraActionBuilderAmountWrap, usesAmount);
+  floraActionBuilderSetVisible(floraActionBuilderAmountRoleWrap, isCustom && usesAmount);
+  floraActionBuilderSetVisible(floraActionBuilderCheersWrap, usesCheers);
+  floraActionBuilderSetVisible(floraActionBuilderUpdateGoalWrap, usesGoalUpdate);
+}
+
+function floraActionBuilderParameterValue(value) {
+  return String(value || "").trim();
+}
+
+function floraActionBuilderBuildUrl() {
+  const target = floraActionBuilderTarget.value;
+  const name = floraActionBuilderParameterValue(floraActionBuilderName.value);
+  const amount = floraActionBuilderParameterValue(floraActionBuilderAmount.value);
+  const params = new URLSearchParams();
+
+  if (name) {
+    params.set("name", name);
+  }
+
+  if (target === "raid") {
+    params.set("viewers", amount || "%viewers%");
+    return `/api/raid?${params.toString()}`;
+  }
+
+  if (target === "bits") {
+    params.set("bits", amount || "%bits%");
+
+    if (floraActionBuilderCheers.checked) {
+      params.set("cheers", "1");
+    }
+
+    return `/api/bits?${params.toString()}`;
+  }
+
+  if (target === "follow") {
+    if (floraActionBuilderUpdateGoal.checked) {
+      params.set("updateGoal", "true");
+    }
+
+    return `/api/follow?${params.toString()}`;
+  }
+
+  if (target === "sub") {
+    if (floraActionBuilderUpdateGoal.checked) {
+      params.set("updateGoal", "true");
+    }
+
+    return `/api/sub?${params.toString()}`;
+  }
+
+  return "";
+}
+
+function floraActionBuilderGenerateUrl() {
+  floraActionBuilderUpdateVisibility();
+
+  const path = floraActionBuilderBuildUrl();
+  const url = path ? `${window.location.origin}${path}` : "";
+
+  floraActionBuilderUrl.value = url;
+
+  if (!url) {
+    floraActionBuilderStatus.textContent = "Could not generate URL for the selected options.";
+    return;
+  }
+
+  const preset = floraActionBuilderType.value;
+  const modeText = preset === "custom" ? "Custom role mapping" : "Preset mapping";
+  floraActionBuilderStatus.textContent = `${modeText}: copy this URL into a Streamer.bot Fetch action.`;
+}
+
+function floraActionBuilderApplyVariablePreset(selectElement, inputElement) {
+  if (selectElement.value === "custom") {
+    inputElement.focus();
+    inputElement.select();
+    return;
+  }
+
+  inputElement.value = selectElement.value;
+  floraActionBuilderGenerateUrl();
+}
+
+if (
+  floraActionBuilderType &&
+  floraActionBuilderTarget &&
+  floraActionBuilderNamePreset &&
+  floraActionBuilderName &&
+  floraActionBuilderAmountPreset &&
+  floraActionBuilderAmount &&
+  floraActionBuilderAmountRole &&
+  floraActionBuilderUpdateGoal &&
+  floraActionBuilderCheers &&
+  floraActionBuilderUrl &&
+  floraCopyActionBuilderUrl &&
+  floraPreviewActionBuilderUrl &&
+  floraActionBuilderStatus
+) {
+  floraActionBuilderType.addEventListener("change", floraActionBuilderApplyPreset);
+
+  floraActionBuilderTarget.addEventListener("change", () => {
+    const target = floraActionBuilderTarget.value;
+
+    if (target === "raid") {
+      floraActionBuilderAmountPreset.value = "%viewers%";
+      floraActionBuilderAmount.value = "%viewers%";
+      floraActionBuilderAmountRole.value = "viewers";
+    }
+
+    if (target === "bits") {
+      floraActionBuilderAmountPreset.value = "%bits%";
+      floraActionBuilderAmount.value = "%bits%";
+      floraActionBuilderAmountRole.value = "bits";
+    }
+
+    floraActionBuilderGenerateUrl();
+  });
+
+  floraActionBuilderNamePreset.addEventListener("change", () => {
+    floraActionBuilderApplyVariablePreset(floraActionBuilderNamePreset, floraActionBuilderName);
+  });
+
+  floraActionBuilderAmountPreset.addEventListener("change", () => {
+    floraActionBuilderApplyVariablePreset(floraActionBuilderAmountPreset, floraActionBuilderAmount);
+  });
+
+  [
+    floraActionBuilderName,
+    floraActionBuilderAmount,
+    floraActionBuilderAmountRole,
+    floraActionBuilderUpdateGoal,
+    floraActionBuilderCheers,
+  ].forEach((element) => {
+    element.addEventListener("input", floraActionBuilderGenerateUrl);
+    element.addEventListener("change", floraActionBuilderGenerateUrl);
+  });
+
+  floraCopyActionBuilderUrl.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(floraActionBuilderUrl.value);
+    setStatus("Copied Streamer.bot Fetch URL.", "success");
+  });
+
+  floraPreviewActionBuilderUrl.addEventListener("click", () => {
+    if (!floraActionBuilderUrl.value) {
+      setStatus("No Action Builder URL generated.", "error");
+      return;
+    }
+
+    window.open(floraActionBuilderUrl.value, "_blank", "noopener,noreferrer");
+  });
+
+  floraActionBuilderApplyPreset();
+}
+// FLORA_ACTION_BUILDER_END

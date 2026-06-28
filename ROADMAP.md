@@ -1,5 +1,12 @@
 # Flora Roadmap
 
+## v0.12.0 - Streamer.bot Action Builder
+
+- Status: Active implementation branch for local Streamer.bot Fetch URL generation.
+- Generate Fetch URLs for supported Flora event endpoints.
+- Support common Streamer.bot variable presets.
+- Support Custom mode for existing Flora targets.
+
 ## v0.11.1 - Preset Preview and Management
 
 - Status: Active implementation branch for preset polish.
