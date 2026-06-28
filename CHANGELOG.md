@@ -1,3 +1,10 @@
+## v0.12.6 - Streamer.bot Setup Checklist
+
+- Added a Streamer.bot setup checklist covering Flora server startup, OBS browser source URLs, Streamer.bot Fetch URL actions, avatar support, testing, and troubleshooting.
+- Documented recommended raid, bits, follow, and subscription action setup.
+- Documented Windows, Linux, and Streamer.bot-through-Wine startup paths.
+- Added troubleshooting checks for server health, avatar caching, stale browser assets, and duplicate server prevention.
+
 ## v0.12.5 - Server Launcher
 
 - Added `scripts/flora-launcher.py` for starting the Flora server only when it is not already running.
