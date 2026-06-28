@@ -60,6 +60,7 @@ const resetStyleButton = document.getElementById("reset-style-button");
 const rotationForm = document.getElementById("rotation-form");
 const resetRotationButton = document.getElementById("reset-rotation-button");
 const copyRotationUrlButton = document.getElementById("copy-rotation-url-button");
+const openRotationPreviewButton = document.getElementById("open-rotation-preview-button");
 const rotationPanelList = document.getElementById("rotation-panel-list");
 const eventThemeForm = document.getElementById("event-theme-form");
 const resetEventThemeButton = document.getElementById("reset-event-theme-button");
@@ -409,6 +410,11 @@ async function copyRotationUrl() {
   setStatus("Copied Rotation URL.", "success");
 }
 
+function openRotationPreview() {
+  window.open(rotationFields.rotationUrl.value, "_blank", "noopener,noreferrer");
+  setStatus("Opened Rotation preview.", "success");
+}
+
 
 function normalizeEventTheme(eventTheme) {
   const source = eventTheme && typeof eventTheme === "object"
@@ -677,13 +683,38 @@ async function resetStyleDefaults() {
   }
 }
 
-function renderUrlList(elementId, urls) {
+function createCopyButton(input, label) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Copy";
+  button.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(input.value);
+    setStatus(`Copied ${label} URL.`, "success");
+  });
+
+  return button;
+}
+
+function createPreviewButton(input, label) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Open Preview";
+  button.className = "secondary-button";
+  button.addEventListener("click", () => {
+    window.open(input.value, "_blank", "noopener,noreferrer");
+    setStatus(`Opened ${label} preview.`, "success");
+  });
+
+  return button;
+}
+
+function renderUrlList(elementId, urls, options = {}) {
   const container = document.getElementById(elementId);
   container.replaceChildren();
 
   for (const [path, label] of urls) {
     const row = document.createElement("div");
-    row.className = "url-row";
+    row.className = options.preview ? "url-row url-row--preview" : "url-row";
 
     const labelElement = document.createElement("div");
     labelElement.className = "url-label";
@@ -694,15 +725,12 @@ function renderUrlList(elementId, urls) {
     input.readOnly = true;
     input.value = absoluteUrl(path);
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = "Copy";
-    button.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(input.value);
-      setStatus(`Copied ${label} URL.`, "success");
-    });
+    row.append(labelElement, input, createCopyButton(input, label));
 
-    row.append(labelElement, input, button);
+    if (options.preview) {
+      row.append(createPreviewButton(input, label));
+    }
+
     container.append(row);
   }
 }
@@ -717,11 +745,12 @@ resetStyleButton.addEventListener("click", resetStyleDefaults);
 rotationForm.addEventListener("submit", saveRotation);
 resetRotationButton.addEventListener("click", resetRotationDefaults);
 copyRotationUrlButton.addEventListener("click", copyRotationUrl);
+openRotationPreviewButton.addEventListener("click", openRotationPreview);
 rotationFields.startPanel.addEventListener("change", updateRotationUrl);
 eventThemeForm.addEventListener("submit", saveEventTheme);
 resetEventThemeButton.addEventListener("click", resetEventThemeDefaults);
 
-renderUrlList("obs-url-list", obsUrls);
+renderUrlList("obs-url-list", obsUrls, { preview: true });
 renderUrlList("streamerbot-url-list", streamerbotUrls);
 
 loadAdminData().catch((error) => setStatus(error.message, "error"));

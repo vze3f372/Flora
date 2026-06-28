@@ -1,5 +1,12 @@
 # Flora Roadmap
 
+## v0.10.5 - Admin Preview Buttons
+
+- Status: Active implementation branch for local admin preview controls.
+- Add Open Preview buttons for OBS browser source URLs.
+- Add Open Preview button for the rotation URL.
+- Keep Streamer.bot Fetch URLs copy-only.
+
 ## v0.10.4 - Admin Write Backups
 
 - Status: Active implementation branch for local admin write safety.
