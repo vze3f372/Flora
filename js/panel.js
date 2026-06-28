@@ -770,7 +770,7 @@ function renderGoalPanel(type, panelConfig, data) {
   const progressEmpty = getGoalColor(panelConfig.progressEmpty, DEFAULT_GOAL_PROGRESS_EMPTY);
   const progressStyle = [
     `--goal-progress: ${barPercentage}%`,
-    `--goal-fill: ${progressFill}`,
+    `--goal-fill: var(--accent-primary, #38bdf8)`,
     `--goal-empty: ${progressEmpty}`
   ].join("; ");
 

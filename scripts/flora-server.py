@@ -299,30 +299,90 @@ def _flora_admin_apply_goal_updates(existing_goals: dict, payload: dict) -> dict
     return next_goals
 
 
-def _flora_admin_handle_post(handler) -> bool:
-    request_path = _flora_admin_get_path(handler)
-
-    if request_path != "/api/admin/goals":
-        return False
-
+def _flora_admin_read_request_json(handler) -> dict:
     try:
         content_length = int(handler.headers.get("Content-Length", "0") or "0")
     except ValueError:
-        _flora_admin_send_error(handler, 400, "Invalid Content-Length header.")
-        return True
+        raise ValueError("Invalid Content-Length header.")
 
     if content_length <= 0:
-        _flora_admin_send_error(handler, 400, "Expected a JSON request body.")
-        return True
+        raise ValueError("Expected a JSON request body.")
 
     try:
         raw_body = handler.rfile.read(content_length).decode("utf-8")
-        payload = json.loads(raw_body)
-    except UnicodeDecodeError:
-        _flora_admin_send_error(handler, 400, "Request body must be UTF-8.")
-        return True
+    except UnicodeDecodeError as error:
+        raise ValueError("Request body must be UTF-8.") from error
+
+    try:
+        return json.loads(raw_body)
     except json.JSONDecodeError as error:
-        _flora_admin_send_error(handler, 400, f"Request body is invalid JSON: {error}")
+        raise ValueError(f"Request body is invalid JSON: {error}") from error
+
+
+_FLORA_ADMIN_STYLE_DEFAULTS = {
+    "colors": {
+        "background": "#0f172a",
+        "panel": "#111827",
+        "panelAlt": "#182235",
+        "text": "#f8fafc",
+        "muted": "#94a3b8",
+        "accent": "#38bdf8",
+        "border": "#293548",
+        "success": "#22c55e",
+        "error": "#fb7185",
+    }
+}
+
+
+def _flora_admin_parse_hex_color(path: str, value) -> str:
+    import re
+
+    if not isinstance(value, str):
+        raise ValueError(f"{path} must be a hex color string.")
+
+    value = value.strip()
+
+    if not re.fullmatch(r"#[0-9a-fA-F]{6}", value):
+        raise ValueError(f"{path} must use #RRGGBB format.")
+
+    return value
+
+
+def _flora_admin_normalize_style(payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("Expected a JSON object.")
+
+    style = payload.get("style", payload)
+
+    if not isinstance(style, dict):
+        raise ValueError("Expected a style object.")
+
+    colors = style.get("colors")
+
+    if not isinstance(colors, dict):
+        raise ValueError("Expected style.colors object.")
+
+    unknown = sorted(set(colors) - set(_FLORA_ADMIN_STYLE_DEFAULTS["colors"]))
+
+    if unknown:
+        raise ValueError(f"Unsupported style color keys: {', '.join(unknown)}")
+
+    next_style = json.loads(json.dumps(_FLORA_ADMIN_STYLE_DEFAULTS))
+
+    for key, fallback in _FLORA_ADMIN_STYLE_DEFAULTS["colors"].items():
+        next_style["colors"][key] = _flora_admin_parse_hex_color(
+            f"style.colors.{key}",
+            colors.get(key, fallback),
+        )
+
+    return next_style
+
+
+def _flora_admin_handle_goals_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
         return True
 
     goals_path = _flora_admin_repo_root() / "data" / "goals.json"
@@ -343,6 +403,44 @@ def _flora_admin_handle_post(handler) -> bool:
 
     _flora_admin_send_json(handler, {"ok": True, "goals": next_goals})
     return True
+
+
+def _flora_admin_handle_style_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        next_style = _flora_admin_normalize_style(payload)
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    config_path = _flora_admin_repo_root() / "config.json"
+
+    try:
+        config = _flora_admin_read_json(config_path)
+        config["style"] = next_style
+        _flora_admin_write_json(config_path, config)
+    except FileNotFoundError:
+        _flora_admin_send_error(handler, 404, "config.json was not found.")
+        return True
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 500, f"config.json is invalid JSON: {error}")
+        return True
+
+    _flora_admin_send_json(handler, {"ok": True, "style": next_style})
+    return True
+
+
+def _flora_admin_handle_post(handler) -> bool:
+    request_path = _flora_admin_get_path(handler)
+
+    if request_path == "/api/admin/goals":
+        return _flora_admin_handle_goals_post(handler)
+
+    if request_path == "/api/admin/style":
+        return _flora_admin_handle_style_post(handler)
+
+    return False
+
 # FLORA_ADMIN_API_END
 
 class FloraRequestHandler(SimpleHTTPRequestHandler):

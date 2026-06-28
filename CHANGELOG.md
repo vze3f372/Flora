@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.10.1 - Panel Style Editor
+
+- Added panel color controls to the local admin UI.
+- Added `style.colors` settings in `config.json`.
+- Added `/api/admin/style` for validated style updates.
+- Added runtime CSS variable overrides for OBS panels.
+
 ## v0.10.0 - Local Admin UI Foundation
 
 - Added a local admin page at `/admin.html`.

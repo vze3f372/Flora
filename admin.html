@@ -48,6 +48,53 @@
     </section>
 
     <section class="card">
+      <h2>Panel Style</h2>
+      <form id="style-form" class="style-grid">
+        <label>
+          <span>Background</span>
+          <input id="style-background" type="color" required>
+        </label>
+        <label>
+          <span>Panel</span>
+          <input id="style-panel" type="color" required>
+        </label>
+        <label>
+          <span>Panel alternate</span>
+          <input id="style-panel-alt" type="color" required>
+        </label>
+        <label>
+          <span>Text</span>
+          <input id="style-text" type="color" required>
+        </label>
+        <label>
+          <span>Muted text</span>
+          <input id="style-muted" type="color" required>
+        </label>
+        <label>
+          <span>Accent</span>
+          <input id="style-accent" type="color" required>
+        </label>
+        <label>
+          <span>Border</span>
+          <input id="style-border" type="color" required>
+        </label>
+        <label>
+          <span>Success</span>
+          <input id="style-success" type="color" required>
+        </label>
+        <label>
+          <span>Error</span>
+          <input id="style-error" type="color" required>
+        </label>
+
+        <div class="actions split-actions">
+          <button id="save-style-button" type="submit">Save Style</button>
+          <button id="reset-style-button" type="button" class="secondary-button">Reset Style Defaults</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
       <h2>OBS Browser Source URLs</h2>
       <div id="obs-url-list" class="url-list"></div>
     </section>

@@ -42,8 +42,8 @@
   background:
     linear-gradient(
       90deg,
-      var(--goal-fill, #5eead4) 0%,
-      var(--goal-fill, #5eead4) var(--goal-progress, 0%),
+      var(--accent-primary, #5eead4) 0%,
+      var(--accent-primary, #5eead4) var(--goal-progress, 0%),
       var(--goal-empty, #16323a) var(--goal-progress, 0%),
       var(--goal-empty, #16323a) 100%
     );
