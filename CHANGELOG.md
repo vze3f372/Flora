@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.10.5 - Admin Preview Buttons
+
+- Added Open Preview buttons for OBS browser source URLs in the local admin UI.
+- Added an Open Preview button for the rotation URL.
+- Kept Streamer.bot Fetch URLs copy-only to avoid accidental write actions.
+
 ## v0.10.4 - Admin Write Backups
 
 - Added automatic timestamped backups before local admin writes.

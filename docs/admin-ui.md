@@ -159,7 +159,7 @@ http://127.0.0.1:8000/panel.html?type=recent-events
 http://127.0.0.1:8000/panel.html?rotation=true&duration=3
 ```
 
-Use these as OBS Browser Source URLs.
+Use these as OBS Browser Source URLs. The admin page also provides **Open Preview** buttons for panel URLs so each panel can be checked quickly in a browser tab.
 
 ## Streamer.bot Fetch URLs
 
@@ -173,6 +173,8 @@ http://127.0.0.1:8000/api/sub?name=%userName%&updateGoal=true
 ```
 
 Use these with Streamer.bot's built-in **Fetch URL** sub-action.
+
+Streamer.bot Fetch URLs are copy-only in the admin page. They do not have preview buttons because opening those URLs can create or update stream data.
 
 ## Refreshing OBS/browser sources
 

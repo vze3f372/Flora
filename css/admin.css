@@ -450,3 +450,18 @@ select:focus {
     justify-self: stretch;
   }
 }
+
+.url-row--preview {
+  grid-template-columns: 165px minmax(0, 1fr) auto auto;
+}
+
+.single-url-row {
+  grid-template-columns: 165px minmax(0, 1fr) auto auto;
+}
+
+@media (max-width: 760px) {
+  .url-row--preview,
+  .single-url-row {
+    grid-template-columns: 1fr;
+  }
+}
