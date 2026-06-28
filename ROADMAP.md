@@ -1,5 +1,13 @@
 # Flora Roadmap
 
+## v0.11.0 - Presets Export/Import
+
+- Status: Active implementation branch for named local presets.
+- Export current admin-managed setup as a preset.
+- Import a selected preset.
+- Store local presets under `presets/`.
+- Back up current config and goals before importing.
+
 ## v0.10.7 - Backup Browser and Tags
 
 - Status: Active implementation branch for selectable backups and metadata.

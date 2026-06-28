@@ -153,6 +153,48 @@
     </section>
 
     <section class="card">
+      <h2>Presets</h2>
+      <p class="form-note">Export or import a named Flora admin setup.</p>
+
+      <div class="preset-grid">
+        <label>
+          Preset name
+          <input id="preset-name" type="text" value="Default Stream Layout">
+        </label>
+
+        <label>
+          Note
+          <input id="preset-note" type="text" placeholder="Optional note for this preset">
+        </label>
+
+        <button id="export-preset-button" type="button" class="secondary-button">
+          Export Current Preset
+        </button>
+
+        <button id="reload-presets-button" type="button" class="secondary-button">
+          Reload Presets
+        </button>
+      </div>
+
+      <label class="full-width-label">
+        Available presets
+        <select id="preset-select"></select>
+      </label>
+
+      <p id="preset-status" class="backup-status">Loading presets...</p>
+
+      <div class="button-row">
+        <button id="import-preset-button" type="button" class="danger-button" disabled>
+          Import Selected Preset
+        </button>
+      </div>
+
+      <p class="form-note">
+        Importing a preset backs up the current config and goals before applying the selected preset.
+      </p>
+    </section>
+
+    <section class="card">
       <h2>Restore Backups</h2>
       <p class="form-note">Browse, tag, and restore local admin backups.</p>
 

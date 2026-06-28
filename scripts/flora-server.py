@@ -874,12 +874,241 @@ def _flora_admin_handle_backup_restore_post(handler) -> bool:
     return True
 
 
+
+# FLORA_PRESET_API_START
+
+def _flora_admin_presets_dir() -> Path:
+    return _flora_admin_repo_root() / "presets"
+
+
+def _flora_admin_clean_preset_text(value, max_length: int = 160) -> str:
+    return str(value or "").strip()[:max_length]
+
+
+def _flora_admin_preset_slug(value: str) -> str:
+    import re
+
+    cleaned = re.sub(r"[^a-zA-Z0-9._-]+", "-", value.strip().lower())
+    cleaned = cleaned.strip("-._")
+
+    return cleaned or "flora-preset"
+
+
+def _flora_admin_preset_path(filename: str) -> Path:
+    presets_dir = _flora_admin_presets_dir().resolve()
+    candidate = (presets_dir / filename).resolve()
+
+    if candidate.parent != presets_dir:
+        raise ValueError("Preset path must be inside presets/.")
+
+    if candidate.suffix != ".json":
+        raise ValueError("Preset file must be a .json file.")
+
+    return candidate
+
+
+def _flora_admin_preset_recent_events_panel(config: dict) -> dict:
+    panels = config.setdefault("panels", {})
+    panel = panels.setdefault("recent-events", {})
+    return panel
+
+
+def _flora_admin_current_preset_payload(name: str, note: str) -> dict:
+    from datetime import datetime, timezone
+
+    repo_root = _flora_admin_repo_root()
+    config = _flora_admin_read_json(repo_root / "config.json")
+    goals = _flora_admin_read_json(repo_root / "data" / "goals.json")
+    recent_events_panel = _flora_admin_preset_recent_events_panel(config)
+
+    return {
+        "schemaVersion": 1,
+        "kind": "flora-admin-preset",
+        "name": _flora_admin_clean_preset_text(name, 80) or "Flora Preset",
+        "note": _flora_admin_clean_preset_text(note, 240),
+        "createdAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "data": {
+            "style": config.get("style", {}),
+            "rotation": config.get("rotation", {}),
+            "eventTypes": recent_events_panel.get("eventTypes", {}),
+            "goals": goals,
+        },
+    }
+
+
+def _flora_admin_preset_summary(path: Path) -> dict:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        payload = {}
+
+    stat = path.stat()
+
+    return {
+        "filename": path.name,
+        "path": path.relative_to(_flora_admin_repo_root()).as_posix(),
+        "name": _flora_admin_clean_preset_text(payload.get("name", path.stem), 80),
+        "note": _flora_admin_clean_preset_text(payload.get("note", ""), 240),
+        "createdAt": payload.get("createdAt"),
+        "modified": stat.st_mtime,
+        "sizeBytes": stat.st_size,
+        "schemaVersion": payload.get("schemaVersion"),
+    }
+
+
+def _flora_admin_list_presets() -> list[dict]:
+    presets_dir = _flora_admin_presets_dir()
+
+    if not presets_dir.exists():
+        return []
+
+    preset_paths = sorted(
+        presets_dir.glob("*.json"),
+        key=lambda item: item.stat().st_mtime,
+        reverse=True,
+    )
+
+    return [_flora_admin_preset_summary(path) for path in preset_paths]
+
+
+def _flora_admin_export_preset(name: str, note: str) -> dict:
+    from datetime import datetime, timezone
+
+    presets_dir = _flora_admin_presets_dir()
+    presets_dir.mkdir(parents=True, exist_ok=True)
+
+    payload = _flora_admin_current_preset_payload(name, note)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    filename = f"{timestamp}-{_flora_admin_preset_slug(payload['name'])}.json"
+    preset_path = _flora_admin_preset_path(filename)
+
+    preset_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    return _flora_admin_preset_summary(preset_path)
+
+
+def _flora_admin_import_preset(filename: str) -> dict:
+    repo_root = _flora_admin_repo_root()
+    preset_path = _flora_admin_preset_path(filename)
+
+    if not preset_path.exists():
+        raise FileNotFoundError(f"Preset does not exist: {filename}")
+
+    preset = json.loads(preset_path.read_text(encoding="utf-8"))
+
+    if preset.get("kind") != "flora-admin-preset":
+        raise ValueError("Preset kind is not flora-admin-preset.")
+
+    data = preset.get("data")
+
+    if not isinstance(data, dict):
+        raise ValueError("Preset data must be an object.")
+
+    config_path = repo_root / "config.json"
+    goals_path = repo_root / "data" / "goals.json"
+
+    config = _flora_admin_read_json(config_path)
+
+    if isinstance(data.get("style"), dict):
+        config["style"] = data["style"]
+
+    if isinstance(data.get("rotation"), dict):
+        config["rotation"] = data["rotation"]
+
+    if isinstance(data.get("eventTypes"), dict):
+        recent_events_panel = _flora_admin_preset_recent_events_panel(config)
+        recent_events_panel["eventTypes"] = data["eventTypes"]
+
+    if config_path.exists():
+        _flora_admin_backup_json(config_path)
+
+    _flora_admin_write_json(config_path, config)
+
+    if isinstance(data.get("goals"), dict):
+        if goals_path.exists():
+            _flora_admin_backup_json(goals_path)
+
+        _flora_admin_write_json(goals_path, data["goals"])
+
+    return {
+        "filename": preset_path.name,
+        "name": _flora_admin_clean_preset_text(preset.get("name", preset_path.stem), 80),
+        "path": preset_path.relative_to(repo_root).as_posix(),
+    }
+
+
+def _flora_admin_handle_presets_get(handler) -> bool:
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "presets": _flora_admin_list_presets(),
+    })
+    return True
+
+
+def _flora_admin_handle_preset_export_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        preset = _flora_admin_export_preset(
+            name=payload.get("name", ""),
+            note=payload.get("note", ""),
+        )
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+        return True
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "preset": preset,
+        "presets": _flora_admin_list_presets(),
+    })
+    return True
+
+
+def _flora_admin_handle_preset_import_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        filename = str(payload.get("filename", "")).strip()
+
+        if not filename:
+            _flora_admin_send_error(handler, 400, "filename is required")
+            return True
+
+        imported = _flora_admin_import_preset(filename)
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+        return True
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "imported": imported,
+        "presets": _flora_admin_list_presets(),
+    })
+    return True
+
+# FLORA_PRESET_API_END
+
+
 def _flora_admin_handle_get(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
     repo_root = _flora_admin_repo_root()
 
     if request_path == "/api/admin/backups":
         return _flora_admin_handle_backups_get(handler)
+
+    if request_path == "/api/admin/presets":
+        return _flora_admin_handle_presets_get(handler)
 
     if request_path == "/api/admin/config":
         try:
@@ -1166,6 +1395,12 @@ def _flora_admin_handle_post(handler) -> bool:
 
     if request_path == "/api/admin/backups/restore":
         return _flora_admin_handle_backup_restore_post(handler)
+
+    if request_path == "/api/admin/presets/export":
+        return _flora_admin_handle_preset_export_post(handler)
+
+    if request_path == "/api/admin/presets/import":
+        return _flora_admin_handle_preset_import_post(handler)
 
     if request_path == "/api/admin/backups/tag":
         return _flora_admin_handle_backup_tag_post(handler)

@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.11.0 - Presets Export/Import
+
+- Added local admin preset export support.
+- Added local admin preset import support.
+- Stored local presets under `presets/`.
+- Exported style, rotation, recent activity event theme, and goals.
+- Backed up current config and goals before importing a preset.
+- Added `presets/` to `.gitignore`.
+
 ## v0.10.7 - Backup Browser and Tags
 
 - Added selectable backup lists for `config.json` and `data/goals.json`.
