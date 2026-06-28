@@ -10,3 +10,7 @@ backups/
 
 # Flora local presets
 presets/
+
+# Flora runtime avatar cache
+data/avatar-cache.json
+assets/avatars/

@@ -2,6 +2,7 @@ let scrollController = null;
 let lastRenderSignature = "";
 let rotationIndex = 0;
 let rotationTimer = null;
+let avatarCache = {};
 const EVENT_TIME_REFRESH_INTERVAL_MS = 15000;
 
 const PANEL_RENDERERS = {
@@ -81,6 +82,66 @@ function getNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
 }
+
+
+function normalizeAvatarName(name) {
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-|-$/g, "") || "unknown";
+}
+
+async function loadAvatarCache() {
+  const result = await loadJson("data/avatar-cache.json");
+
+  if (!result.ok || !isObject(result.data)) {
+    avatarCache = {};
+    return;
+  }
+
+  avatarCache = result.data;
+}
+
+function getAvatarEntry(name) {
+  return avatarCache[normalizeAvatarName(name)] || null;
+}
+
+function avatarInitials(name) {
+  const cleaned = String(name || "?").trim();
+
+  if (!cleaned) {
+    return "?";
+  }
+
+  return cleaned.slice(0, 2).toUpperCase();
+}
+
+function renderAvatar(name, className) {
+  const avatar = getAvatarEntry(name);
+
+  if (avatar && avatar.avatarPath) {
+    return `
+      <span class="${className}">
+        <img src="${escapeHtml(avatar.avatarPath)}" alt="" loading="lazy">
+      </span>
+    `;
+  }
+
+  return `<span class="${className} ${className}--fallback">${escapeHtml(avatarInitials(name))}</span>`;
+}
+
+function renderNameWithAvatar(name, wrapperClass, avatarClass, textClass) {
+  const avatar = renderAvatar(name, avatarClass);
+
+  return `
+    <div class="${wrapperClass}">
+      ${avatar}
+      <span class="${textClass}">${escapeHtml(name)}</span>
+    </div>
+  `;
+}
+
 
 function getPanelConfig(config, type) {
   return config.panels?.[type] ?? config.leaderboards?.[type] ?? null;
@@ -498,7 +559,7 @@ function createTableRow(rank, name, stats, panelConfig) {
 
   row.innerHTML = `
     <div class="table-panel-rank">${rank}.</div>
-    <div class="table-panel-name">${escapeHtml(name)}</div>
+    ${renderNameWithAvatar(name, "table-panel-name", "table-panel-avatar", "table-panel-name-text")}
     ${valueCells}
   `;
 
@@ -630,6 +691,7 @@ async function renderPanel(force = false, configOverride = null, typeOverride = 
 
   lastRenderSignature = signature;
 
+  await loadAvatarCache();
   renderer(type, panelConfig, data);
 }
 
@@ -802,7 +864,7 @@ function renderEventsPanel(type, panelConfig, data) {
     return `
       <article class="events-panel-row">
         <div class="events-panel-type" style="--event-type-color: ${escapeHtml(eventColor)}">${escapeHtml(eventLabel)}</div>
-        <div class="events-panel-name">${escapeHtml(event.name)}</div>
+        ${renderNameWithAvatar(event.name, "events-panel-name", "events-panel-avatar", "events-panel-name-text")}
         <div class="events-panel-detail">${escapeHtml(event.detail)}</div>
         <div class="events-panel-time" data-created-at="${escapeHtml(event.createdAt || "")}" data-fallback-time="${escapeHtml(event.time || "")}">${escapeHtml(formatEventTime(event))}</div>
       </article>
