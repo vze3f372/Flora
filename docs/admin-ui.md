@@ -190,6 +190,23 @@ For stubborn browser caching, add a temporary query parameter:
 http://127.0.0.1:8000/panel.html?type=recent-events&v=test
 ```
 
+## Admin write backups
+
+Before the local admin API writes to `config.json` or `data/goals.json`, Flora creates a timestamped backup under:
+
+```text
+backups/admin/
+```
+
+These backups are local safety files and are ignored by git.
+
+Example backup filenames:
+
+```text
+backups/admin/config.json.20260628T143012123456Z.bak
+backups/admin/data__goals.json.20260628T143012123456Z.bak
+```
+
 ## Safety notes
 
 The admin page is designed for local use.

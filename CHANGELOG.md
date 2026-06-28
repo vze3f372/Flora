@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.4 - Admin Write Backups
+
+- Added automatic timestamped backups before local admin writes.
+- Backed up `config.json` before style, rotation, and event theme changes.
+- Backed up `data/goals.json` before goal changes.
+- Stored local admin backups under `backups/admin/`.
+- Added `backups/` to `.gitignore`.
+
 ## v0.10.3 - Event Theme Editor
 
 - Added recent activity event label/color controls to the local admin UI.
