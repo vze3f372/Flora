@@ -2098,6 +2098,129 @@ if (
 }
 // FLORA_PRESETS_UI_END
 
+
+// FLORA_OBS_SOURCE_QUICK_COPY_START
+const floraObsSourceSingleList = document.getElementById("obs-source-single-list");
+const floraObsSourceRotationList = document.getElementById("obs-source-rotation-list");
+const floraObsSourceStatus = document.getElementById("obs-source-status");
+
+const FLORA_OBS_SINGLE_SOURCES = [
+  ["Raid leaderboard", "/panel.html?type=raids"],
+  ["Raid count leaderboard", "/panel.html?type=raids-count"],
+  ["Biggest raid leaderboard", "/panel.html?type=raids-biggest"],
+  ["Bits leaderboard", "/panel.html?type=bits"],
+  ["Cheer count leaderboard", "/panel.html?type=bits-count"],
+  ["Biggest cheer leaderboard", "/panel.html?type=bits-biggest"],
+  ["Follower goal", "/panel.html?type=follower-goal"],
+  ["Subscriber goal", "/panel.html?type=sub-goal"],
+  ["Recent events", "/panel.html?type=recent-events"],
+];
+
+const FLORA_OBS_ROTATION_SOURCES = [
+  ["Default rotation", "/panel.html?rotation=true"],
+  ["Fast default rotation", "/panel.html?rotation=true&duration=3"],
+  ["Leaderboards rotation", "/panel.html?rotation=leaderboards"],
+  ["Goals rotation", "/panel.html?rotation=goals"],
+];
+
+function floraObsAbsoluteUrl(path) {
+  return `${window.location.origin}${path}`;
+}
+
+async function floraCopyObsUrl(url, label) {
+  try {
+    await navigator.clipboard.writeText(url);
+    setStatus(`Copied OBS source URL: ${label}.`, "success");
+    if (floraObsSourceStatus) {
+      floraObsSourceStatus.textContent = `Copied: ${label}`;
+    }
+  } catch {
+    const temporary = document.createElement("textarea");
+    temporary.value = url;
+    temporary.setAttribute("readonly", "");
+    temporary.style.position = "fixed";
+    temporary.style.left = "-9999px";
+    document.body.append(temporary);
+    temporary.select();
+    document.execCommand("copy");
+    temporary.remove();
+
+    setStatus(`Copied OBS source URL: ${label}.`, "success");
+    if (floraObsSourceStatus) {
+      floraObsSourceStatus.textContent = `Copied: ${label}`;
+    }
+  }
+}
+
+function floraOpenObsPreview(url, label) {
+  window.open(url, "_blank", "noopener,noreferrer");
+  setStatus(`Opened OBS source preview: ${label}.`, "success");
+  if (floraObsSourceStatus) {
+    floraObsSourceStatus.textContent = `Opened preview: ${label}`;
+  }
+}
+
+function floraCreateObsSourceRow(label, path) {
+  const url = floraObsAbsoluteUrl(path);
+
+  const row = document.createElement("div");
+  row.className = "obs-source-row";
+
+  const title = document.createElement("div");
+  title.className = "obs-source-title";
+  title.textContent = label;
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.readOnly = true;
+  input.value = url;
+  input.className = "obs-source-url";
+
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "secondary-button";
+  copyButton.textContent = "Copy";
+  copyButton.addEventListener("click", () => {
+    floraCopyObsUrl(url, label).catch((error) => setStatus(error.message, "error"));
+  });
+
+  const previewButton = document.createElement("button");
+  previewButton.type = "button";
+  previewButton.className = "secondary-button";
+  previewButton.textContent = "Preview";
+  previewButton.addEventListener("click", () => {
+    floraOpenObsPreview(url, label);
+  });
+
+  row.append(title, input, copyButton, previewButton);
+
+  return row;
+}
+
+function floraRenderObsSources() {
+  if (floraObsSourceSingleList) {
+    floraObsSourceSingleList.replaceChildren();
+
+    for (const [label, path] of FLORA_OBS_SINGLE_SOURCES) {
+      floraObsSourceSingleList.append(floraCreateObsSourceRow(label, path));
+    }
+  }
+
+  if (floraObsSourceRotationList) {
+    floraObsSourceRotationList.replaceChildren();
+
+    for (const [label, path] of FLORA_OBS_ROTATION_SOURCES) {
+      floraObsSourceRotationList.append(floraCreateObsSourceRow(label, path));
+    }
+  }
+}
+
+if (floraObsSourceSingleList && floraObsSourceRotationList) {
+  floraRenderObsSources();
+}
+// FLORA_OBS_SOURCE_QUICK_COPY_END
+
+
 // FLORA_ACTION_BUILDER_START
 const floraActionBuilderType = document.getElementById("action-builder-type");
 const floraActionBuilderTarget = document.getElementById("action-builder-target");
