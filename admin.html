@@ -16,6 +16,83 @@
       <button id="reload-button" type="button">Reload</button>
     </header>
 
+    <section class="card" id="server-status-card">
+      <h2>Flora Server Status</h2>
+      <p class="form-note">
+        Check the local Flora server, copy common URLs, and confirm the recommended startup commands.
+      </p>
+
+      <div class="server-status-grid">
+        <article class="server-status-tile">
+          <h3>Status</h3>
+          <p id="server-status-state">Checking...</p>
+        </article>
+
+        <article class="server-status-tile">
+          <h3>Host</h3>
+          <p id="server-status-host">127.0.0.1</p>
+        </article>
+
+        <article class="server-status-tile">
+          <h3>Port</h3>
+          <p id="server-status-port">8000</p>
+        </article>
+      </div>
+
+      <div class="server-url-grid">
+        <label>
+          Health URL
+          <div class="copy-row">
+            <input id="server-health-url" type="text" readonly>
+            <button id="copy-server-health-url" type="button" class="secondary-button">Copy</button>
+          </div>
+        </label>
+
+        <label>
+          Admin URL
+          <div class="copy-row">
+            <input id="server-admin-url" type="text" readonly>
+            <button id="copy-server-admin-url" type="button" class="secondary-button">Copy</button>
+          </div>
+        </label>
+
+        <label>
+          Panel base URL
+          <div class="copy-row">
+            <input id="server-panel-url" type="text" readonly>
+            <button id="copy-server-panel-url" type="button" class="secondary-button">Copy</button>
+          </div>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="refresh-server-status-button" type="button" class="secondary-button">
+          Refresh Server Status
+        </button>
+      </div>
+
+      <div class="server-startup-grid">
+        <article class="server-startup-card">
+          <h3>Linux</h3>
+          <code>python scripts/flora-launcher.py</code>
+        </article>
+
+        <article class="server-startup-card">
+          <h3>Windows</h3>
+          <code>start-server-windows.bat</code>
+        </article>
+
+        <article class="server-startup-card">
+          <h3>Streamer.bot on Linux through Wine</h3>
+          <code>start-server-wine.bat</code>
+        </article>
+      </div>
+
+      <p id="server-status-detail" class="form-note">
+        Waiting for server status.
+      </p>
+    </section>
+
     <section class="card">
       <h2>Server / Config Status</h2>
       <div id="status" class="status status-muted">Loading admin data...</div>

@@ -192,6 +192,31 @@ For stubborn browser caching, add a temporary query parameter:
 http://127.0.0.1:8000/panel.html?type=recent-events&v=test
 ```
 
+## Flora Server Status
+
+The Admin UI includes a **Flora Server Status** card near the top of the page.
+
+The card checks:
+
+    /api/health
+
+It shows the local server status, host, port, and commonly used URLs:
+
+    http://127.0.0.1:8000/api/health
+    http://127.0.0.1:8000/admin.html
+    http://127.0.0.1:8000/panel.html
+
+The card also includes copy buttons for the health URL, Admin URL, and panel base URL.
+
+Startup reminders are shown for:
+
+- Linux
+- Windows
+- Streamer.bot running on Linux through Wine
+
+The Admin UI does not start the server directly. If the Admin UI is visible, the Flora server is already running.
+
+
 ## Runtime Reset Backup Restore
 
 The Admin UI includes a **Runtime Reset Backups** card for restoring runtime data from backups created by the Fresh Start reset card.
