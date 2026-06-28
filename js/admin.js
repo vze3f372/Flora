@@ -1032,6 +1032,143 @@ loadBackups().catch((error) => {
 
 
 
+
+// FLORA_SERVER_STATUS_UI_START
+const floraServerStatusState = document.getElementById("server-status-state");
+const floraServerStatusHost = document.getElementById("server-status-host");
+const floraServerStatusPort = document.getElementById("server-status-port");
+const floraServerHealthUrl = document.getElementById("server-health-url");
+const floraServerAdminUrl = document.getElementById("server-admin-url");
+const floraServerPanelUrl = document.getElementById("server-panel-url");
+const floraServerStatusDetail = document.getElementById("server-status-detail");
+const floraRefreshServerStatusButton = document.getElementById("refresh-server-status-button");
+const floraCopyServerHealthUrlButton = document.getElementById("copy-server-health-url");
+const floraCopyServerAdminUrlButton = document.getElementById("copy-server-admin-url");
+const floraCopyServerPanelUrlButton = document.getElementById("copy-server-panel-url");
+
+function floraServerOrigin() {
+  return window.location.origin || "http://127.0.0.1:8000";
+}
+
+function floraServerUrl(path) {
+  return `${floraServerOrigin()}${path}`;
+}
+
+function floraSetServerUrlFields() {
+  if (floraServerHealthUrl) {
+    floraServerHealthUrl.value = floraServerUrl("/api/health");
+  }
+
+  if (floraServerAdminUrl) {
+    floraServerAdminUrl.value = floraServerUrl("/admin.html");
+  }
+
+  if (floraServerPanelUrl) {
+    floraServerPanelUrl.value = floraServerUrl("/panel.html");
+  }
+
+  if (floraServerStatusHost) {
+    floraServerStatusHost.textContent = window.location.hostname || "127.0.0.1";
+  }
+
+  if (floraServerStatusPort) {
+    floraServerStatusPort.textContent = window.location.port || "80";
+  }
+}
+
+async function floraRefreshServerStatus() {
+  floraSetServerUrlFields();
+
+  if (floraServerStatusState) {
+    floraServerStatusState.textContent = "Checking...";
+    floraServerStatusState.dataset.kind = "muted";
+  }
+
+  if (floraServerStatusDetail) {
+    floraServerStatusDetail.textContent = "Checking /api/health...";
+  }
+
+  try {
+    const startedAt = performance.now();
+    const health = await getJson("/api/health");
+    const elapsed = Math.round(performance.now() - startedAt);
+
+    if (floraServerStatusState) {
+      floraServerStatusState.textContent = health.ok ? "Running" : "Responding";
+      floraServerStatusState.dataset.kind = health.ok ? "success" : "muted";
+    }
+
+    if (floraServerStatusDetail) {
+      const service = health.service ? ` Service: ${health.service}.` : "";
+      floraServerStatusDetail.textContent = `Health check passed in ${elapsed} ms.${service}`;
+    }
+  } catch (error) {
+    if (floraServerStatusState) {
+      floraServerStatusState.textContent = "Error";
+      floraServerStatusState.dataset.kind = "error";
+    }
+
+    if (floraServerStatusDetail) {
+      floraServerStatusDetail.textContent = `Health check failed: ${error.message}`;
+    }
+  }
+}
+
+async function floraCopyServerUrl(input, label) {
+  if (!input || !input.value) {
+    setStatus(`No ${label} URL is available to copy.`, "error");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(input.value);
+    setStatus(`Copied ${label} URL.`, "success");
+  } catch {
+    input.focus();
+    input.select();
+    document.execCommand("copy");
+    setStatus(`Copied ${label} URL.`, "success");
+  }
+}
+
+if (
+  floraServerStatusState &&
+  floraServerHealthUrl &&
+  floraServerAdminUrl &&
+  floraServerPanelUrl &&
+  floraRefreshServerStatusButton
+) {
+  floraSetServerUrlFields();
+
+  floraRefreshServerStatusButton.addEventListener("click", () => {
+    floraRefreshServerStatus().catch((error) => {
+      if (floraServerStatusDetail) {
+        floraServerStatusDetail.textContent = `Health check failed: ${error.message}`;
+      }
+    });
+  });
+
+  floraCopyServerHealthUrlButton?.addEventListener("click", () => {
+    floraCopyServerUrl(floraServerHealthUrl, "health").catch((error) => setStatus(error.message, "error"));
+  });
+
+  floraCopyServerAdminUrlButton?.addEventListener("click", () => {
+    floraCopyServerUrl(floraServerAdminUrl, "admin").catch((error) => setStatus(error.message, "error"));
+  });
+
+  floraCopyServerPanelUrlButton?.addEventListener("click", () => {
+    floraCopyServerUrl(floraServerPanelUrl, "panel base").catch((error) => setStatus(error.message, "error"));
+  });
+
+  floraRefreshServerStatus().catch((error) => {
+    if (floraServerStatusDetail) {
+      floraServerStatusDetail.textContent = `Health check failed: ${error.message}`;
+    }
+  });
+}
+// FLORA_SERVER_STATUS_UI_END
+
+
 // FLORA_RUNTIME_BACKUP_RESTORE_UI_START
 const runtimeBackupSelect = document.getElementById("runtime-backup-select");
 const reloadRuntimeBackupsButton = document.getElementById("reload-runtime-backups-button");

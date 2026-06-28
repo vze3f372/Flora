@@ -1,3 +1,11 @@
+## v0.12.9 - Admin Server Status
+
+- Added a Flora Server Status card to the Admin UI.
+- Added Admin UI health-check status using `/api/health`.
+- Added copy buttons for the health URL, Admin URL, and panel base URL.
+- Added visible startup reminders for Linux, Windows, and Streamer.bot running through Wine.
+- Documented that the Admin UI does not start the server directly because it is only available after the server is already running.
+
 ## v0.12.8 - Runtime Backup Restore
 
 - Added a Runtime Reset Backups card to the Admin UI.
