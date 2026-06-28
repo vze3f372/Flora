@@ -2,21 +2,27 @@
 
 Flora is a local-first broadcast graphics engine for OBS Studio and Streamer.bot.
 
-It renders configurable broadcast panels from local data files using HTML, CSS, vanilla JavaScript, JSON, and Python's standard library web server.
+It renders configurable broadcast panels from local JSON data using HTML, CSS, vanilla JavaScript, and Python's standard library HTTP server. Flora is designed to stay lightweight, local, browser-source friendly, and easy to wire into Streamer.bot.
 
-Flora is not intended to be only a Twitch overlay. The long-term goal is a modular panel engine for leaderboards, event cards, goals, schedules, timers, alerts, diagnostics, and future panel types.
+## What Flora can do
 
-## Principles
+Flora currently supports:
 
-- Local-first
-- Cross-platform
-- Open source
-- Lightweight
-- Framework-free
-- OBS Browser Source friendly
-- Streamer.bot friendly
-- Configuration-driven
-- Panel-oriented
+- Raid leaderboards
+- Bits / cheer leaderboards
+- Follower goals
+- Subscriber goals
+- Recent stream activity
+- Single-panel OBS browser sources
+- Default and named panel rotations
+- Streamer.bot Fetch URL integration
+- Twitch avatar caching for users
+- Local Admin UI configuration
+- Runtime data reset and restore
+- Admin backups and local presets
+- Built-in panel theme presets
+- Built-in panel layout presets
+- OBS source URL quick-copy tools
 
 ## Run locally
 
@@ -32,128 +38,154 @@ On Windows:
 start-server-windows.bat
 ```
 
-Then open:
+On Omarchy/Linux when Streamer.bot is running through Wine, use the Wine wrapper from Streamer.bot:
 
-```text
-http://localhost:8000/panel.html?type=raids
-http://localhost:8000/panel.html?type=bits
-http://localhost:8000/panel.html?type=follower-goal
-http://localhost:8000/panel.html?type=recent-events
+```bat
+start-server-wine.bat
 ```
 
-## Current panel
-
-The current built-in panel is:
+Health check:
 
 ```text
-raids
+http://127.0.0.1:8000/api/health
 ```
 
-It is configured in:
+Admin UI:
 
 ```text
-config.json
+http://127.0.0.1:8000/admin.html
 ```
 
-under:
+## OBS browser sources
+
+Open the Admin UI and use the **OBS Source URLs** card for copyable source URLs.
+
+Common panel URLs:
 
 ```text
-panels.raids
+http://127.0.0.1:8000/panel.html?type=raids
+http://127.0.0.1:8000/panel.html?type=raids-count
+http://127.0.0.1:8000/panel.html?type=raids-biggest
+http://127.0.0.1:8000/panel.html?type=bits
+http://127.0.0.1:8000/panel.html?type=bits-count
+http://127.0.0.1:8000/panel.html?type=bits-biggest
+http://127.0.0.1:8000/panel.html?type=follower-goal
+http://127.0.0.1:8000/panel.html?type=sub-goal
+http://127.0.0.1:8000/panel.html?type=recent-events
 ```
 
-The default data file is:
+Rotation URLs:
+
+```text
+http://127.0.0.1:8000/panel.html?rotation=true
+http://127.0.0.1:8000/panel.html?rotation=leaderboards
+http://127.0.0.1:8000/panel.html?rotation=goals
+```
+
+## Streamer.bot setup
+
+For normal setup, start here:
+
+```text
+docs/streamerbot/setup-checklist.md
+```
+
+The recommended workflow is:
+
+```text
+Streamer.bot trigger
+  -> optional Twitch user info lookup for avatar URL
+  -> Core → Network → Fetch URL
+  -> Flora local API endpoint
+  -> local JSON data file
+  -> OBS browser source updates
+```
+
+The Admin UI includes a **Streamer.bot Action Builder** that generates Fetch URLs for common actions.
+
+## Local Admin UI
+
+Open:
+
+```text
+http://127.0.0.1:8000/admin.html
+```
+
+The Admin UI can manage:
+
+- Server status and common URLs
+- Goals
+- Panel style colors
+- Panel theme presets
+- Panel layout presets
+- Default panel rotation
+- Named rotation groups
+- Recent activity event labels and colors
+- Runtime data reset
+- Runtime backup restore
+- Config/goals backup restore
+- Admin setup presets
+- OBS source URLs
+- Streamer.bot Fetch URLs
+
+## Data files
+
+Runtime stream data is stored under:
+
+```text
+data/
+```
+
+Important runtime files:
 
 ```text
 data/raids.json
+data/bits.json
+data/events.json
+data/goals.json
+data/avatar-cache.json
 ```
 
-## OBS Browser Source
-
-Use this URL in OBS:
+Downloaded Twitch avatars are stored under:
 
 ```text
-http://localhost:8000/panel.html?type=raids
+assets/avatars/
 ```
 
-## Streamer.bot
-
-Streamer.bot should write data only. Flora handles rendering, sorting, layout, animation, and styling.
-
-See:
-
-```text
-docs/streamerbot/raid-table-panel.md
-```
-
-
-## Panel rotation
-
-Use rotation mode when one OBS browser source should cycle through multiple panels.
-
-~~~text
-http://localhost:8000/panel.html?rotation=true
-~~~
-
-Direct panel URLs still work and take priority over rotation:
-
-~~~text
-http://localhost:8000/panel.html?type=raids
-http://localhost:8000/panel.html?type=bits
-http://localhost:8000/panel.html?type=follower-goal
-~~~
-
-## Streamer.bot data updates
-
-- Streamer.bot data writer: `docs/streamerbot/data-writer.md`
-- Streamer.bot command examples: `docs/streamerbot/command-examples.md
-- [Streamer.bot HTTP action integration](docs/streamerbot/http-actions.md)`
-
-Flora data files can be updated with:
-
-~~~bash
-python scripts/flora-data.py --help
-~~~
+Runtime cache, generated backups, and exported local presets are intentionally ignored by Git.
 
 ## Developer checks
 
-Run the local project checks before committing:
-
-The check script validates configuration syntax, configuration semantics, required files, and configured table panel data files.
+Run these before committing:
 
 ```bash
+python -m py_compile scripts/flora-data.py scripts/flora-server.py scripts/flora-launcher.py scripts/validate-config.py
 python scripts/check.py
-```
-
-## Validate configuration
-
-Flora includes a standard-library validation script for `config.json`.
-
-Run:
-
-```bash
 python scripts/validate-config.py
+git diff --check
 ```
 
-Expected output:
+Expected check output includes:
 
 ```text
+All checks passed
 config.json is valid
 ```
 
 ## Documentation
 
+Recommended entry points:
+
 - [Local Admin UI Guide](docs/admin-ui.md)
+- [Server Launcher Guide](docs/server-launcher.md)
+- [Streamer.bot Setup Checklist](docs/streamerbot/setup-checklist.md)
+- [Streamer.bot Fetch URL Quickstart](docs/streamerbot/fetch-url-quickstart.md)
+- [Streamer.bot Fetch URL Recipes](docs/streamerbot/fetch-url-recipes.md)
+- [Live Twitch Trigger Recipes](docs/streamerbot/live-trigger-recipes.md)
 
-- `CHANGELOG.md`
-- `ROADMAP.md`
-- `docs/DESIGN.md`
-- `docs/configuration.md`
-- `docs/streamerbot/raid-table-panel.md`
-- [Streamer.bot Fetch URL recipes](docs/streamerbot/fetch-url-recipes.md)
-- [Live Twitch trigger recipes](docs/streamerbot/live-trigger-recipes.md)
-- [Streamer.bot Fetch URL quickstart](docs/streamerbot/fetch-url-quickstart.md)
+Additional project docs:
 
-## Local Admin UI
-
-Run the Flora server and open `http://127.0.0.1:8000/admin.html` to edit follower/subscriber goal values, adjust panel colors, configure panel rotation, edit recent activity event labels/colors, and copy OBS or Streamer.bot URLs without manually editing JSON files.
-
+- [Design Notes](docs/DESIGN.md)
+- [Configuration Guide](docs/configuration.md)
+- [Roadmap](ROADMAP.md)
+- [Changelog](CHANGELOG.md)

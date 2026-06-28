@@ -325,5 +325,5 @@ python scripts/flora-data.py event --type raid --name "%userName%" --detail "Rai
 Recent event panel URL:
 
 ~~~text
-http://localhost:8000/panel.html\?type\=recent-events
+http://localhost:8000/panel.html?type=recent-events
 ~~~

@@ -1,102 +1,145 @@
 # Flora Server Launcher
 
-Flora includes a small cross-platform launcher for starting the local Python server from Streamer.bot or from a desktop shortcut.
+Flora includes a small launcher that starts the local server only if it is not already running.
 
-The launcher checks whether Flora is already running before starting a new server.
+Launcher script:
 
-## Launcher script
-
-    scripts/flora-launcher.py
+```text
+scripts/flora-launcher.py
+```
 
 Default server URL:
 
-    http://127.0.0.1:8000
+```text
+http://127.0.0.1:8000
+```
 
-Health check URL:
+Health check:
 
-    http://127.0.0.1:8000/api/health
+```text
+http://127.0.0.1:8000/api/health
+```
 
-Server logs are written to:
+Server log:
 
-    logs/flora-server.log
+```text
+logs/flora-server.log
+```
+
+The launcher is safe to call repeatedly. If Flora is already running, it exits without starting a duplicate server.
 
 ## Linux
 
-From the Flora project directory:
+From the repository root:
 
-    python scripts/flora-launcher.py
+```bash
+./start-server-linux.sh
+```
 
-The launcher starts `scripts/flora-server.py` in the background if it is not already running.
+Equivalent direct command:
+
+```bash
+python scripts/flora-launcher.py
+```
 
 ## Windows
 
-From the Flora project directory:
+From the repository root:
 
-    start-server-windows.bat
+```bat
+start-server-windows.bat
+```
 
-Or run directly:
+The Windows script tries:
 
-    python scripts\flora-launcher.py
+```bat
+python scripts\flora-launcher.py
+```
 
-## Streamer.bot setup
+and then falls back to:
 
-Use:
-
-    Core → System → Run a Program
-
-For Windows native Streamer.bot:
-
-    File / Command:
-    python
-
-    Working Directory:
-    C:\path\to\streampanel
-
-    Arguments:
-    scripts\flora-launcher.py
-
-For Linux or macOS:
-
-    File / Command:
-    python
-
-    Working Directory:
-    /path/to/streampanel
-
-    Arguments:
-    scripts/flora-launcher.py
-
-## Notes for Linux with Streamer.bot under Wine
-
-If Streamer.bot is running under Wine, it may not reliably call the native Linux Python executable. In that case, prefer starting Flora through the Linux desktop session, terminal, or an OS-level autostart method.
-
-The launcher is still useful because it prevents duplicate Flora servers when called repeatedly.
+```bat
+py -3 scripts\flora-launcher.py
+```
 
 ## Streamer.bot on Linux through Wine
 
-If Streamer.bot is running through Wine on Linux, use the Wine batch wrapper:
+When Streamer.bot is running through Wine on Linux, use the Wine batch wrapper:
 
-    start-server-wine.bat
+```bat
+start-server-wine.bat
+```
 
-This wrapper uses Wine's `start /unix` bridge to launch native Linux Python:
+In Streamer.bot:
 
-    start /unix /usr/bin/python /home/vze3f372/Documents/streamerbot/streampanel/scripts/flora-launcher.py
+```text
+Core → System → Run a Program
+```
 
-In Streamer.bot, create an action with:
+Use your local Flora path. For example:
 
-    Core → System → Run a Program
+```text
+File / Command:
+Z:\home\vze3f372\Documents\streamerbot\streampanel\start-server-wine.bat
 
-Use:
+Working Directory:
+Z:\home\vze3f372\Documents\streamerbot\streampanel
 
-    File / Command:
-    Z:\home\vze3f372\Documents\streamerbot\streampanel\start-server-wine.bat
+Arguments:
+```
 
-    Working Directory:
-    Z:\home\vze3f372\Documents\streamerbot\streampanel
+Leave `Arguments` empty.
 
-    Arguments:
-    
+For another user or install path, adjust the `File / Command` and `Working Directory` paths to match the local Flora repo.
 
-Leave Arguments empty.
+The Wine wrapper uses Wine's `start /unix` bridge to launch native Linux Python.
 
-This is the recommended setup for Omarchy Linux when Streamer.bot is running under Wine.
+## Expected launcher output
+
+If Flora was not running:
+
+```json
+{
+  "ok": true,
+  "action": "started",
+  "pid": 12345,
+  "url": "http://127.0.0.1:8000/api/health",
+  "log": "logs/flora-server.log"
+}
+```
+
+If Flora was already running:
+
+```json
+{
+  "ok": true,
+  "action": "already-running",
+  "url": "http://127.0.0.1:8000/api/health"
+}
+```
+
+## Troubleshooting
+
+Check server health:
+
+```bash
+curl -s http://127.0.0.1:8000/api/health | python -m json.tool
+```
+
+Check for a running server:
+
+```bash
+pgrep -af 'flora-server.py'
+```
+
+Stop Flora manually:
+
+```bash
+pkill -f 'scripts/flora-server.py' || true
+```
+
+View the log:
+
+```bash
+tail -n 80 logs/flora-server.log
+```
