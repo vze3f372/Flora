@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.10.0 - Local Admin UI Foundation
+
+- Added a local admin page at `/admin.html`.
+- Added admin API endpoints for reading `config.json` and reading/updating `data/goals.json`.
+- Added browser controls for follower and subscriber goal current/target values.
+- Added copyable OBS browser source URLs and Streamer.bot Fetch URLs.
+
 All notable changes to Flora will be documented in this file.
 
 ## v0.9.7 - Subscription Goal Option

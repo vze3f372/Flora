@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flora Admin</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow">Local-only control panel</p>
+        <h1>Flora Admin</h1>
+      </div>
+      <button id="reload-button" type="button">Reload</button>
+    </header>
+
+    <section class="card">
+      <h2>Server / Config Status</h2>
+      <div id="status" class="status status-muted">Loading admin data...</div>
+    </section>
+
+    <section class="card">
+      <h2>Goals</h2>
+      <form id="goals-form" class="goals-grid">
+        <label>
+          <span>Followers current</span>
+          <input id="followers-current" type="number" min="0" step="1" required>
+        </label>
+        <label>
+          <span>Followers target</span>
+          <input id="followers-target" type="number" min="0" step="1" required>
+        </label>
+        <label>
+          <span>Subscribers current</span>
+          <input id="subscribers-current" type="number" min="0" step="1" required>
+        </label>
+        <label>
+          <span>Subscribers target</span>
+          <input id="subscribers-target" type="number" min="0" step="1" required>
+        </label>
+
+        <div class="actions">
+          <button id="save-goals-button" type="submit">Save Goals</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>OBS Browser Source URLs</h2>
+      <div id="obs-url-list" class="url-list"></div>
+    </section>
+
+    <section class="card">
+      <h2>Streamer.bot Fetch URLs</h2>
+      <div id="streamerbot-url-list" class="url-list"></div>
+    </section>
+  </main>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+from __future__ import annotations
+import json
 #!/usr/bin/env python3
 """Local Flora HTTP server.
 
@@ -5,7 +7,6 @@ Serves the OBS browser-source files and exposes local API endpoints that can be
 called by Streamer.bot actions.
 """
 
-from __future__ import annotations
 
 import argparse
 import json
@@ -187,6 +188,163 @@ def add_event_common_args(
     return arguments
 
 
+
+# FLORA_ADMIN_API_START
+_FLORA_ADMIN_GOAL_KEYS = ("followers", "subscribers")
+_FLORA_ADMIN_GOAL_FIELDS = ("current", "target")
+
+
+def _flora_admin_repo_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def _flora_admin_read_json(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _flora_admin_write_json(path: Path, payload: dict) -> None:
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    tmp_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    tmp_path.replace(path)
+
+
+def _flora_admin_send_json(handler, payload: dict, status: int = 200) -> None:
+    body = json.dumps(payload, indent=2).encode("utf-8")
+    handler.send_response(status)
+    handler.send_header("Content-Type", "application/json; charset=utf-8")
+    handler.send_header("Content-Length", str(len(body)))
+    handler.end_headers()
+    handler.wfile.write(body)
+
+
+def _flora_admin_send_error(handler, status: int, message: str) -> None:
+    _flora_admin_send_json(handler, {"ok": False, "error": message}, status)
+
+
+def _flora_admin_get_path(handler) -> str:
+    from urllib.parse import urlparse
+
+    return urlparse(handler.path).path
+
+
+def _flora_admin_handle_get(handler) -> bool:
+    request_path = _flora_admin_get_path(handler)
+    repo_root = _flora_admin_repo_root()
+
+    if request_path == "/api/admin/config":
+        try:
+            _flora_admin_send_json(handler, _flora_admin_read_json(repo_root / "config.json"))
+        except FileNotFoundError:
+            _flora_admin_send_error(handler, 404, "config.json was not found.")
+        except json.JSONDecodeError as error:
+            _flora_admin_send_error(handler, 500, f"config.json is invalid JSON: {error}")
+        return True
+
+    if request_path == "/api/admin/goals":
+        try:
+            _flora_admin_send_json(handler, _flora_admin_read_json(repo_root / "data" / "goals.json"))
+        except FileNotFoundError:
+            _flora_admin_send_error(handler, 404, "data/goals.json was not found.")
+        except json.JSONDecodeError as error:
+            _flora_admin_send_error(handler, 500, f"data/goals.json is invalid JSON: {error}")
+        return True
+
+    return False
+
+
+def _flora_admin_parse_goal_value(goal_key: str, field: str, value) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{goal_key}.{field} must be a whole number.")
+
+    if value < 0:
+        raise ValueError(f"{goal_key}.{field} must be non-negative.")
+
+    return value
+
+
+def _flora_admin_apply_goal_updates(existing_goals: dict, payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("Expected a JSON object.")
+
+    updates = payload.get("goals", payload)
+
+    if not isinstance(updates, dict):
+        raise ValueError("Expected a goals object.")
+
+    for goal_key in _FLORA_ADMIN_GOAL_KEYS:
+        if goal_key not in existing_goals:
+            raise ValueError(f"Existing goals file is missing required goal key: {goal_key}")
+
+    for goal_key in updates:
+        if goal_key not in _FLORA_ADMIN_GOAL_KEYS:
+            raise ValueError(f"Admin API cannot create or update unknown goal key: {goal_key}")
+
+    next_goals = dict(existing_goals)
+
+    for goal_key, goal_updates in updates.items():
+        if not isinstance(goal_updates, dict):
+            raise ValueError(f"{goal_key} update must be an object.")
+
+        next_goal = dict(existing_goals[goal_key])
+
+        for field, value in goal_updates.items():
+            if field not in _FLORA_ADMIN_GOAL_FIELDS:
+                raise ValueError(f"Admin API cannot update unsupported field: {goal_key}.{field}")
+
+            next_goal[field] = _flora_admin_parse_goal_value(goal_key, field, value)
+
+        next_goals[goal_key] = next_goal
+
+    return next_goals
+
+
+def _flora_admin_handle_post(handler) -> bool:
+    request_path = _flora_admin_get_path(handler)
+
+    if request_path != "/api/admin/goals":
+        return False
+
+    try:
+        content_length = int(handler.headers.get("Content-Length", "0") or "0")
+    except ValueError:
+        _flora_admin_send_error(handler, 400, "Invalid Content-Length header.")
+        return True
+
+    if content_length <= 0:
+        _flora_admin_send_error(handler, 400, "Expected a JSON request body.")
+        return True
+
+    try:
+        raw_body = handler.rfile.read(content_length).decode("utf-8")
+        payload = json.loads(raw_body)
+    except UnicodeDecodeError:
+        _flora_admin_send_error(handler, 400, "Request body must be UTF-8.")
+        return True
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Request body is invalid JSON: {error}")
+        return True
+
+    goals_path = _flora_admin_repo_root() / "data" / "goals.json"
+
+    try:
+        existing_goals = _flora_admin_read_json(goals_path)
+        next_goals = _flora_admin_apply_goal_updates(existing_goals, payload)
+        _flora_admin_write_json(goals_path, next_goals)
+    except FileNotFoundError:
+        _flora_admin_send_error(handler, 404, "data/goals.json was not found.")
+        return True
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 500, f"data/goals.json is invalid JSON: {error}")
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {"ok": True, "goals": next_goals})
+    return True
+# FLORA_ADMIN_API_END
+
 class FloraRequestHandler(SimpleHTTPRequestHandler):
     server_version = "FloraHTTP/0.9"
 
@@ -213,6 +371,9 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         }
 
     def do_GET(self) -> None:
+        if _flora_admin_handle_get(self):
+            return
+
         parsed = urlparse(self.path)
 
         if parsed.path == "/api/health":
@@ -233,6 +394,9 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self) -> None:
+        if _flora_admin_handle_post(self):
+            return
+
         parsed = urlparse(self.path)
         self.handle_api_request(parsed, allow_body=True)
 
