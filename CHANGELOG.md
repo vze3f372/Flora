@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.10.2 - Panel Rotation Editor
+
+- Added rotation controls to the local admin UI.
+- Added `/api/admin/rotation` for validated rotation updates.
+- Added controls for rotation enablement, start panel, transition timing, panel membership, and per-panel duration.
+- Added a copyable rotation browser source URL.
+
 ## v0.10.1 - Panel Style Editor
 
 - Added panel color controls to the local admin UI.
