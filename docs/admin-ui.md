@@ -192,6 +192,26 @@ For stubborn browser caching, add a temporary query parameter:
 http://127.0.0.1:8000/panel.html?type=recent-events&v=test
 ```
 
+## Presets
+
+The local admin page includes a Presets section for saving and reusing admin-managed setups.
+
+A preset includes:
+
+- panel style colors
+- panel rotation settings
+- recent activity event theme labels and colors
+- goals data
+
+Presets are stored locally under:
+
+```text
+presets/
+```
+
+Importing a preset backs up the current `config.json` and `data/goals.json` before applying the selected preset.
+
+Presets are local files and are ignored by git.
 ## Restore Backups
 
 The local admin page includes a Restore Backups section.

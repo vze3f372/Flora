@@ -537,3 +537,29 @@ select:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* v0.11.0 presets */
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(220px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.preset-grid label,
+.full-width-label {
+  display: grid;
+  gap: 6px;
+}
+
+.full-width-label {
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .preset-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -7,3 +7,6 @@ __pycache__/
 *.py[cod]
 # Flora local admin backups
 backups/
+
+# Flora local presets
+presets/

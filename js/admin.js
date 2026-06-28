@@ -1020,3 +1020,144 @@ loadAdminData().catch((error) => setStatus(error.message, "error"));
 loadBackups().catch((error) => {
   setStatus(`Could not load backup status: ${error.message}`, "error");
 });
+
+// FLORA_PRESETS_UI_START
+const floraPresetName = document.getElementById("preset-name");
+const floraPresetNote = document.getElementById("preset-note");
+const floraExportPresetButton = document.getElementById("export-preset-button");
+const floraReloadPresetsButton = document.getElementById("reload-presets-button");
+const floraPresetSelect = document.getElementById("preset-select");
+const floraPresetStatus = document.getElementById("preset-status");
+const floraImportPresetButton = document.getElementById("import-preset-button");
+
+const floraPresetState = {
+  presets: [],
+};
+
+function floraFormatPresetTime(value) {
+  if (!value) {
+    return "unknown time";
+  }
+
+  return new Date(value * 1000).toLocaleString();
+}
+
+function floraPresetOptionLabel(preset) {
+  const note = preset.note ? ` — ${preset.note}` : "";
+  return `${preset.name} (${floraFormatPresetTime(preset.modified)})${note}`;
+}
+
+function floraSelectedPreset() {
+  return floraPresetState.presets.find((preset) => preset.filename === floraPresetSelect.value) || null;
+}
+
+function floraRenderPresets(presets) {
+  floraPresetState.presets = Array.isArray(presets) ? presets : [];
+  floraPresetSelect.replaceChildren();
+
+  if (!floraPresetState.presets.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "No presets available";
+    floraPresetSelect.append(option);
+
+    floraPresetStatus.textContent = "No presets exported yet.";
+    floraImportPresetButton.disabled = true;
+    return;
+  }
+
+  for (const preset of floraPresetState.presets) {
+    const option = document.createElement("option");
+    option.value = preset.filename;
+    option.textContent = floraPresetOptionLabel(preset);
+    floraPresetSelect.append(option);
+  }
+
+  const current = floraSelectedPreset();
+  floraPresetStatus.textContent = current
+    ? `Selected: ${current.path}`
+    : "Select a preset.";
+  floraImportPresetButton.disabled = false;
+}
+
+async function floraLoadPresets() {
+  const data = await getJson("/api/admin/presets");
+  floraRenderPresets(data.presets);
+}
+
+async function floraExportPreset() {
+  const name = floraPresetName.value.trim() || "Flora Preset";
+
+  const data = await postJson("/api/admin/presets/export", {
+    name,
+    note: floraPresetNote.value,
+  });
+
+  floraRenderPresets(data.presets);
+  floraPresetSelect.value = data.preset.filename;
+  floraPresetStatus.textContent = `Exported: ${data.preset.path}`;
+  setStatus(`Exported preset ${data.preset.name}.`, "success");
+}
+
+async function floraImportPreset() {
+  const preset = floraSelectedPreset();
+
+  if (!preset) {
+    setStatus("No preset is selected.", "error");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Import preset "${preset.name}"?\n\n${preset.path}\n\nFlora will back up the current config and goals before importing.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const data = await postJson("/api/admin/presets/import", {
+    filename: preset.filename,
+  });
+
+  await loadConfig();
+  await loadGoals();
+  await loadRotation();
+  await loadEventTheme();
+  await loadBackups();
+  await floraLoadPresets();
+
+  setStatus(`Imported preset ${data.imported.name}.`, "success");
+}
+
+if (
+  floraPresetName &&
+  floraPresetNote &&
+  floraExportPresetButton &&
+  floraReloadPresetsButton &&
+  floraPresetSelect &&
+  floraPresetStatus &&
+  floraImportPresetButton
+) {
+  floraReloadPresetsButton.addEventListener("click", () => {
+    floraLoadPresets().catch((error) => setStatus(error.message, "error"));
+  });
+
+  floraExportPresetButton.addEventListener("click", () => {
+    floraExportPreset().catch((error) => setStatus(error.message, "error"));
+  });
+
+  floraImportPresetButton.addEventListener("click", () => {
+    floraImportPreset().catch((error) => setStatus(error.message, "error"));
+  });
+
+  floraPresetSelect.addEventListener("change", () => {
+    const preset = floraSelectedPreset();
+    floraPresetStatus.textContent = preset ? `Selected: ${preset.path}` : "Select a preset.";
+  });
+
+  floraLoadPresets().catch((error) => {
+    floraPresetStatus.textContent = `Could not load presets: ${error.message}`;
+    floraImportPresetButton.disabled = true;
+  });
+}
+// FLORA_PRESETS_UI_END
