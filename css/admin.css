@@ -507,3 +507,33 @@ select:focus {
     grid-template-columns: 1fr;
   }
 }
+
+.backup-working-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) minmax(220px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.backup-card label {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.backup-select {
+  min-width: 0;
+}
+
+.backup-card input,
+.backup-card select,
+.backup-working-row input {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .backup-working-row {
+    grid-template-columns: 1fr;
+  }
+}

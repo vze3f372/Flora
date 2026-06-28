@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.7 - Backup Browser and Tags
+
+- Added selectable backup lists for `config.json` and `data/goals.json`.
+- Added restore support for a selected backup instead of only the latest backup.
+- Added backup tags and notes stored in local metadata sidecar files.
+- Added Mark Current Setup as Working to create tagged config and goals backups.
+- Preserved latest-backup restore behavior for compatibility.
+
 ## v0.10.6 - Admin Restore Backups
 
 - Added local admin controls for restoring the latest `config.json` backup.

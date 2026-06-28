@@ -203,6 +203,12 @@ It shows the latest available local admin backups for:
 
 The restore buttons restore the latest backup for the selected file.
 
+The backup browser can show multiple backups for each file. Select a backup from the list before restoring.
+
+Backups can also be tagged with short labels and notes. Tag metadata is stored beside the backup file as a local metadata sidecar file.
+
+The **Mark Current Setup as Working** button creates fresh backups for both `config.json` and `data/goals.json` and tags them together, usually as `known-good`.
+
 Before restoring an older backup, Flora creates another backup of the current file. This means restore actions are reversible as long as the backup files remain available.
 
 Backup files are stored under:

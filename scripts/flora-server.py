@@ -662,12 +662,177 @@ def _flora_admin_handle_event_theme_post(handler) -> bool:
 
 
 
+
+
+def _flora_admin_backup_meta_path(backup_path: Path) -> Path:
+    if backup_path.name.endswith(".bak"):
+        return backup_path.with_name(backup_path.name[:-4] + ".meta.json")
+
+    return backup_path.with_name(backup_path.name + ".meta.json")
+
+
+def _flora_admin_clean_backup_text(value, max_length: int = 160) -> str:
+    return str(value or "").strip()[:max_length]
+
+
+def _flora_admin_read_backup_metadata(backup_path: Path) -> dict:
+    meta_path = _flora_admin_backup_meta_path(backup_path)
+
+    if not meta_path.exists():
+        return {}
+
+    try:
+        return json.loads(meta_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def _flora_admin_write_backup_metadata(
+    backup_path: Path,
+    target: str,
+    tag: str = "",
+    note: str = "",
+    reason: str = "manual-tag",
+) -> dict:
+    from datetime import datetime, timezone
+
+    metadata = {
+        "target": target,
+        "tag": _flora_admin_clean_backup_text(tag, 80),
+        "note": _flora_admin_clean_backup_text(note, 240),
+        "reason": _flora_admin_clean_backup_text(reason, 80),
+        "createdAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "backup": backup_path.relative_to(_flora_admin_repo_root()).as_posix(),
+    }
+
+    _flora_admin_backup_meta_path(backup_path).write_text(
+        json.dumps(metadata, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    return metadata
+
+
+def _flora_admin_backup_item(target: str, backup_path: Path) -> dict:
+    stat = backup_path.stat()
+    metadata = _flora_admin_read_backup_metadata(backup_path)
+
+    return {
+        "target": target,
+        "label": _flora_admin_backup_target_label(target),
+        "path": backup_path.relative_to(_flora_admin_repo_root()).as_posix(),
+        "modified": stat.st_mtime,
+        "sizeBytes": stat.st_size,
+        "tag": _flora_admin_clean_backup_text(metadata.get("tag", ""), 80),
+        "note": _flora_admin_clean_backup_text(metadata.get("note", ""), 240),
+        "reason": _flora_admin_clean_backup_text(metadata.get("reason", ""), 80),
+        "metaPath": _flora_admin_backup_meta_path(backup_path).relative_to(_flora_admin_repo_root()).as_posix()
+            if _flora_admin_backup_meta_path(backup_path).exists()
+            else None,
+    }
+
+
+def _flora_admin_backup_items(target: str) -> list[dict]:
+    backup_dir = _flora_admin_backup_dir()
+    prefix = _flora_admin_backup_target_prefix(target)
+
+    if not backup_dir.exists():
+        return []
+
+    backup_paths = sorted(
+        backup_dir.glob(f"{prefix}*.bak"),
+        key=lambda item: item.stat().st_mtime,
+        reverse=True,
+    )
+
+    return [_flora_admin_backup_item(target, backup_path) for backup_path in backup_paths]
+
+
+def _flora_admin_backup_info_for_browser(target: str) -> dict:
+    info = _flora_admin_backup_info(target)
+    info["items"] = _flora_admin_backup_items(target)
+
+    if info["items"]:
+        latest = info["items"][0]
+        info["path"] = latest["path"]
+        info["modified"] = latest["modified"]
+        info["sizeBytes"] = latest["sizeBytes"]
+        info["tag"] = latest.get("tag", "")
+        info["note"] = latest.get("note", "")
+
+    return info
+
+
+def _flora_admin_selected_backup_path(target: str, selected_path: str) -> Path:
+    repo_root = _flora_admin_repo_root().resolve()
+    backup_dir = _flora_admin_backup_dir().resolve()
+    candidate = (repo_root / selected_path).resolve()
+
+    if candidate.parent != backup_dir:
+        raise ValueError("Backup path must be inside backups/admin.")
+
+    if not candidate.name.startswith(_flora_admin_backup_target_prefix(target)):
+        raise ValueError(f"Backup path does not match target {target}.")
+
+    if not candidate.name.endswith(".bak"):
+        raise ValueError("Backup path must point to a .bak file.")
+
+    if not candidate.exists():
+        raise FileNotFoundError(f"Backup does not exist: {selected_path}")
+
+    return candidate
+
+
+def _flora_admin_restore_backup_path(target: str, backup_path: Path) -> dict:
+    import shutil
+
+    destination = _flora_admin_backup_target_path(target)
+
+    if destination.exists():
+        _flora_admin_backup_json(destination)
+
+    shutil.copy2(backup_path, destination)
+
+    return {
+        "target": target,
+        "label": _flora_admin_backup_target_label(target),
+        "restoredFrom": backup_path.relative_to(_flora_admin_repo_root()).as_posix(),
+    }
+
+
+def _flora_admin_restore_selected_backup(target: str, selected_path: str) -> dict:
+    backup_path = _flora_admin_selected_backup_path(target, selected_path)
+    return _flora_admin_restore_backup_path(target, backup_path)
+
+
+def _flora_admin_create_tagged_backup(target: str, tag: str, note: str, reason: str) -> dict:
+    source_path = _flora_admin_backup_target_path(target)
+
+    if not source_path.exists():
+        raise FileNotFoundError(f"{_flora_admin_backup_target_label(target)} was not found.")
+
+    backup_path = _flora_admin_backup_json(source_path)
+
+    if backup_path is None:
+        raise FileNotFoundError(f"Could not create backup for {target}.")
+
+    _flora_admin_write_backup_metadata(
+        backup_path=backup_path,
+        target=target,
+        tag=tag,
+        note=note,
+        reason=reason,
+    )
+
+    return _flora_admin_backup_item(target, backup_path)
+
+
 def _flora_admin_handle_backups_get(handler) -> bool:
     _flora_admin_send_json(handler, {
         "ok": True,
         "backups": {
-            "config": _flora_admin_backup_info("config"),
-            "goals": _flora_admin_backup_info("goals"),
+            "config": _flora_admin_backup_info_for_browser("config"),
+            "goals": _flora_admin_backup_info_for_browser("goals"),
         },
     })
     return True
@@ -682,7 +847,12 @@ def _flora_admin_handle_backup_restore_post(handler) -> bool:
             _flora_admin_send_error(handler, 400, "target must be config or goals")
             return True
 
-        result = _flora_admin_restore_latest_backup(target)
+        selected_path = str(payload.get("path", "")).strip()
+
+        if selected_path:
+            result = _flora_admin_restore_selected_backup(target, selected_path)
+        else:
+            result = _flora_admin_restore_latest_backup(target)
     except json.JSONDecodeError as error:
         _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
         return True
@@ -697,8 +867,8 @@ def _flora_admin_handle_backup_restore_post(handler) -> bool:
         "ok": True,
         "restore": result,
         "backups": {
-            "config": _flora_admin_backup_info("config"),
-            "goals": _flora_admin_backup_info("goals"),
+            "config": _flora_admin_backup_info_for_browser("config"),
+            "goals": _flora_admin_backup_info_for_browser("goals"),
         },
     })
     return True
@@ -915,11 +1085,93 @@ def _flora_admin_handle_style_post(handler) -> bool:
     return True
 
 
+
+
+def _flora_admin_handle_backup_tag_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        target = str(payload.get("target", "")).strip()
+        selected_path = str(payload.get("path", "")).strip()
+
+        if target not in {"config", "goals"}:
+            _flora_admin_send_error(handler, 400, "target must be config or goals")
+            return True
+
+        if not selected_path:
+            _flora_admin_send_error(handler, 400, "path is required")
+            return True
+
+        backup_path = _flora_admin_selected_backup_path(target, selected_path)
+        _flora_admin_write_backup_metadata(
+            backup_path=backup_path,
+            target=target,
+            tag=payload.get("tag", ""),
+            note=payload.get("note", ""),
+            reason="manual-tag",
+        )
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+        return True
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "backup": _flora_admin_backup_item(target, backup_path),
+        "backups": {
+            "config": _flora_admin_backup_info_for_browser("config"),
+            "goals": _flora_admin_backup_info_for_browser("goals"),
+        },
+    })
+    return True
+
+
+def _flora_admin_handle_mark_working_post(handler) -> bool:
+    try:
+        payload = _flora_admin_read_request_json(handler)
+        tag = _flora_admin_clean_backup_text(payload.get("tag", "known-good"), 80) or "known-good"
+        note = _flora_admin_clean_backup_text(payload.get("note", ""), 240)
+
+        created = {
+            "config": _flora_admin_create_tagged_backup("config", tag, note, "manual-known-good"),
+            "goals": _flora_admin_create_tagged_backup("goals", tag, note, "manual-known-good"),
+        }
+    except json.JSONDecodeError as error:
+        _flora_admin_send_error(handler, 400, f"Invalid JSON payload: {error}")
+        return True
+    except FileNotFoundError as error:
+        _flora_admin_send_error(handler, 404, str(error))
+        return True
+    except ValueError as error:
+        _flora_admin_send_error(handler, 400, str(error))
+        return True
+
+    _flora_admin_send_json(handler, {
+        "ok": True,
+        "created": created,
+        "backups": {
+            "config": _flora_admin_backup_info_for_browser("config"),
+            "goals": _flora_admin_backup_info_for_browser("goals"),
+        },
+    })
+    return True
+
+
 def _flora_admin_handle_post(handler) -> bool:
     request_path = _flora_admin_get_path(handler)
 
     if request_path == "/api/admin/backups/restore":
         return _flora_admin_handle_backup_restore_post(handler)
+
+    if request_path == "/api/admin/backups/tag":
+        return _flora_admin_handle_backup_tag_post(handler)
+
+    if request_path == "/api/admin/backups/mark-working":
+        return _flora_admin_handle_mark_working_post(handler)
 
     if request_path == "/api/admin/goals":
         return _flora_admin_handle_goals_post(handler)
