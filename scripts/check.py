@@ -36,6 +36,37 @@ REQUIRED_FILES = [
     "scripts/flora-server.py",
 ]
 
+def runtime_default_for(relative_path):
+    runtime_defaults = {
+        "data/raids.json": "data/defaults/raids.json",
+        "data/bits.json": "data/defaults/bits.json",
+        "data/events.json": "data/defaults/events.json",
+        "data/goals.json": "data/defaults/goals.json",
+    }
+
+    return runtime_defaults.get(str(relative_path).replace(chr(92), "/"))
+
+
+def resolve_data_file(relative_path):
+    data_path = ROOT / relative_path
+
+    if data_path.exists():
+        return data_path
+
+    default_path = runtime_default_for(relative_path)
+
+    if default_path:
+        default_file = ROOT / default_path
+
+        if default_file.exists():
+            return default_file
+
+    return data_path
+
+
+def data_file_exists_or_has_default(relative_path):
+    return resolve_data_file(relative_path).exists()
+
 
 def fail(message):
     print(f"check error: {message}", file=sys.stderr)
@@ -67,7 +98,16 @@ def run_command(command):
 
 
 def load_json_file(relative_path):
-    path = ROOT / relative_path
+    resolved_path = resolve_data_file(relative_path)
+
+    try:
+        with resolved_path.open("r", encoding="utf-8") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        fail(f"{relative_path} does not exist and has no default")
+    except json.JSONDecodeError as error:
+        fail(f"{relative_path} is not valid JSON: {error}")
+
 
     try:
         with path.open("r", encoding="utf-8") as file:
@@ -107,8 +147,8 @@ def check_data_file_exists(panel_name, panel):
     if not isinstance(data_file, str) or not data_file.strip():
         fail(f"panels.{panel_name}.dataFile must not be empty")
 
-    if not (ROOT / data_file).exists():
-        fail(f"panels.{panel_name}.dataFile does not exist: {data_file}")
+    if not data_file_exists_or_has_default(data_file):
+        fail(f"panels.{panel_name}.dataFile does not exist and has no default: {data_file}")
 
 
 def check_table_panel_data(panel_name, panel):
