@@ -27,7 +27,6 @@ data/avatar-cache.json
 assets/avatars/
 
 # Flora runtime logs
-logs/
 
 # Flora versioned runtime defaults
 !data/defaults/
