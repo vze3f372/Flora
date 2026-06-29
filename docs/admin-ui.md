@@ -364,6 +364,8 @@ Reset behavior:
     assets/avatars/        -> selected image files removed
     data/goals.json        -> goal targets preserved, current values set to 0
 
+These are local runtime files and are ignored by Git. Flora keeps versioned starter files in `data/defaults/`, and missing runtime files are recreated from those defaults when the server starts.
+
 The card requires typing:
 
     RESET

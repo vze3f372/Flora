@@ -97,7 +97,8 @@ http://127.0.0.1:8000/panel.html?type=recent-events
 After a live manual test, restore the test data before committing repo changes:
 
 ~~~bash
-git restore data/raids.json data/events.json
+rm -f data/raids.json data/events.json
+python scripts/flora-launcher.py
 python scripts/check.py
 python scripts/validate-config.py
 ~~~
