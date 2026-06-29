@@ -949,3 +949,25 @@ select:focus {
   display: block;
 }
 /* FLORA_ADMIN_TABS_END */
+
+/* FLORA_UNIFIED_ROTATION_EDITOR_START */
+.rotation-editor-toolbar {
+  align-items: end;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  margin: 1rem 0 1.25rem;
+}
+
+.rotation-editor-toolbar .form-note {
+  margin: 0;
+}
+
+.rotation-editor-panel[hidden] {
+  display: none;
+}
+
+.rotation-editor-panel.is-active {
+  display: block;
+}
+/* FLORA_UNIFIED_ROTATION_EDITOR_END */
