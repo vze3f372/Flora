@@ -2949,6 +2949,20 @@ def is_duplicate_raid_request(name: str, viewers: int) -> bool:
     return False
 # FLORA_RAID_DEDUPE_END
 
+
+# FLORA_RAID_SERVE_REPAIR_START
+def repair_raids_before_serving() -> None:
+    try:
+        run_writer(
+            [
+                "repair-raids",
+            ],
+            dry_run=False,
+        )
+    except Exception as error:
+        print(f"Flora raid serve repair warning: {error}", flush=True)
+# FLORA_RAID_SERVE_REPAIR_END
+
 class FloraRequestHandler(SimpleHTTPRequestHandler):
     server_version = "FloraHTTP/0.9"
 
@@ -2982,6 +2996,9 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             return
 
         parsed = urlparse(self.path)
+
+        if parsed.path == "/data/raids.json":
+            repair_raids_before_serving()
 
         if parsed.path == "/api/health":
             self.send_json(
@@ -3121,6 +3138,18 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
                     dry_run,
                 )
             )
+            results.append(
+                run_writer(
+                    [
+                        "repair-current-raid",
+                        "--name",
+                        name,
+                        "--viewers",
+                        str(viewers),
+                    ],
+                    dry_run,
+                )
+            )
         else:
             results.append(
                 run_writer(
@@ -3147,6 +3176,15 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
                     ],
                     payload,
                 ),
+                dry_run,
+            )
+        )
+
+        results.append(
+            run_writer(
+                [
+                    "repair-raids",
+                ],
                 dry_run,
             )
         )
