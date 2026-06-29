@@ -452,120 +452,143 @@
     </div>
 
     <div class="admin-tab-panel" data-admin-tab-panel="rotations" hidden>
-    <section class="card">
-      <h2>Default Rotation</h2>
-      <p class="form-note" data-note="FLORA_DEFAULT_ROTATION_NOTE">
-        Used by /panel.html?rotation=true. Configure the unnamed rotation that cycles through the selected panels.
-      </p>
-      <form id="rotation-form" class="rotation-form">
-        <label class="checkbox-label">
-          <input id="rotation-enabled" type="checkbox">
-          <span>Enable rotation by default</span>
-        </label>
-
-        <div class="rotation-grid">
-          <label>
-            <span>Start panel</span>
-            <select id="rotation-start-panel"></select>
-          </label>
-
-          <label>
-            <span>Transition milliseconds</span>
-            <input id="rotation-transition" type="number" min="0" step="100" required>
-          </label>
-        </div>
-
-        <div>
-          <h3 class="section-subtitle">Rotation panels</h3>
-          <div id="rotation-panel-list" class="rotation-panel-list"></div>
-        </div>
-
-        <div>
-          <h3 class="section-subtitle">Rotation URL</h3>
-          <div class="url-row single-url-row">
-            <div class="url-label">Rotation</div>
-            <input id="rotation-url" type="text" readonly>
-            <button id="copy-rotation-url-button" type="button">Copy</button>
-            <button id="open-rotation-preview-button" type="button" class="secondary-button">Open Preview</button>
-          </div>
-        </div>
-
-        <div class="actions split-actions">
-          <button id="save-rotation-button" type="submit">Save Rotation</button>
-          <button id="reset-rotation-button" type="button" class="secondary-button">Reset Rotation Defaults</button>
-        </div>
-      </form>
-    </section>
-    <section class="card">
-      <h2>Named Rotation Profiles</h2>
-      <p class="form-note" data-note="FLORA_NAMED_ROTATION_PROFILES_NOTE">
-        Used by /panel.html?rotation=&lt;name&gt;. Create reusable rotation profiles such as leaderboards, goals, or supporters.
-      </p>
+    <section class="card" id="rotation-editor-card">
+      <h2>Rotation Editor</h2>
       <p class="form-note">
-        Create additional rotation boards for separate OBS browser sources.
+        Configure the default rotation source or a named rotation profile from one place.
       </p>
 
-      <div class="named-rotation-toolbar">
+      <div class="rotation-editor-toolbar">
         <label>
-          Rotation group
-          <select id="named-rotation-select"></select>
+          Rotation editor
+          <select id="rotation-editor-mode">
+            <option value="default">Default Rotation</option>
+            <option value="named">Named Profile</option>
+          </select>
         </label>
 
-        <label>
-          New group name
-          <input id="named-rotation-new-name" type="text" placeholder="leaderboards, goals, brb-loop">
-        </label>
-
-        <button id="create-named-rotation-button" type="button" class="secondary-button">
-          Create Group
-        </button>
-
-        <button id="delete-named-rotation-button" type="button" class="danger-button">
-          Delete Group
-        </button>
+        <p id="rotation-editor-note" class="form-note">
+          Default Rotation is used by /panel.html?rotation=true.
+        </p>
       </div>
 
-      <form id="named-rotation-form" class="rotation-form">
-        <label class="checkbox-label">
-          <input id="named-rotation-enabled" type="checkbox">
-          <span>Enable this rotation group</span>
-        </label>
-
-        <div class="rotation-grid">
-          <label>
-            <span>Start panel</span>
-            <select id="named-rotation-start-panel"></select>
-          </label>
-
-          <label>
-            <span>Transition milliseconds</span>
-            <input id="named-rotation-transition" type="number" min="0" step="100" required>
-          </label>
-        </div>
-
-        <div>
-          <h3 class="section-subtitle">Panels in this group</h3>
-          <div id="named-rotation-panel-list" class="rotation-panel-list"></div>
-        </div>
-
-        <div>
-          <h3 class="section-subtitle">Named rotation URL</h3>
-          <div class="url-row single-url-row">
-            <div class="url-label">Rotation</div>
-            <input id="named-rotation-url" type="text" readonly>
-            <button id="copy-named-rotation-url-button" type="button">Copy</button>
-            <button id="open-named-rotation-preview-button" type="button" class="secondary-button">Open Preview</button>
-          </div>
-        </div>
-
-        <p id="named-rotation-status" class="form-note">
-          Named rotations load from config.json.
+      <div id="default-rotation-editor" class="rotation-editor-panel" data-rotation-editor-panel="default">
+        <h3 class="section-subtitle">Default Rotation</h3>
+        <p class="form-note" data-note="FLORA_DEFAULT_ROTATION_NOTE">
+          Used by /panel.html?rotation=true. Configure the unnamed rotation that cycles through the selected panels.
         </p>
 
-        <div class="actions split-actions">
-          <button id="save-named-rotation-button" type="submit">Save Named Rotation</button>
+        <form id="rotation-form" class="rotation-form">
+          <label class="checkbox-label">
+            <input id="rotation-enabled" type="checkbox">
+            <span>Enable rotation by default</span>
+          </label>
+
+          <div class="rotation-grid">
+            <label>
+              <span>Start panel</span>
+              <select id="rotation-start-panel"></select>
+            </label>
+
+            <label>
+              <span>Transition milliseconds</span>
+              <input id="rotation-transition" type="number" min="0" step="100" required>
+            </label>
+          </div>
+
+          <div>
+            <h3 class="section-subtitle">Rotation panels</h3>
+            <div id="rotation-panel-list" class="rotation-panel-list"></div>
+          </div>
+
+          <div>
+            <h3 class="section-subtitle">Rotation URL</h3>
+            <div class="url-row single-url-row">
+              <div class="url-label">Rotation</div>
+              <input id="rotation-url" type="text" readonly>
+              <button id="copy-rotation-url-button" type="button">Copy</button>
+              <button id="open-rotation-preview-button" type="button" class="secondary-button">Open Preview</button>
+            </div>
+          </div>
+
+          <div class="actions split-actions">
+            <button id="save-rotation-button" type="submit">Save Rotation</button>
+            <button id="reset-rotation-button" type="button" class="secondary-button">Reset Rotation Defaults</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="named-rotation-editor" class="rotation-editor-panel" data-rotation-editor-panel="named" hidden>
+        <h3 class="section-subtitle">Named Rotation Profile</h3>
+        <p class="form-note" data-note="FLORA_NAMED_ROTATION_PROFILES_NOTE">
+          Used by /panel.html?rotation=&lt;name&gt;. Create reusable rotation profiles such as leaderboards, goals, or supporters.
+        </p>
+        <p class="form-note">
+          Create additional rotation boards for separate OBS browser sources.
+        </p>
+
+        <div class="named-rotation-toolbar">
+          <label>
+            Rotation group
+            <select id="named-rotation-select"></select>
+          </label>
+
+          <label>
+            New group name
+            <input id="named-rotation-new-name" type="text" placeholder="leaderboards, goals, brb-loop">
+          </label>
+
+          <button id="create-named-rotation-button" type="button" class="secondary-button">
+            Create Group
+          </button>
+
+          <button id="delete-named-rotation-button" type="button" class="danger-button">
+            Delete Group
+          </button>
         </div>
-      </form>
+
+        <form id="named-rotation-form" class="rotation-form">
+          <label class="checkbox-label">
+            <input id="named-rotation-enabled" type="checkbox">
+            <span>Enable this rotation group</span>
+          </label>
+
+          <div class="rotation-grid">
+            <label>
+              <span>Start panel</span>
+              <select id="named-rotation-start-panel"></select>
+            </label>
+
+            <label>
+              <span>Transition milliseconds</span>
+              <input id="named-rotation-transition" type="number" min="0" step="100" required>
+            </label>
+          </div>
+
+          <div>
+            <h3 class="section-subtitle">Panels in this group</h3>
+            <div id="named-rotation-panel-list" class="rotation-panel-list"></div>
+          </div>
+
+          <div>
+            <h3 class="section-subtitle">Named rotation URL</h3>
+            <div class="url-row single-url-row">
+              <div class="url-label">Rotation</div>
+              <input id="named-rotation-url" type="text" readonly>
+              <button id="copy-named-rotation-url-button" type="button">Copy</button>
+              <button id="open-named-rotation-preview-button" type="button" class="secondary-button">Open Preview</button>
+            </div>
+          </div>
+
+          <p id="named-rotation-status" class="form-note">
+            Named rotations load from config.json.
+          </p>
+
+          <div class="actions split-actions">
+            <button id="save-named-rotation-button" type="submit">Save Named Rotation</button>
+          </div>
+        </form>
+      </div>
     </section>
     </div>
 

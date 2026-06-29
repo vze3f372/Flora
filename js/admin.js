@@ -2891,5 +2891,48 @@ function floraInitializeAdminTabs() {
   activateTab(defaultTab);
 }
 
+
+// FLORA_UNIFIED_ROTATION_EDITOR_START
+function initializeRotationEditorMode() {
+  const modeSelect = document.getElementById("rotation-editor-mode");
+  const note = document.getElementById("rotation-editor-note");
+  const panels = [...document.querySelectorAll("[data-rotation-editor-panel]")];
+
+  if (!modeSelect || panels.length === 0) {
+    return;
+  }
+
+  const notes = {
+    default: "Default Rotation is used by /panel.html?rotation=true.",
+    named: "Named Profiles are used by /panel.html?rotation=<name>.",
+  };
+
+  function activateMode(mode) {
+    const activeMode = mode === "named" ? "named" : "default";
+
+    panels.forEach((panel) => {
+      const isActive = panel.dataset.rotationEditorPanel === activeMode;
+      panel.hidden = !isActive;
+      panel.classList.toggle("is-active", isActive);
+    });
+
+    modeSelect.value = activeMode;
+
+    if (note) {
+      note.textContent = notes[activeMode];
+    }
+
+    localStorage.setItem("flora-rotation-editor-mode", activeMode);
+  }
+
+  modeSelect.addEventListener("change", () => {
+    activateMode(modeSelect.value);
+  });
+
+  activateMode(localStorage.getItem("flora-rotation-editor-mode") || "default");
+}
+// FLORA_UNIFIED_ROTATION_EDITOR_END
+
 floraInitializeAdminTabs();
+initializeRotationEditorMode();
 // FLORA_ADMIN_TABS_END
