@@ -910,3 +910,42 @@ select:focus {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* FLORA_ADMIN_TABS_START */
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.admin-tab-button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel-alt);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  padding: 0.55rem 0.9rem;
+}
+
+.admin-tab-button:hover,
+.admin-tab-button:focus {
+  border-color: var(--accent);
+}
+
+.admin-tab-button.is-active {
+  background: var(--accent);
+  color: var(--background);
+  border-color: var(--accent);
+}
+
+.admin-tab-panel[hidden] {
+  display: none;
+}
+
+.admin-tab-panel.is-active {
+  display: block;
+}
+/* FLORA_ADMIN_TABS_END */
