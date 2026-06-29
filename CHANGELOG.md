@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.15.2 - Streamer.bot Lifecycle Watchdog
+
+- Updated the Wine startup wrapper so Streamer.bot launches Flora through the Linux start script reliably.
+- Added a Streamer.bot watchdog that stops the Flora server when Streamer.bot closes.
+- Ignored watchdog lock/log runtime files so normal startup and shutdown do not dirty Git.
+
+## v0.15.1 - Wine Server Launcher Fix
+
+- Fixed the Wine launcher path handling for `start-server-wine.bat`.
+- Avoided broken quoted Linux paths being passed to Python through Wine.
+- Kept the Streamer.bot startup hook path unchanged.
+
+## v0.15.0 - Unified Rotation Editor
+
+- Combined Default Rotation and Named Rotation Profiles into one Rotation Editor card.
+- Added a mode selector for switching between the default rotation and named profile editor.
+- Kept existing rotation config, API behavior, URLs, save buttons, and preview links unchanged.
+
+
 
 
 
