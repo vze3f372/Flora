@@ -279,7 +279,8 @@ http://127.0.0.1:8000/api/goal?key=followers&current=55&target=100&dryRun=true
 After live manual or trigger tests, restore test data before committing:
 
 ~~~bash
-git restore data/raids.json data/bits.json data/events.json data/goals.json
+rm -f data/raids.json data/bits.json data/events.json data/goals.json
+python scripts/flora-launcher.py
 python scripts/check.py
 python scripts/validate-config.py
 ~~~

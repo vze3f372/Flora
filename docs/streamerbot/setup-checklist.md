@@ -295,6 +295,8 @@ Flora stores downloaded avatar images in:
 
 Both are runtime cache locations and are ignored by Git.
 
+The main runtime data files are also ignored by Git: `data/raids.json`, `data/bits.json`, `data/events.json`, and `data/goals.json`. If they are missing, Flora recreates them from `data/defaults/` when the server starts. See `docs/runtime-data.md` for the current reset workflow.
+
 ## 9. Testing checklist
 
 Before going live, confirm:

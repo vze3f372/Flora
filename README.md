@@ -138,6 +138,8 @@ data/
 
 Important runtime files:
 
+Live runtime files are local working data. They are ignored by Git and recreated from `data/defaults/` if missing. See `docs/runtime-data.md` for reset and backup guidance.
+
 ```text
 data/raids.json
 data/bits.json
@@ -152,7 +154,7 @@ Downloaded Twitch avatars are stored under:
 assets/avatars/
 ```
 
-Runtime cache, generated backups, and exported local presets are intentionally ignored by Git.
+Runtime data, runtime cache, generated logs, generated backups, and exported local presets are intentionally ignored by Git. Versioned starter data lives in `data/defaults/`.
 
 ## Developer checks
 
