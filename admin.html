@@ -16,6 +16,16 @@
       <button id="reload-button" type="button">Reload</button>
     </header>
 
+    <nav class="admin-tabs" aria-label="Admin sections">
+      <button class="admin-tab-button is-active" type="button" data-admin-tab="dashboard" aria-selected="true">Dashboard</button>
+      <button class="admin-tab-button" type="button" data-admin-tab="obs" aria-selected="false">OBS Sources</button>
+      <button class="admin-tab-button" type="button" data-admin-tab="streamerbot" aria-selected="false">Streamer.bot</button>
+      <button class="admin-tab-button" type="button" data-admin-tab="panels" aria-selected="false">Panels</button>
+      <button class="admin-tab-button" type="button" data-admin-tab="rotations" aria-selected="false">Rotations</button>
+      <button class="admin-tab-button" type="button" data-admin-tab="data" aria-selected="false">Data Safety</button>
+    </nav>
+
+    <div class="admin-tab-panel is-active" data-admin-tab-panel="dashboard">
     <section class="card" id="server-status-card">
       <h2>Flora Server Status</h2>
       <p class="form-note">
@@ -92,545 +102,17 @@
         Waiting for server status.
       </p>
     </section>
-
     <section class="card">
       <h2>Server / Config Status</h2>
       <div id="status" class="status status-muted">Loading admin data...</div>
     </section>
+    </div>
 
-    <section class="card">
-      <h2>Goals</h2>
-      <form id="goals-form" class="goals-grid">
-        <label>
-          <span>Followers current</span>
-          <input id="followers-current" type="number" min="0" step="1" required>
-        </label>
-        <label>
-          <span>Followers target</span>
-          <input id="followers-target" type="number" min="0" step="1" required>
-        </label>
-        <label>
-          <span>Subscribers current</span>
-          <input id="subscribers-current" type="number" min="0" step="1" required>
-        </label>
-        <label>
-          <span>Subscribers target</span>
-          <input id="subscribers-target" type="number" min="0" step="1" required>
-        </label>
-
-        <div class="actions">
-          <button id="save-goals-button" type="submit">Save Goals</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="card" id="theme-preset-card">
-      <h2>Panel Theme Presets</h2>
-      <p class="form-note">
-        Apply a built-in panel color preset. Flora backs up config.json before applying a preset.
-      </p>
-
-      <div class="theme-preset-grid">
-        <label>
-          Theme preset
-          <select id="theme-preset-select"></select>
-        </label>
-
-        <div>
-          <button id="reload-theme-presets-button" type="button" class="secondary-button">
-            Reload Presets
-          </button>
-        </div>
-      </div>
-
-      <div id="theme-preset-preview" class="theme-preset-preview">
-        <p class="form-note">No theme preset selected.</p>
-      </div>
-
-      <div class="button-row">
-        <button id="apply-theme-preset-button" type="button">
-          Apply Theme Preset
-        </button>
-      </div>
-
-      <p id="theme-preset-status" class="form-note">
-        No theme preset has been applied in this session.
-      </p>
-    </section>
-
-    <section class="card" id="layout-preset-card">
-      <h2>Panel Layout Presets</h2>
-      <p class="form-note">
-        Apply a built-in layout preset for row counts, recent activity limits, scroll speed, and rotation groups.
-        Flora backs up config.json before applying a preset.
-      </p>
-
-      <div class="theme-preset-grid">
-        <label>
-          Layout preset
-          <select id="layout-preset-select"></select>
-        </label>
-
-        <div>
-          <button id="reload-layout-presets-button" type="button" class="secondary-button">
-            Reload Presets
-          </button>
-        </div>
-      </div>
-
-      <div id="layout-preset-preview" class="theme-preset-preview">
-        <p class="form-note">No layout preset selected.</p>
-      </div>
-
-      <div class="button-row">
-        <button id="apply-layout-preset-button" type="button">
-          Apply Layout Preset
-        </button>
-      </div>
-
-      <p id="layout-preset-status" class="form-note">
-        No layout preset has been applied in this session.
-      </p>
-    </section>
-
-    <section class="card">
-      <h2>Panel Style</h2>
-      <form id="style-form" class="style-grid">
-        <label>
-          <span>Background</span>
-          <input id="style-background" type="color" required>
-        </label>
-        <label>
-          <span>Panel</span>
-          <input id="style-panel" type="color" required>
-        </label>
-        <label>
-          <span>Panel alternate</span>
-          <input id="style-panel-alt" type="color" required>
-        </label>
-        <label>
-          <span>Text</span>
-          <input id="style-text" type="color" required>
-        </label>
-        <label>
-          <span>Muted text</span>
-          <input id="style-muted" type="color" required>
-        </label>
-        <label>
-          <span>Accent</span>
-          <input id="style-accent" type="color" required>
-        </label>
-        <label>
-          <span>Border</span>
-          <input id="style-border" type="color" required>
-        </label>
-        <label>
-          <span>Success</span>
-          <input id="style-success" type="color" required>
-        </label>
-        <label>
-          <span>Error</span>
-          <input id="style-error" type="color" required>
-        </label>
-
-        <div class="actions split-actions">
-          <button id="save-style-button" type="submit">Save Style</button>
-          <button id="reset-style-button" type="button" class="secondary-button">Reset Style Defaults</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="card">
-      <h2>Panel Rotation</h2>
-      <form id="rotation-form" class="rotation-form">
-        <label class="checkbox-label">
-          <input id="rotation-enabled" type="checkbox">
-          <span>Enable rotation by default</span>
-        </label>
-
-        <div class="rotation-grid">
-          <label>
-            <span>Start panel</span>
-            <select id="rotation-start-panel"></select>
-          </label>
-
-          <label>
-            <span>Transition milliseconds</span>
-            <input id="rotation-transition" type="number" min="0" step="100" required>
-          </label>
-        </div>
-
-        <div>
-          <h3 class="section-subtitle">Rotation panels</h3>
-          <div id="rotation-panel-list" class="rotation-panel-list"></div>
-        </div>
-
-        <div>
-          <h3 class="section-subtitle">Rotation URL</h3>
-          <div class="url-row single-url-row">
-            <div class="url-label">Rotation</div>
-            <input id="rotation-url" type="text" readonly>
-            <button id="copy-rotation-url-button" type="button">Copy</button>
-            <button id="open-rotation-preview-button" type="button" class="secondary-button">Open Preview</button>
-          </div>
-        </div>
-
-        <div class="actions split-actions">
-          <button id="save-rotation-button" type="submit">Save Rotation</button>
-          <button id="reset-rotation-button" type="button" class="secondary-button">Reset Rotation Defaults</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="card">
-      <h2>Named Rotation Groups</h2>
-      <p class="form-note">
-        Create additional rotation boards for separate OBS browser sources.
-      </p>
-
-      <div class="named-rotation-toolbar">
-        <label>
-          Rotation group
-          <select id="named-rotation-select"></select>
-        </label>
-
-        <label>
-          New group name
-          <input id="named-rotation-new-name" type="text" placeholder="leaderboards, goals, brb-loop">
-        </label>
-
-        <button id="create-named-rotation-button" type="button" class="secondary-button">
-          Create Group
-        </button>
-
-        <button id="delete-named-rotation-button" type="button" class="danger-button">
-          Delete Group
-        </button>
-      </div>
-
-      <form id="named-rotation-form" class="rotation-form">
-        <label class="checkbox-label">
-          <input id="named-rotation-enabled" type="checkbox">
-          <span>Enable this rotation group</span>
-        </label>
-
-        <div class="rotation-grid">
-          <label>
-            <span>Start panel</span>
-            <select id="named-rotation-start-panel"></select>
-          </label>
-
-          <label>
-            <span>Transition milliseconds</span>
-            <input id="named-rotation-transition" type="number" min="0" step="100" required>
-          </label>
-        </div>
-
-        <div>
-          <h3 class="section-subtitle">Panels in this group</h3>
-          <div id="named-rotation-panel-list" class="rotation-panel-list"></div>
-        </div>
-
-        <div>
-          <h3 class="section-subtitle">Named rotation URL</h3>
-          <div class="url-row single-url-row">
-            <div class="url-label">Rotation</div>
-            <input id="named-rotation-url" type="text" readonly>
-            <button id="copy-named-rotation-url-button" type="button">Copy</button>
-            <button id="open-named-rotation-preview-button" type="button" class="secondary-button">Open Preview</button>
-          </div>
-        </div>
-
-        <p id="named-rotation-status" class="form-note">
-          Named rotations load from config.json.
-        </p>
-
-        <div class="actions split-actions">
-          <button id="save-named-rotation-button" type="submit">Save Named Rotation</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="card">
-      <h2>Event Theme</h2>
-      <form id="event-theme-form" class="event-theme-form">
-        <p class="section-help">
-          Configure recent activity event labels and colors.
-        </p>
-
-        <div id="event-theme-list" class="event-theme-list"></div>
-
-        <div class="actions split-actions">
-          <button id="save-event-theme-button" type="submit">Save Event Theme</button>
-          <button id="reset-event-theme-button" type="button" class="secondary-button">Reset Event Theme Defaults</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="card">
-      <h2>Presets</h2>
-      <p class="form-note">Export or import a named Flora admin setup.</p>
-
-      <div class="preset-grid">
-        <label>
-          Preset name
-          <input id="preset-name" type="text" value="Default Stream Layout">
-        </label>
-
-        <label>
-          Note
-          <input id="preset-note" type="text" placeholder="Optional note for this preset">
-        </label>
-
-        <button id="export-preset-button" type="button" class="secondary-button">
-          Export Current Preset
-        </button>
-
-        <button id="reload-presets-button" type="button" class="secondary-button">
-          Reload Presets
-        </button>
-      </div>
-
-      <label class="full-width-label">
-        Available presets
-        <select id="preset-select"></select>
-      </label>
-
-      <p id="preset-status" class="backup-status">Loading presets...</p>
-
-      <div id="preset-preview" class="preset-preview">
-        <p class="form-note">Select a preset to preview its contents.</p>
-      </div>
-
-      <div class="button-row">
-        <button id="import-preset-button" type="button" class="danger-button" disabled>
-          Import Selected Preset
-        </button>
-
-        <button id="delete-preset-button" type="button" class="danger-button" disabled>
-          Delete Selected Preset
-        </button>
-      </div>
-
-      <p class="form-note">
-        Importing a preset backs up the current config and goals before applying the selected preset.
-      </p>
-    </section>
-
-    <section class="card">
-      <h2>Restore Backups</h2>
-      <p class="form-note">Browse, tag, and restore local admin backups.</p>
-
-      <div class="backup-working-row">
-        <label>
-          Working tag
-          <input id="working-backup-tag" type="text" value="known-good">
-        </label>
-        <label>
-          Note
-          <input id="working-backup-note" type="text" placeholder="Optional note for this working setup">
-        </label>
-        <button id="mark-working-backup-button" type="button" class="secondary-button">
-          Mark Current Setup as Working
-        </button>
-        <button id="reload-backups-button" type="button" class="secondary-button">Reload Backups</button>
-      </div>
-
-      <div class="backup-grid">
-        <article class="backup-card">
-          <h3>Config Backups</h3>
-          <p id="config-backup-status" class="backup-status">Loading...</p>
-
-          <label>
-            Available backups
-            <select id="config-backup-select" class="backup-select"></select>
-          </label>
-
-          <label>
-            Tag
-            <input id="config-backup-tag" type="text" placeholder="known-good, before-test, etc.">
-          </label>
-
-          <label>
-            Note
-            <input id="config-backup-note" type="text" placeholder="Optional note">
-          </label>
-
-          <div class="button-row">
-            <button id="tag-config-backup-button" type="button" class="secondary-button" disabled>
-              Save Tag
-            </button>
-            <button id="restore-config-backup-button" type="button" class="danger-button" disabled>
-              Restore Selected Config Backup
-            </button>
-          </div>
-        </article>
-
-        <article class="backup-card">
-          <h3>Goals Backups</h3>
-          <p id="goals-backup-status" class="backup-status">Loading...</p>
-
-          <label>
-            Available backups
-            <select id="goals-backup-select" class="backup-select"></select>
-          </label>
-
-          <label>
-            Tag
-            <input id="goals-backup-tag" type="text" placeholder="known-good, before-test, etc.">
-          </label>
-
-          <label>
-            Note
-            <input id="goals-backup-note" type="text" placeholder="Optional note">
-          </label>
-
-          <div class="button-row">
-            <button id="tag-goals-backup-button" type="button" class="secondary-button" disabled>
-              Save Tag
-            </button>
-            <button id="restore-goals-backup-button" type="button" class="danger-button" disabled>
-              Restore Selected Goals Backup
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <p class="form-note">
-        Restore actions create another backup of the current file before restoring the selected backup.
-      </p>
-    </section>
-
+    <div class="admin-tab-panel" data-admin-tab-panel="obs" hidden>
     <section class="card">
       <h2>OBS Browser Source URLs</h2>
       <div id="obs-url-list" class="url-list"></div>
     </section>
-
-    <section class="card" id="runtime-backup-restore-card">
-      <h2>Runtime Reset Backups</h2>
-      <p class="form-note">
-        Restore runtime data from backups created by the Fresh Start reset card. Flora creates another safety backup before restoring.
-      </p>
-
-      <div class="runtime-backup-grid">
-        <label>
-          Runtime backup
-          <select id="runtime-backup-select"></select>
-        </label>
-
-        <div>
-          <button id="reload-runtime-backups-button" type="button" class="secondary-button">
-            Reload Runtime Backups
-          </button>
-        </div>
-      </div>
-
-      <div id="runtime-backup-preview" class="runtime-backup-preview">
-        <p class="form-note">No runtime backup selected.</p>
-      </div>
-
-      <div class="runtime-reset-grid">
-        <label class="checkbox-row">
-          <input id="runtime-restore-raids" type="checkbox">
-          Raid leaderboard
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-restore-bits" type="checkbox">
-          Bits leaderboard
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-restore-events" type="checkbox">
-          Recent events
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-restore-avatar-cache" type="checkbox">
-          Avatar cache metadata
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-restore-avatar-images" type="checkbox">
-          Avatar image files
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-restore-goals" type="checkbox">
-          Goals
-        </label>
-      </div>
-
-      <label>
-        Type RESTORE to confirm
-        <input id="runtime-restore-confirmation" type="text" placeholder="RESTORE">
-      </label>
-
-      <div class="button-row">
-        <button id="runtime-restore-button" type="button" class="danger-button">
-          Create Safety Backup and Restore Selected Data
-        </button>
-      </div>
-
-      <p id="runtime-restore-status" class="form-note">
-        No runtime data has been restored in this session.
-      </p>
-    </section>
-
-    <section class="card" id="runtime-reset-card">
-      <h2>Fresh Start / Reset Runtime Data</h2>
-      <p class="form-note">
-        Reset selected runtime data before a new stream, event, or demo. Flora creates a backup before changing anything.
-      </p>
-
-      <div class="runtime-reset-grid">
-        <label class="checkbox-row">
-          <input id="runtime-reset-raids" type="checkbox">
-          Raid leaderboard
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-reset-bits" type="checkbox">
-          Bits leaderboard
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-reset-events" type="checkbox">
-          Recent events
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-reset-avatar-cache" type="checkbox">
-          Avatar cache metadata
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-reset-avatar-images" type="checkbox">
-          Avatar image files
-        </label>
-
-        <label class="checkbox-row">
-          <input id="runtime-reset-goals-progress" type="checkbox">
-          Reset goal progress to zero
-        </label>
-      </div>
-
-      <label>
-        Type RESET to confirm
-        <input id="runtime-reset-confirmation" type="text" placeholder="RESET">
-      </label>
-
-      <div class="button-row">
-        <button id="runtime-reset-button" type="button" class="danger-button">
-          Create Backup and Reset Selected Data
-        </button>
-      </div>
-
-      <p id="runtime-reset-status" class="form-note">
-        No runtime data has been reset in this session.
-      </p>
-    </section>
-
     <section class="card" id="obs-source-card">
       <h2>OBS Source URLs</h2>
       <p class="form-note">
@@ -647,7 +129,9 @@
         OBS source URLs are generated from the current Admin URL origin.
       </p>
     </section>
+    </div>
 
+    <div class="admin-tab-panel" data-admin-tab-panel="streamerbot" hidden>
     <section class="card">
       <h2>Streamer.bot Action Builder</h2>
       <p class="form-note">
@@ -756,11 +240,543 @@
         Select a trigger preset to generate a URL.
       </p>
     </section>
-
     <section class="card">
       <h2>Streamer.bot Fetch URLs</h2>
       <div id="streamerbot-url-list" class="url-list"></div>
     </section>
+    </div>
+
+    <div class="admin-tab-panel" data-admin-tab-panel="panels" hidden>
+    <section class="card">
+      <h2>Goals</h2>
+      <form id="goals-form" class="goals-grid">
+        <label>
+          <span>Followers current</span>
+          <input id="followers-current" type="number" min="0" step="1" required>
+        </label>
+        <label>
+          <span>Followers target</span>
+          <input id="followers-target" type="number" min="0" step="1" required>
+        </label>
+        <label>
+          <span>Subscribers current</span>
+          <input id="subscribers-current" type="number" min="0" step="1" required>
+        </label>
+        <label>
+          <span>Subscribers target</span>
+          <input id="subscribers-target" type="number" min="0" step="1" required>
+        </label>
+
+        <div class="actions">
+          <button id="save-goals-button" type="submit">Save Goals</button>
+        </div>
+      </form>
+    </section>
+    <section class="card" id="theme-preset-card">
+      <h2>Panel Theme Presets</h2>
+      <p class="form-note">
+        Apply a built-in panel color preset. Flora backs up config.json before applying a preset.
+      </p>
+
+      <div class="theme-preset-grid">
+        <label>
+          Theme preset
+          <select id="theme-preset-select"></select>
+        </label>
+
+        <div>
+          <button id="reload-theme-presets-button" type="button" class="secondary-button">
+            Reload Presets
+          </button>
+        </div>
+      </div>
+
+      <div id="theme-preset-preview" class="theme-preset-preview">
+        <p class="form-note">No theme preset selected.</p>
+      </div>
+
+      <div class="button-row">
+        <button id="apply-theme-preset-button" type="button">
+          Apply Theme Preset
+        </button>
+      </div>
+
+      <p id="theme-preset-status" class="form-note">
+        No theme preset has been applied in this session.
+      </p>
+    </section>
+    <section class="card" id="layout-preset-card">
+      <h2>Panel Layout Presets</h2>
+      <p class="form-note">
+        Apply a built-in layout preset for row counts, recent activity limits, scroll speed, and rotation groups.
+        Flora backs up config.json before applying a preset.
+      </p>
+
+      <div class="theme-preset-grid">
+        <label>
+          Layout preset
+          <select id="layout-preset-select"></select>
+        </label>
+
+        <div>
+          <button id="reload-layout-presets-button" type="button" class="secondary-button">
+            Reload Presets
+          </button>
+        </div>
+      </div>
+
+      <div id="layout-preset-preview" class="theme-preset-preview">
+        <p class="form-note">No layout preset selected.</p>
+      </div>
+
+      <div class="button-row">
+        <button id="apply-layout-preset-button" type="button">
+          Apply Layout Preset
+        </button>
+      </div>
+
+      <p id="layout-preset-status" class="form-note">
+        No layout preset has been applied in this session.
+      </p>
+    </section>
+    <section class="card">
+      <h2>Panel Style</h2>
+      <form id="style-form" class="style-grid">
+        <label>
+          <span>Background</span>
+          <input id="style-background" type="color" required>
+        </label>
+        <label>
+          <span>Panel</span>
+          <input id="style-panel" type="color" required>
+        </label>
+        <label>
+          <span>Panel alternate</span>
+          <input id="style-panel-alt" type="color" required>
+        </label>
+        <label>
+          <span>Text</span>
+          <input id="style-text" type="color" required>
+        </label>
+        <label>
+          <span>Muted text</span>
+          <input id="style-muted" type="color" required>
+        </label>
+        <label>
+          <span>Accent</span>
+          <input id="style-accent" type="color" required>
+        </label>
+        <label>
+          <span>Border</span>
+          <input id="style-border" type="color" required>
+        </label>
+        <label>
+          <span>Success</span>
+          <input id="style-success" type="color" required>
+        </label>
+        <label>
+          <span>Error</span>
+          <input id="style-error" type="color" required>
+        </label>
+
+        <div class="actions split-actions">
+          <button id="save-style-button" type="submit">Save Style</button>
+          <button id="reset-style-button" type="button" class="secondary-button">Reset Style Defaults</button>
+        </div>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Event Theme</h2>
+      <form id="event-theme-form" class="event-theme-form">
+        <p class="section-help">
+          Configure recent activity event labels and colors.
+        </p>
+
+        <div id="event-theme-list" class="event-theme-list"></div>
+
+        <div class="actions split-actions">
+          <button id="save-event-theme-button" type="submit">Save Event Theme</button>
+          <button id="reset-event-theme-button" type="button" class="secondary-button">Reset Event Theme Defaults</button>
+        </div>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Presets</h2>
+      <p class="form-note">Export or import a named Flora admin setup.</p>
+
+      <div class="preset-grid">
+        <label>
+          Preset name
+          <input id="preset-name" type="text" value="Default Stream Layout">
+        </label>
+
+        <label>
+          Note
+          <input id="preset-note" type="text" placeholder="Optional note for this preset">
+        </label>
+
+        <button id="export-preset-button" type="button" class="secondary-button">
+          Export Current Preset
+        </button>
+
+        <button id="reload-presets-button" type="button" class="secondary-button">
+          Reload Presets
+        </button>
+      </div>
+
+      <label class="full-width-label">
+        Available presets
+        <select id="preset-select"></select>
+      </label>
+
+      <p id="preset-status" class="backup-status">Loading presets...</p>
+
+      <div id="preset-preview" class="preset-preview">
+        <p class="form-note">Select a preset to preview its contents.</p>
+      </div>
+
+      <div class="button-row">
+        <button id="import-preset-button" type="button" class="danger-button" disabled>
+          Import Selected Preset
+        </button>
+
+        <button id="delete-preset-button" type="button" class="danger-button" disabled>
+          Delete Selected Preset
+        </button>
+      </div>
+
+      <p class="form-note">
+        Importing a preset backs up the current config and goals before applying the selected preset.
+      </p>
+    </section>
+    </div>
+
+    <div class="admin-tab-panel" data-admin-tab-panel="rotations" hidden>
+    <section class="card">
+      <h2>Default Rotation</h2>
+      <p class="form-note" data-note="FLORA_DEFAULT_ROTATION_NOTE">
+        Used by /panel.html?rotation=true. Configure the unnamed rotation that cycles through the selected panels.
+      </p>
+      <form id="rotation-form" class="rotation-form">
+        <label class="checkbox-label">
+          <input id="rotation-enabled" type="checkbox">
+          <span>Enable rotation by default</span>
+        </label>
+
+        <div class="rotation-grid">
+          <label>
+            <span>Start panel</span>
+            <select id="rotation-start-panel"></select>
+          </label>
+
+          <label>
+            <span>Transition milliseconds</span>
+            <input id="rotation-transition" type="number" min="0" step="100" required>
+          </label>
+        </div>
+
+        <div>
+          <h3 class="section-subtitle">Rotation panels</h3>
+          <div id="rotation-panel-list" class="rotation-panel-list"></div>
+        </div>
+
+        <div>
+          <h3 class="section-subtitle">Rotation URL</h3>
+          <div class="url-row single-url-row">
+            <div class="url-label">Rotation</div>
+            <input id="rotation-url" type="text" readonly>
+            <button id="copy-rotation-url-button" type="button">Copy</button>
+            <button id="open-rotation-preview-button" type="button" class="secondary-button">Open Preview</button>
+          </div>
+        </div>
+
+        <div class="actions split-actions">
+          <button id="save-rotation-button" type="submit">Save Rotation</button>
+          <button id="reset-rotation-button" type="button" class="secondary-button">Reset Rotation Defaults</button>
+        </div>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Named Rotation Profiles</h2>
+      <p class="form-note" data-note="FLORA_NAMED_ROTATION_PROFILES_NOTE">
+        Used by /panel.html?rotation=&lt;name&gt;. Create reusable rotation profiles such as leaderboards, goals, or supporters.
+      </p>
+      <p class="form-note">
+        Create additional rotation boards for separate OBS browser sources.
+      </p>
+
+      <div class="named-rotation-toolbar">
+        <label>
+          Rotation group
+          <select id="named-rotation-select"></select>
+        </label>
+
+        <label>
+          New group name
+          <input id="named-rotation-new-name" type="text" placeholder="leaderboards, goals, brb-loop">
+        </label>
+
+        <button id="create-named-rotation-button" type="button" class="secondary-button">
+          Create Group
+        </button>
+
+        <button id="delete-named-rotation-button" type="button" class="danger-button">
+          Delete Group
+        </button>
+      </div>
+
+      <form id="named-rotation-form" class="rotation-form">
+        <label class="checkbox-label">
+          <input id="named-rotation-enabled" type="checkbox">
+          <span>Enable this rotation group</span>
+        </label>
+
+        <div class="rotation-grid">
+          <label>
+            <span>Start panel</span>
+            <select id="named-rotation-start-panel"></select>
+          </label>
+
+          <label>
+            <span>Transition milliseconds</span>
+            <input id="named-rotation-transition" type="number" min="0" step="100" required>
+          </label>
+        </div>
+
+        <div>
+          <h3 class="section-subtitle">Panels in this group</h3>
+          <div id="named-rotation-panel-list" class="rotation-panel-list"></div>
+        </div>
+
+        <div>
+          <h3 class="section-subtitle">Named rotation URL</h3>
+          <div class="url-row single-url-row">
+            <div class="url-label">Rotation</div>
+            <input id="named-rotation-url" type="text" readonly>
+            <button id="copy-named-rotation-url-button" type="button">Copy</button>
+            <button id="open-named-rotation-preview-button" type="button" class="secondary-button">Open Preview</button>
+          </div>
+        </div>
+
+        <p id="named-rotation-status" class="form-note">
+          Named rotations load from config.json.
+        </p>
+
+        <div class="actions split-actions">
+          <button id="save-named-rotation-button" type="submit">Save Named Rotation</button>
+        </div>
+      </form>
+    </section>
+    </div>
+
+    <div class="admin-tab-panel" data-admin-tab-panel="data" hidden>
+    <section class="card">
+      <h2>Restore Backups</h2>
+      <p class="form-note">Browse, tag, and restore local admin backups.</p>
+
+      <div class="backup-working-row">
+        <label>
+          Working tag
+          <input id="working-backup-tag" type="text" value="known-good">
+        </label>
+        <label>
+          Note
+          <input id="working-backup-note" type="text" placeholder="Optional note for this working setup">
+        </label>
+        <button id="mark-working-backup-button" type="button" class="secondary-button">
+          Mark Current Setup as Working
+        </button>
+        <button id="reload-backups-button" type="button" class="secondary-button">Reload Backups</button>
+      </div>
+
+      <div class="backup-grid">
+        <article class="backup-card">
+          <h3>Config Backups</h3>
+          <p id="config-backup-status" class="backup-status">Loading...</p>
+
+          <label>
+            Available backups
+            <select id="config-backup-select" class="backup-select"></select>
+          </label>
+
+          <label>
+            Tag
+            <input id="config-backup-tag" type="text" placeholder="known-good, before-test, etc.">
+          </label>
+
+          <label>
+            Note
+            <input id="config-backup-note" type="text" placeholder="Optional note">
+          </label>
+
+          <div class="button-row">
+            <button id="tag-config-backup-button" type="button" class="secondary-button" disabled>
+              Save Tag
+            </button>
+            <button id="restore-config-backup-button" type="button" class="danger-button" disabled>
+              Restore Selected Config Backup
+            </button>
+          </div>
+        </article>
+
+        <article class="backup-card">
+          <h3>Goals Backups</h3>
+          <p id="goals-backup-status" class="backup-status">Loading...</p>
+
+          <label>
+            Available backups
+            <select id="goals-backup-select" class="backup-select"></select>
+          </label>
+
+          <label>
+            Tag
+            <input id="goals-backup-tag" type="text" placeholder="known-good, before-test, etc.">
+          </label>
+
+          <label>
+            Note
+            <input id="goals-backup-note" type="text" placeholder="Optional note">
+          </label>
+
+          <div class="button-row">
+            <button id="tag-goals-backup-button" type="button" class="secondary-button" disabled>
+              Save Tag
+            </button>
+            <button id="restore-goals-backup-button" type="button" class="danger-button" disabled>
+              Restore Selected Goals Backup
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <p class="form-note">
+        Restore actions create another backup of the current file before restoring the selected backup.
+      </p>
+    </section>
+    <section class="card" id="runtime-backup-restore-card">
+      <h2>Runtime Reset Backups</h2>
+      <p class="form-note">
+        Restore runtime data from backups created by the Fresh Start reset card. Flora creates another safety backup before restoring.
+      </p>
+
+      <div class="runtime-backup-grid">
+        <label>
+          Runtime backup
+          <select id="runtime-backup-select"></select>
+        </label>
+
+        <div>
+          <button id="reload-runtime-backups-button" type="button" class="secondary-button">
+            Reload Runtime Backups
+          </button>
+        </div>
+      </div>
+
+      <div id="runtime-backup-preview" class="runtime-backup-preview">
+        <p class="form-note">No runtime backup selected.</p>
+      </div>
+
+      <div class="runtime-reset-grid">
+        <label class="checkbox-row">
+          <input id="runtime-restore-raids" type="checkbox">
+          Raid leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-bits" type="checkbox">
+          Bits leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-events" type="checkbox">
+          Recent events
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-avatar-cache" type="checkbox">
+          Avatar cache metadata
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-avatar-images" type="checkbox">
+          Avatar image files
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-goals" type="checkbox">
+          Goals
+        </label>
+      </div>
+
+      <label>
+        Type RESTORE to confirm
+        <input id="runtime-restore-confirmation" type="text" placeholder="RESTORE">
+      </label>
+
+      <div class="button-row">
+        <button id="runtime-restore-button" type="button" class="danger-button">
+          Create Safety Backup and Restore Selected Data
+        </button>
+      </div>
+
+      <p id="runtime-restore-status" class="form-note">
+        No runtime data has been restored in this session.
+      </p>
+    </section>
+    <section class="card" id="runtime-reset-card">
+      <h2>Fresh Start / Reset Runtime Data</h2>
+      <p class="form-note">
+        Reset selected runtime data before a new stream, event, or demo. Flora creates a backup before changing anything.
+      </p>
+
+      <div class="runtime-reset-grid">
+        <label class="checkbox-row">
+          <input id="runtime-reset-raids" type="checkbox">
+          Raid leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-bits" type="checkbox">
+          Bits leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-events" type="checkbox">
+          Recent events
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-avatar-cache" type="checkbox">
+          Avatar cache metadata
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-avatar-images" type="checkbox">
+          Avatar image files
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-goals-progress" type="checkbox">
+          Reset goal progress to zero
+        </label>
+      </div>
+
+      <label>
+        Type RESET to confirm
+        <input id="runtime-reset-confirmation" type="text" placeholder="RESET">
+      </label>
+
+      <div class="button-row">
+        <button id="runtime-reset-button" type="button" class="danger-button">
+          Create Backup and Reset Selected Data
+        </button>
+      </div>
+
+      <p id="runtime-reset-status" class="form-note">
+        No runtime data has been reset in this session.
+      </p>
+    </section>
+    </div>
   </main>
 
   <script src="/js/admin.js"></script>
