@@ -1,7 +1,4 @@
 @echo off
-setlocal
-cd /d "%~dp0"
-
-for /f "usebackq delims=" %%I in (`winepath -u "%~dp0"`) do set "FLORA_UNIX_DIR=%%I"
-
-start /unix /usr/bin/python "%FLORA_UNIX_DIR%/scripts/flora-launcher.py" %*
+cd /d Z:\home\vze3f372\Documents\streamerbot\streampanel
+start /unix /usr/bin/bash /home/vze3f372/Documents/streamerbot/streampanel/start-server-linux.sh %*
+exit /b 0
