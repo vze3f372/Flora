@@ -2,6 +2,17 @@
 
 
 
+
+## v0.13.5 - Raid Data Safety Fix
+
+- Fixed Action Builder URL generation so Streamer.bot variables such as `%userName%`, `%viewers%`, and `%targetUserProfileImageUrl%` are not percent-encoded.
+- Fixed raid updates so `biggestRaid` is preserved and repaired when missing.
+- Added `repair-raids` to normalize `data/raids.json`.
+- Added raid duplicate protection for repeated identical HTTP requests.
+- Added legacy pre-count detection so Streamer.bot/Twitch simulations do not double-count raids when a row is already written before the Fetch URL completes.
+- Made avatar caching best-effort so a failed avatar download does not block raid writes.
+- Hardened table panel rendering so missing numeric fields such as `biggestRaid` use safe fallbacks instead of clearing the panel.
+
 ## v0.13.4 - Getting Started Guide
 
 - Added a from-scratch Getting Started guide.

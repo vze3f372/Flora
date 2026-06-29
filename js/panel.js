@@ -365,6 +365,14 @@ function isObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+function getTableFieldFallback(field, stats) {
+  if (field === "biggestRaid") {
+    return Math.max(getNumber(stats.biggestRaid), getNumber(stats.viewers), 0);
+  }
+
+  return 0;
+}
+
 function validateTableData(data, panelConfig) {
   if (!isObject(data)) {
     return "Panel data must be a JSON object.";
@@ -384,13 +392,15 @@ function validateTableData(data, panelConfig) {
 
     for (const field of requiredFields) {
       if (!(field in stats)) {
-        return `${name} is missing field: ${field}`;
+        stats[field] = getTableFieldFallback(field, stats);
+        console.warn(`${name} is missing field: ${field}; using fallback value ${stats[field]}`);
       }
     }
 
     for (const field of sortFields) {
       if (!Number.isFinite(Number(stats[field]))) {
-        return `${name}.${field} must be numeric.`;
+        stats[field] = getTableFieldFallback(field, stats);
+        console.warn(`${name}.${field} must be numeric; using fallback value ${stats[field]}`);
       }
     }
   }

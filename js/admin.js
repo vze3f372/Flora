@@ -2326,50 +2326,80 @@ function floraActionBuilderParameterValue(value) {
   return String(value || "").trim();
 }
 
+function floraActionBuilderEncodeValue(value) {
+  const text = floraActionBuilderParameterValue(value);
+
+  if (/^%[A-Za-z0-9_]+%$/.test(text)) {
+    return text;
+  }
+
+  return encodeURIComponent(text);
+}
+
+function floraActionBuilderQueryString(params) {
+  return params
+    .filter(([key, value]) => floraActionBuilderParameterValue(key) && floraActionBuilderParameterValue(value))
+    .map(([key, value]) => `${encodeURIComponent(key)}=${floraActionBuilderEncodeValue(value)}`)
+    .join("&");
+}
+
 function floraActionBuilderBuildUrl() {
   const target = floraActionBuilderTarget.value;
   const name = floraActionBuilderParameterValue(floraActionBuilderName.value);
   const amount = floraActionBuilderParameterValue(floraActionBuilderAmount.value);
   const avatarUrl = floraActionBuilderParameterValue(floraActionBuilderAvatarVariable.value);
-  const params = new URLSearchParams();
+  const params = [];
 
   if (name) {
-    params.set("name", name);
-  }
-
-  if (floraActionBuilderAvatar.checked && avatarUrl) {
-    params.set("avatarUrl", avatarUrl);
+    params.push(["name", name]);
   }
 
   if (target === "raid") {
-    params.set("viewers", amount || "%viewers%");
-    return `/api/raid?${params.toString()}`;
+    params.push(["viewers", amount || "%viewers%"]);
+
+    if (floraActionBuilderAvatar.checked && avatarUrl) {
+      params.push(["avatarUrl", avatarUrl]);
+    }
+
+    return `/api/raid?${floraActionBuilderQueryString(params)}`;
   }
 
   if (target === "bits") {
-    params.set("bits", amount || "%bits%");
+    params.push(["bits", amount || "%bits%"]);
 
-    if (floraActionBuilderCheers.checked) {
-      params.set("cheers", "1");
+    if (floraActionBuilderAvatar.checked && avatarUrl) {
+      params.push(["avatarUrl", avatarUrl]);
     }
 
-    return `/api/bits?${params.toString()}`;
+    if (floraActionBuilderCheers.checked) {
+      params.push(["cheers", "1"]);
+    }
+
+    return `/api/bits?${floraActionBuilderQueryString(params)}`;
   }
 
   if (target === "follow") {
-    if (floraActionBuilderUpdateGoal.checked) {
-      params.set("updateGoal", "true");
+    if (floraActionBuilderAvatar.checked && avatarUrl) {
+      params.push(["avatarUrl", avatarUrl]);
     }
 
-    return `/api/follow?${params.toString()}`;
+    if (floraActionBuilderUpdateGoal.checked) {
+      params.push(["updateGoal", "true"]);
+    }
+
+    return `/api/follow?${floraActionBuilderQueryString(params)}`;
   }
 
   if (target === "sub") {
-    if (floraActionBuilderUpdateGoal.checked) {
-      params.set("updateGoal", "true");
+    if (floraActionBuilderAvatar.checked && avatarUrl) {
+      params.push(["avatarUrl", avatarUrl]);
     }
 
-    return `/api/sub?${params.toString()}`;
+    if (floraActionBuilderUpdateGoal.checked) {
+      params.push(["updateGoal", "true"]);
+    }
+
+    return `/api/sub?${floraActionBuilderQueryString(params)}`;
   }
 
   return "";
