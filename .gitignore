@@ -17,3 +17,18 @@ assets/avatars/
 
 # Flora runtime logs
 logs/
+
+# Flora runtime data
+data/raids.json
+data/bits.json
+data/events.json
+data/goals.json
+data/avatar-cache.json
+assets/avatars/
+
+# Flora runtime logs
+logs/
+
+# Flora versioned runtime defaults
+!data/defaults/
+!data/defaults/*.json
