@@ -2963,6 +2963,32 @@ def repair_raids_before_serving() -> None:
         print(f"Flora raid serve repair warning: {error}", flush=True)
 # FLORA_RAID_SERVE_REPAIR_END
 
+
+# FLORA_RUNTIME_BOOTSTRAP_START
+RUNTIME_DEFAULTS_DIR = ROOT / "data" / "defaults"
+RUNTIME_DATA_FILES = {
+    ROOT / "data" / "raids.json": RUNTIME_DEFAULTS_DIR / "raids.json",
+    ROOT / "data" / "bits.json": RUNTIME_DEFAULTS_DIR / "bits.json",
+    ROOT / "data" / "events.json": RUNTIME_DEFAULTS_DIR / "events.json",
+    ROOT / "data" / "goals.json": RUNTIME_DEFAULTS_DIR / "goals.json",
+}
+
+
+def ensure_runtime_data_files() -> None:
+    for destination, source in RUNTIME_DATA_FILES.items():
+        if destination.exists():
+            continue
+
+        destination.parent.mkdir(parents=True, exist_ok=True)
+
+        if source.exists():
+            destination.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+        elif destination.name == "events.json":
+            destination.write_text('{\n  "events": []\n}\n', encoding="utf-8")
+        else:
+            destination.write_text("{}\n", encoding="utf-8")
+# FLORA_RUNTIME_BOOTSTRAP_END
+
 class FloraRequestHandler(SimpleHTTPRequestHandler):
     server_version = "FloraHTTP/0.9"
 
@@ -3406,6 +3432,8 @@ def main() -> int:
     parser.add_argument("--port", default=8000, type=int)
 
     args = parser.parse_args()
+
+    ensure_runtime_data_files()
 
     server = ThreadingHTTPServer((args.host, args.port), FloraRequestHandler)
 
