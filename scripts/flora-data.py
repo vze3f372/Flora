@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import re
 import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
@@ -125,18 +126,152 @@ def make_result(action, dry_run=False, **fields):
     return result
 
 
+
+def safe_int(value, default=0):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def infer_biggest_raid_from_aggregate(viewers, raids):
+    viewers = safe_int(viewers)
+    raids = safe_int(raids)
+
+    if viewers <= 0:
+        return 0
+
+    if raids <= 1:
+        return viewers
+
+    return max(1, (viewers + raids - 1) // raids)
+
+
+def raid_event_viewer_max_by_name():
+    data = load_json_object(EVENTS_FILE)
+    events = data.get("events", [])
+
+    if not isinstance(events, list):
+        return {}
+
+    by_name = {}
+
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+
+        if event.get("type") != "raid":
+            continue
+
+        name = str(event.get("name", "")).strip()
+
+        if not name:
+            continue
+
+        detail = str(event.get("detail", ""))
+        match = re.search(r"Raided with\s+(\d+)\s+viewer", detail, re.IGNORECASE)
+
+        if not match:
+            continue
+
+        viewers = safe_int(match.group(1))
+        by_name[name] = max(by_name.get(name, 0), viewers)
+
+    return by_name
+
+
+def normalize_raid_row(name, row, event_biggest=0):
+    if not isinstance(row, dict):
+        fail(f"data/raids.json.{name} must contain a JSON object")
+
+    viewers = safe_int(row.get("viewers"))
+    raids = safe_int(row.get("raids"))
+
+    if viewers < 0:
+        fail(f"data/raids.json.{name}.viewers must be greater than or equal to zero")
+
+    if raids < 0:
+        fail(f"data/raids.json.{name}.raids must be greater than or equal to zero")
+
+    if "biggestRaid" in row:
+        biggest = safe_int(row.get("biggestRaid"))
+    else:
+        biggest = infer_biggest_raid_from_aggregate(viewers, raids)
+
+    biggest = max(biggest, safe_int(event_biggest))
+
+    if biggest < 0:
+        biggest = 0
+
+    row["viewers"] = viewers
+    row["raids"] = raids
+    row["biggestRaid"] = biggest
+
+    return row
+
+
+def normalize_raid_data(data, event_biggest_by_name=None):
+    event_biggest_by_name = event_biggest_by_name or {}
+
+    for name, row in list(data.items()):
+        data[name] = normalize_raid_row(
+            name,
+            row,
+            event_biggest_by_name.get(name, 0),
+        )
+
+    return data
+
+
+def repair_raids(args):
+    data = load_json_object(RAIDS_FILE)
+    event_biggest_by_name = raid_event_viewer_max_by_name()
+    before = json.dumps(data, sort_keys=True)
+
+    normalize_raid_data(data, event_biggest_by_name)
+
+    changed = before != json.dumps(data, sort_keys=True)
+
+    save_json_object(RAIDS_FILE, data, args.dry_run)
+
+    repaired = [
+        name
+        for name, stats in data.items()
+        if isinstance(stats, dict) and "biggestRaid" in stats
+    ]
+
+    print_json(make_result(
+        "repair-raids",
+        dry_run=args.dry_run,
+        file="data/raids.json",
+        changed=changed,
+        rows=len(repaired),
+    ))
+
+
 def update_raid(args):
     name = require_non_empty_text(args.name, "name")
 
     data = load_json_object(RAIDS_FILE)
-    row = data.setdefault(name, {})
+    event_biggest_by_name = raid_event_viewer_max_by_name()
+    normalize_raid_data(data, event_biggest_by_name)
 
-    if not isinstance(row, dict):
-        fail(f"data/raids.json.{name} must contain a JSON object")
+    row = data.setdefault(
+        name,
+        {
+            "viewers": 0,
+            "raids": 0,
+            "biggestRaid": 0,
+        },
+    )
+    row = normalize_raid_row(name, row, event_biggest_by_name.get(name, 0))
+    data[name] = row
 
-    row["viewers"] = int(row.get("viewers", 0)) + args.viewers
-    row["raids"] = int(row.get("raids", 0)) + args.raids
-    row["biggestRaid"] = max(int(row.get("biggestRaid", 0)), args.viewers)
+    previous_biggest = row["biggestRaid"]
+
+    row["viewers"] = row["viewers"] + args.viewers
+    row["raids"] = row["raids"] + args.raids
+    row["biggestRaid"] = max(previous_biggest, args.viewers)
 
     save_json_object(RAIDS_FILE, data, args.dry_run)
 
@@ -148,6 +283,8 @@ def update_raid(args):
         viewers=row["viewers"],
         raids=row["raids"],
         biggestRaid=row["biggestRaid"],
+        previousBiggestRaid=previous_biggest,
+        currentRaidViewers=args.viewers,
     ))
 
 
@@ -491,6 +628,13 @@ def build_parser():
     sub_event.add_argument("--keep", default=25, type=positive_int("keep"))
     add_dry_run_argument(sub_event)
     sub_event.set_defaults(func=add_sub_event)
+
+    repair_raids_parser = subparsers.add_parser(
+        "repair-raids",
+        help="Normalize raid data and repair missing biggestRaid fields.",
+    )
+    add_dry_run_argument(repair_raids_parser)
+    repair_raids_parser.set_defaults(func=repair_raids)
 
     reset = subparsers.add_parser(
         "reset",
