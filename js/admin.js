@@ -2852,3 +2852,44 @@ if (namedRotationSelect) {
 }
 
 // FLORA_NAMED_ROTATION_ADMIN_END
+
+// FLORA_ADMIN_TABS_START
+function floraInitializeAdminTabs() {
+  const buttons = [...document.querySelectorAll("[data-admin-tab]")];
+  const panels = [...document.querySelectorAll("[data-admin-tab-panel]")];
+
+  if (!buttons.length || !panels.length) {
+    return;
+  }
+
+  const availableTabs = new Set(buttons.map(button => button.dataset.adminTab));
+  const savedTab = localStorage.getItem("flora-admin-active-tab");
+  const defaultTab = availableTabs.has(savedTab) ? savedTab : buttons[0].dataset.adminTab;
+
+  function activateTab(tabName) {
+    buttons.forEach(button => {
+      const isActive = button.dataset.adminTab === tabName;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-selected", String(isActive));
+    });
+
+    panels.forEach(panel => {
+      const isActive = panel.dataset.adminTabPanel === tabName;
+      panel.classList.toggle("is-active", isActive);
+      panel.hidden = !isActive;
+    });
+
+    localStorage.setItem("flora-admin-active-tab", tabName);
+  }
+
+  buttons.forEach(button => {
+    button.addEventListener("click", () => {
+      activateTab(button.dataset.adminTab);
+    });
+  });
+
+  activateTab(defaultTab);
+}
+
+floraInitializeAdminTabs();
+// FLORA_ADMIN_TABS_END
