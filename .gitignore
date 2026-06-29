@@ -31,3 +31,7 @@ assets/avatars/
 # Flora versioned runtime defaults
 !data/defaults/
 !data/defaults/*.json
+
+# Flora watchdog runtime files
+.flora-watchdog.lock
+logs/flora-watchdog.log
