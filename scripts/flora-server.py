@@ -13,10 +13,12 @@ import json
 import re
 import shutil
 import subprocess
+import time
 import sys
 import urllib.request
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
@@ -154,7 +156,6 @@ def _flora_avatar_normalize_name(name: str) -> str:
 
 
 def _flora_avatar_now() -> str:
-    from datetime import datetime, timezone
 
     return datetime.now(timezone.utc).isoformat()
 
@@ -361,7 +362,6 @@ def _flora_admin_backup_json(path: Path) -> Path | None:
     if not path.exists():
         return None
 
-    from datetime import datetime, timezone
     import shutil
 
     repo_root = _flora_admin_repo_root()
@@ -946,7 +946,6 @@ def _flora_admin_write_backup_metadata(
     note: str = "",
     reason: str = "manual-tag",
 ) -> dict:
-    from datetime import datetime, timezone
 
     metadata = {
         "target": target,
@@ -1166,7 +1165,6 @@ def _flora_admin_preset_recent_events_panel(config: dict) -> dict:
 
 
 def _flora_admin_current_preset_payload(name: str, note: str) -> dict:
-    from datetime import datetime, timezone
 
     repo_root = _flora_admin_repo_root()
     config = _flora_admin_read_json(repo_root / "config.json")
@@ -1224,7 +1222,6 @@ def _flora_admin_list_presets() -> list[dict]:
 
 
 def _flora_admin_export_preset(name: str, note: str) -> dict:
-    from datetime import datetime, timezone
 
     presets_dir = _flora_admin_presets_dir()
     presets_dir.mkdir(parents=True, exist_ok=True)
@@ -1513,7 +1510,6 @@ def _flora_admin_handle_preset_delete_post(handler) -> bool:
 # FLORA_RUNTIME_RESET_START
 
 def _flora_admin_runtime_reset_timestamp() -> str:
-    from datetime import datetime, timezone
 
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
 
@@ -2791,6 +2787,168 @@ def _flora_admin_handle_post(handler) -> bool:
 
 # FLORA_ADMIN_API_END
 
+
+
+
+
+
+
+# FLORA_RAID_PRECOUNT_START
+RAID_PRECOUNT_WINDOW_SECONDS = 120
+
+
+def parse_legacy_last_raid(value: Any) -> datetime | None:
+    text = str(value or "").strip()
+
+    if not text:
+        return None
+
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
+        try:
+            return datetime.strptime(text, fmt)
+        except ValueError:
+            continue
+
+    return None
+
+
+def is_recent_legacy_precount(row: dict[str, Any] | None, viewers: int) -> bool:
+    if not isinstance(row, dict):
+        return False
+
+    last_raid = parse_legacy_last_raid(row.get("lastRaid"))
+
+    if last_raid is None:
+        return False
+
+    age = (datetime.now() - last_raid).total_seconds()
+
+    if age < 0 or age > RAID_PRECOUNT_WINDOW_SECONDS:
+        return False
+
+    try:
+        row_viewers = int(row.get("viewers", 0))
+        row_raids = int(row.get("raids", 0))
+    except (TypeError, ValueError):
+        return False
+
+    return row_raids >= 1 and row_viewers >= viewers
+# FLORA_RAID_PRECOUNT_END
+
+# FLORA_RAID_DEBUG_START
+def read_raid_row_for_debug(name: str) -> dict[str, Any] | None:
+    path = ROOT / "data" / "raids.json"
+
+    try:
+        with path.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+    except Exception:
+        return None
+
+    if not isinstance(data, dict):
+        return None
+
+    row = data.get(name)
+
+    if isinstance(row, dict):
+        return dict(row)
+
+    return None
+# FLORA_RAID_DEBUG_END
+
+# FLORA_SAFE_AVATAR_CACHE_START
+def safe_cache_avatar_from_payload(name: str, payload: dict[str, Any], dry_run: bool) -> Any:
+    try:
+        return cache_avatar_from_payload(name, payload, dry_run)
+    except Exception as error:
+        print(f"Flora avatar cache warning for {name}: {error}", flush=True)
+        return None
+# FLORA_SAFE_AVATAR_CACHE_END
+
+# FLORA_RAID_EVENT_DEDUPE_START
+RAID_EVENT_DUPLICATE_WINDOW_SECONDS = 60
+RAID_EVENTS_FILE = ROOT / "data" / "events.json"
+
+
+def has_recent_matching_raid_event(name: str, viewers: int) -> bool:
+    try:
+        with RAID_EVENTS_FILE.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return False
+
+    events = data.get("events", [])
+
+    if not isinstance(events, list):
+        return False
+
+    now = datetime.now(timezone.utc)
+    expected_name = name.casefold()
+
+    for event in events[:25]:
+        if not isinstance(event, dict):
+            continue
+
+        if event.get("type") != "raid":
+            continue
+
+        event_name = str(event.get("name", "")).strip().casefold()
+
+        if event_name != expected_name:
+            continue
+
+        detail = str(event.get("detail", ""))
+        match = re.search(r"Raided with\s+(\d+)\s+viewer", detail, re.IGNORECASE)
+
+        if not match:
+            continue
+
+        if int(match.group(1)) != viewers:
+            continue
+
+        created_at = str(event.get("createdAt", ""))
+
+        try:
+            event_time = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+
+        age = (now - event_time).total_seconds()
+
+        if 0 <= age <= RAID_EVENT_DUPLICATE_WINDOW_SECONDS:
+            return True
+
+    return False
+# FLORA_RAID_EVENT_DEDUPE_END
+
+
+# FLORA_RAID_DEDUPE_START
+RAID_DUPLICATE_WINDOW_SECONDS = 5.0
+_RECENT_RAID_REQUESTS: dict[tuple[str, int], float] = {}
+
+
+def is_duplicate_raid_request(name: str, viewers: int) -> bool:
+    now = time.monotonic()
+    key = (name.casefold(), viewers)
+
+    expired = [
+        existing_key
+        for existing_key, timestamp in _RECENT_RAID_REQUESTS.items()
+        if now - timestamp > RAID_DUPLICATE_WINDOW_SECONDS
+    ]
+
+    for existing_key in expired:
+        _RECENT_RAID_REQUESTS.pop(existing_key, None)
+
+    previous = _RECENT_RAID_REQUESTS.get(key)
+
+    if previous is not None and now - previous <= RAID_DUPLICATE_WINDOW_SECONDS:
+        return True
+
+    _RECENT_RAID_REQUESTS[key] = now
+    return False
+# FLORA_RAID_DEDUPE_END
+
 class FloraRequestHandler(SimpleHTTPRequestHandler):
     server_version = "FloraHTTP/0.9"
 
@@ -2831,8 +2989,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
                 {
                     "ok": True,
                     "service": "flora",
-                    "root": str(ROOT),
-                },
+                        },
             )
             return
 
@@ -2928,19 +3085,57 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
     def handle_raid(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
         name = require_text(payload, "name", "userName")
         viewers = require_int(payload, "viewers", "viewerCount")
-        avatar = cache_avatar_from_payload(name, payload, dry_run)
 
-        results = [
-            run_writer(
-                [
-                    "raid",
-                    "--name",
-                    name,
-                    "--viewers",
-                    str(viewers),
-                ],
-                dry_run,
-            ),
+        normalized = {
+            "name": name,
+            "viewers": viewers,
+        }
+
+        raid_row_before = read_raid_row_for_debug(name)
+
+        if not dry_run and (
+            is_duplicate_raid_request(name, viewers)
+            or has_recent_matching_raid_event(name, viewers)
+        ):
+            return {
+                "ok": True,
+                "action": "raid",
+                "dryRun": dry_run,
+                "duplicate": True,
+                "skipped": True,
+                "message": "Duplicate raid request ignored",
+                "normalized": normalized,
+            }
+
+        avatar = safe_cache_avatar_from_payload(name, payload, dry_run)
+        legacy_precount = not dry_run and is_recent_legacy_precount(raid_row_before, viewers)
+
+        results = []
+
+        if legacy_precount:
+            results.append(
+                run_writer(
+                    [
+                        "repair-raids",
+                    ],
+                    dry_run,
+                )
+            )
+        else:
+            results.append(
+                run_writer(
+                    [
+                        "raid",
+                        "--name",
+                        name,
+                        "--viewers",
+                        str(viewers),
+                    ],
+                    dry_run,
+                )
+            )
+
+        results.append(
             run_writer(
                 add_event_common_args(
                     [
@@ -2953,13 +3148,16 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
                     payload,
                 ),
                 dry_run,
-            ),
-        ]
+            )
+        )
 
         return {
             "ok": True,
             "action": "raid",
             "dryRun": dry_run,
+            "duplicate": False,
+            "legacyPrecount": legacy_precount,
+            "normalized": normalized,
             "results": results,
             "avatar": avatar,
         }
@@ -2968,7 +3166,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         name = require_text(payload, "name", "userName")
         bits = require_int(payload, "bits")
         cheers = require_int(payload, "cheers") if "cheers" in payload else 1
-        avatar = cache_avatar_from_payload(name, payload, dry_run)
+        avatar = safe_cache_avatar_from_payload(name, payload, dry_run)
 
         results = [
             run_writer(
@@ -3008,7 +3206,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
 
     def handle_follow(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
         name = require_text(payload, "name")
-        avatar = cache_avatar_from_payload(name, payload, dry_run)
+        avatar = safe_cache_avatar_from_payload(name, payload, dry_run)
         event_time = optional_text(payload, "time", "Just now")
         keep = optional_int(payload, "keep", 25)
         update_goal = optional_bool(payload, "updateGoal", False)
@@ -3051,7 +3249,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
 
     def handle_sub(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
         name = require_text(payload, "name")
-        avatar = cache_avatar_from_payload(name, payload, dry_run)
+        avatar = safe_cache_avatar_from_payload(name, payload, dry_run)
         event_time = optional_text(payload, "time", "Just now")
         keep = optional_int(payload, "keep", 25)
         update_goal = optional_bool(payload, "updateGoal", False)
@@ -3121,7 +3319,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         event_type = require_text(payload, "type")
         name = require_text(payload, "name", "userName")
         detail = require_text(payload, "detail")
-        avatar = cache_avatar_from_payload(name, payload, dry_run)
+        avatar = safe_cache_avatar_from_payload(name, payload, dry_run)
 
         result = run_writer(
             add_event_common_args(
