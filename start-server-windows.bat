@@ -1,9 +1,8 @@
 @echo off
 setlocal
+
 cd /d "%~dp0"
 
-python scripts\flora-launcher.py %*
-if %errorlevel% equ 0 exit /b 0
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\flora-start-windows.ps1"
 
-py -3 scripts\flora-launcher.py %*
-exit /b %errorlevel%
+exit /b %ERRORLEVEL%
