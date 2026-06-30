@@ -292,12 +292,19 @@ def run_writer(arguments: list[str], dry_run: bool) -> dict[str, Any]:
     if dry_run:
         command.append("--dry-run")
 
+    run_options = {
+        "cwd": ROOT,
+        "text": True,
+        "capture_output": True,
+        "check": False,
+    }
+
+    if sys.platform == "win32":
+        run_options["creationflags"] = subprocess.CREATE_NO_WINDOW
+
     completed = subprocess.run(
         command,
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
+        **run_options,
     )
 
     stdout = completed.stdout.strip()
