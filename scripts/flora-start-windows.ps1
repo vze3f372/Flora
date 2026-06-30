@@ -150,7 +150,7 @@ try {
 
     Start-Process $AdminUrl
 
-    Show-FloraPopup "Flora started" "Flora is running. Admin page opened in the browser. Startup log: $StartupLog" "Info"
+    # Success is logged silently. Error conditions still show popups.
 
     exit 0
 }
