@@ -21,17 +21,6 @@
     opacity: 0.8;
 }
 
-.panel-shell::after {
-    content: "";
-    position: absolute;
-    left: 42px;
-    right: 42px;
-    top: 124px;
-    height: 2px;
-    pointer-events: none;
-    background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
-    box-shadow: 0 0 14px rgba(56, 243, 255, 0.85);
-}
 
 .panel-header,
 .table-panel {

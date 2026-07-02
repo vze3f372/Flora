@@ -35,3 +35,5 @@ assets/avatars/
 # Flora watchdog runtime files
 .flora-watchdog.lock
 logs/flora-watchdog.log
+
+data/subs.json

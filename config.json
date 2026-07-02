@@ -317,6 +317,90 @@
       "rankLabel": "Rank",
       "nameLabel": "User",
       "sortMode": "biggestCheer"
+    },
+    "sub-months-total": {
+      "title": "TOP SUBS",
+      "subtitle": "TOTAL MONTHS SUBBED",
+      "dataFile": "data/subs.json",
+      "maxRows": 10,
+      "sortBy": "totalMonths",
+      "sortThenBy": "streakMonths",
+      "columns": [
+        {
+          "label": "Months",
+          "field": "totalMonths",
+          "className": "primary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Streak",
+          "field": "streakMonths",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "120px"
+        },
+        {
+          "label": "Tier",
+          "field": "tier",
+          "className": "secondary-text",
+          "align": "center",
+          "width": "130px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "type": "table",
+      "emptyMessage": "No subscriptions recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "Subscriber",
+      "sortMode": "totalSubMonths"
+    },
+    "sub-months-streak": {
+      "title": "SUB STREAKS",
+      "subtitle": "MONTHS IN A ROW",
+      "dataFile": "data/subs.json",
+      "maxRows": 10,
+      "sortBy": "streakMonths",
+      "sortThenBy": "totalMonths",
+      "columns": [
+        {
+          "label": "Streak",
+          "field": "streakMonths",
+          "className": "primary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Total",
+          "field": "totalMonths",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "120px"
+        },
+        {
+          "label": "Tier",
+          "field": "tier",
+          "className": "secondary-text",
+          "align": "center",
+          "width": "130px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "type": "table",
+      "emptyMessage": "No subscriptions recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "Subscriber",
+      "sortMode": "streakSubMonths"
     }
   },
   "rotation": {

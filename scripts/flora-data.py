@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 RAIDS_FILE = ROOT / "data" / "raids.json"
 BITS_FILE = ROOT / "data" / "bits.json"
+SUBS_FILE = ROOT / "data" / "subs.json"
 GOALS_FILE = ROOT / "data" / "goals.json"
 
 
@@ -35,6 +36,7 @@ EVENTS_FILE = ROOT / "data" / "events.json"
 DATA_FILES = {
     "raids": RAIDS_FILE,
     "bits": BITS_FILE,
+    "subs": SUBS_FILE,
     "goals": GOALS_FILE,
     "events": EVENTS_FILE,
 }
@@ -532,6 +534,80 @@ def write_event(event_type, name, detail, event_time, keep, dry_run):
     ))
 
 
+
+def parse_bool_like(value):
+    if value is None:
+        return None
+
+    text = str(value).strip().lower()
+
+    if text == "":
+        return None
+
+    if text in {"1", "true", "yes", "y", "on"}:
+        return True
+
+    if text in {"0", "false", "no", "n", "off"}:
+        return False
+
+    return None
+
+
+def update_subs(args):
+    name = require_non_empty_text(args.name, "name")
+    data = load_json_object(SUBS_FILE)
+
+    existing = data.get(name, {})
+
+    if not isinstance(existing, dict):
+        existing = {}
+
+    previous_subs = safe_int(existing.get("subs"), 0)
+    previous_total_months = safe_int(existing.get("totalMonths"), 0)
+    previous_streak_months = safe_int(existing.get("streakMonths"), 0)
+
+    total_months = previous_total_months
+
+    if args.total_months is not None:
+        total_months = max(previous_total_months, safe_int(args.total_months, 0))
+
+    streak_months = previous_streak_months
+
+    if args.streak_months is not None:
+        streak_months = safe_int(args.streak_months, 0)
+
+    tier = str(args.tier or existing.get("tier", "")).strip()
+    is_prime_sub = parse_bool_like(args.is_prime_sub)
+
+    if is_prime_sub is None:
+        is_prime_sub = bool(existing.get("isPrimeSub", False))
+
+    row = dict(existing)
+    row.update({
+        "subs": previous_subs + args.subs,
+        "totalMonths": total_months,
+        "streakMonths": streak_months,
+        "tier": tier,
+        "isPrimeSub": bool(is_prime_sub),
+        "lastSub": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+    })
+
+    data[name] = row
+    save_json_object(SUBS_FILE, data, args.dry_run)
+
+    print_json(make_result(
+        "sub-leaderboard",
+        dry_run=args.dry_run,
+        file="data/subs.json",
+        name=name,
+        subs=row["subs"],
+        totalMonths=row["totalMonths"],
+        streakMonths=row["streakMonths"],
+        tier=row["tier"],
+        isPrimeSub=row["isPrimeSub"],
+    ))
+
+
 def add_event(args):
     write_event(
         args.type,
@@ -655,6 +731,19 @@ def build_parser():
     bits.add_argument("--cheers", default=1, type=positive_int("cheers"))
     add_dry_run_argument(bits)
     bits.set_defaults(func=update_bits)
+
+    sub_leaderboard = subparsers.add_parser(
+        "sub-leaderboard",
+        help="Update subscription leaderboard statistics for one user.",
+    )
+    sub_leaderboard.add_argument("--name", required=True)
+    sub_leaderboard.add_argument("--total-months", type=non_negative_int("total-months"))
+    sub_leaderboard.add_argument("--streak-months", type=non_negative_int("streak-months"))
+    sub_leaderboard.add_argument("--subs", default=1, type=positive_int("subs"))
+    sub_leaderboard.add_argument("--tier", default="")
+    sub_leaderboard.add_argument("--is-prime-sub", default="")
+    add_dry_run_argument(sub_leaderboard)
+    sub_leaderboard.set_defaults(func=update_subs)
 
     goal = subparsers.add_parser(
         "goal",

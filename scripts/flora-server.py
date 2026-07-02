@@ -2976,6 +2976,7 @@ RUNTIME_DEFAULTS_DIR = ROOT / "data" / "defaults"
 RUNTIME_DATA_FILES = {
     ROOT / "data" / "raids.json": RUNTIME_DEFAULTS_DIR / "raids.json",
     ROOT / "data" / "bits.json": RUNTIME_DEFAULTS_DIR / "bits.json",
+    ROOT / "data" / "subs.json": RUNTIME_DEFAULTS_DIR / "subs.json",
     ROOT / "data" / "events.json": RUNTIME_DEFAULTS_DIR / "events.json",
     ROOT / "data" / "goals.json": RUNTIME_DEFAULTS_DIR / "goals.json",
 }
@@ -3325,6 +3326,19 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         keep = optional_int(payload, "keep", 25)
         update_goal = optional_bool(payload, "updateGoal", False)
 
+        total_months = optional_int(payload, "totalMonths", None)
+
+        if total_months is None:
+            total_months = optional_int(payload, "badgeCount", None)
+
+        streak_months = optional_int(payload, "streakMonths", None)
+
+        if streak_months is None:
+            streak_months = optional_int(payload, "monthsSubscribed", None)
+
+        tier = optional_text(payload, "tier", "")
+        is_prime_sub = optional_text(payload, "isPrimeSub", "")
+
         results = [
             run_writer(
                 [
@@ -3339,6 +3353,27 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
                 dry_run,
             )
         ]
+
+        if total_months is not None or streak_months is not None or tier or is_prime_sub:
+            sub_arguments = [
+                "sub-leaderboard",
+                "--name",
+                name,
+            ]
+
+            if total_months is not None:
+                sub_arguments.extend(["--total-months", str(total_months)])
+
+            if streak_months is not None:
+                sub_arguments.extend(["--streak-months", str(streak_months)])
+
+            if tier:
+                sub_arguments.extend(["--tier", tier])
+
+            if is_prime_sub:
+                sub_arguments.extend(["--is-prime-sub", is_prime_sub])
+
+            results.append(run_writer(sub_arguments, dry_run))
 
         if update_goal:
             results.append(
