@@ -85,6 +85,12 @@ http://127.0.0.1:8000/panel.html?rotation=leaderboards
 http://127.0.0.1:8000/panel.html?rotation=goals
 ```
 
+## Updating Flora
+
+Use the included updater scripts to update safely without deleting runtime stream data.
+
+See `docs/updating.md`.
+
 ## Streamer.bot setup
 
 For normal setup, start here:
