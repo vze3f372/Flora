@@ -217,6 +217,9 @@ Open one of these in a browser:
 ```text
 http://127.0.0.1:8000/panel.html?type=raids
 http://127.0.0.1:8000/panel.html?type=bits
+http://127.0.0.1:8000/panel.html?type=sub-months-total
+http://127.0.0.1:8000/panel.html?type=sub-months-streak
+http://127.0.0.1:8000/panel.html?type=gift-subs
 http://127.0.0.1:8000/panel.html?type=follower-goal
 http://127.0.0.1:8000/panel.html?type=sub-goal
 http://127.0.0.1:8000/panel.html?type=recent-events
@@ -272,6 +275,8 @@ Sub test:
 
 ```text
 http://127.0.0.1:8000/api/sub?name=TestSub
+http://127.0.0.1:8000/api/sub?name=TestSub&totalMonths=12&streakMonths=3&tier=tier%201&isPrimeSub=false
+http://127.0.0.1:8000/api/gift-sub?name=TestGifter&recipient=TestRecipient&giftCount=1&totalGifted=5&tier=tier%202&anonymous=false&monthsGifted=3
 ```
 
 Goal test:
@@ -310,12 +315,14 @@ http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewers%
 http://127.0.0.1:8000/api/bits?name=%userName%&bits=%bits%&cheers=1
 http://127.0.0.1:8000/api/follow?name=%userName%
 http://127.0.0.1:8000/api/sub?name=%userName%
+http://127.0.0.1:8000/api/sub?name=%userName%&totalMonths=%badgeCount%&streakMonths=%monthsSubscribed%&tier=%tier%&isPrimeSub=%isPrimeSub%
+http://127.0.0.1:8000/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%
 ```
 
 For avatar support, add a Twitch user info lookup before the Fetch URL action and include:
 
 ```text
-avatarUrl=%targetUserProfileImageUrl%
+avatarUrl=%targetUserProfileImageUrlEscaped%
 ```
 
 ## 10. Streamer.bot on Linux through Wine

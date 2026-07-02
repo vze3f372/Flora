@@ -146,6 +146,8 @@
             <option value="bits">Bits / Cheer</option>
             <option value="follow">Follow</option>
             <option value="sub">Subscription</option>
+            <option value="sub-leaderboard">Subscription Leaderboard</option>
+            <option value="gift-sub">Gift Subscription</option>
             <option value="custom">Custom</option>
           </select>
         </label>
@@ -157,6 +159,8 @@
             <option value="bits">Bits leaderboard</option>
             <option value="follow">Follower goal</option>
             <option value="sub">Subscriber goal</option>
+            <option value="sub-leaderboard">Subscription leaderboard</option>
+            <option value="gift-sub">Gift sub leaderboard</option>
           </select>
         </label>
 
@@ -218,7 +222,7 @@
 
         <label id="action-builder-avatar-variable-wrap">
           Avatar URL variable
-          <input id="action-builder-avatar-variable" type="text" value="%targetUserProfileImageUrl%">
+          <input id="action-builder-avatar-variable" type="text" value="%targetUserProfileImageUrlEscaped%">
         </label>
 
       <label class="full-width-label">
@@ -711,6 +715,16 @@
         </label>
 
         <label class="checkbox-row">
+          <input id="runtime-restore-subs" type="checkbox">
+          Subscription leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-restore-gift-subs" type="checkbox">
+          Gift sub leaderboard
+        </label>
+
+        <label class="checkbox-row">
           <input id="runtime-restore-events" type="checkbox">
           Recent events
         </label>
@@ -761,6 +775,16 @@
         <label class="checkbox-row">
           <input id="runtime-reset-bits" type="checkbox">
           Bits leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-subs" type="checkbox">
+          Subscription leaderboard
+        </label>
+
+        <label class="checkbox-row">
+          <input id="runtime-reset-gift-subs" type="checkbox">
+          Gift sub leaderboard
         </label>
 
         <label class="checkbox-row">

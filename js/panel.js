@@ -314,6 +314,7 @@ const TABLE_SORT_MODES = {
   biggestCheer: ["biggestCheer", "bits"],
   totalSubMonths: ["totalMonths", "streakMonths"],
   streakSubMonths: ["streakMonths", "totalMonths"],
+  giftSubCount: ["gifts", "giftEvents"],
 };
 
 function getTableSortFields(panelConfig) {

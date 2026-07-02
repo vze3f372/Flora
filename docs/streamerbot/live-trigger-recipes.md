@@ -170,6 +170,12 @@ Live Fetch URL:
 http://127.0.0.1:8000/api/sub?name=%userName%
 ~~~
 
+Subscription leaderboard Fetch URL:
+
+~~~text
+http://127.0.0.1:8000/api/sub?name=%userName%&totalMonths=%badgeCount%&streakMonths=%monthsSubscribed%&tier=%tier%&isPrimeSub=%isPrimeSub%&avatarUrl=%targetUserProfileImageUrlEscaped%
+~~~
+
 Expected result:
 
 ~~~text
@@ -279,7 +285,7 @@ http://127.0.0.1:8000/api/goal?key=followers&current=55&target=100&dryRun=true
 After live manual or trigger tests, restore test data before committing:
 
 ~~~bash
-rm -f data/raids.json data/bits.json data/events.json data/goals.json
+rm -f data/raids.json data/bits.json data/subs.json data/gift-subs.json data/events.json data/goals.json
 python scripts/flora-launcher.py
 python scripts/check.py
 python scripts/validate-config.py
@@ -307,4 +313,30 @@ Live:
 
 ~~~text
 http://127.0.0.1:8000/api/sub?name=%userName%&updateGoal=true
+~~~
+
+## Gift subscription leaderboard
+
+Trigger:
+
+~~~text
+Twitch → Subscriptions → Gift Subscription
+~~~
+
+Dry-run Fetch URL:
+
+~~~text
+http://127.0.0.1:8000/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%&dryRun=true
+~~~
+
+Live Fetch URL:
+
+~~~text
+http://127.0.0.1:8000/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%
+~~~
+
+Live Fetch URL with subscriber goal increment:
+
+~~~text
+http://127.0.0.1:8000/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%&updateGoal=true
 ~~~

@@ -8,6 +8,8 @@ These files are tracked by Git:
 
 - `data/defaults/raids.json`
 - `data/defaults/bits.json`
+- `data/defaults/subs.json`
+- `data/defaults/gift-subs.json`
 - `data/defaults/events.json`
 - `data/defaults/goals.json`
 
@@ -19,6 +21,8 @@ These files are created and updated while Flora runs:
 
 - `data/raids.json`
 - `data/bits.json`
+- `data/subs.json`
+- `data/gift-subs.json`
 - `data/events.json`
 - `data/goals.json`
 - `data/avatar-cache.json`
@@ -26,7 +30,7 @@ These files are created and updated while Flora runs:
 - files under `assets/avatars/`
 - files under `backups/`
 
-These files are intentionally ignored by Git. Normal stream activity, panel refreshes, raid tests, bits tests, avatar downloads, and server logs should not dirty the working tree.
+These files are intentionally ignored by Git. Normal stream activity, panel refreshes, raid tests, bits tests, subscription tests, gift subscription tests, avatar downloads, and server logs should not dirty the working tree.
 
 ## Startup behavior
 
@@ -51,7 +55,7 @@ Manual reset method:
     pkill -f '[s]cripts/flora-server.py' 2>/dev/null || true
     sleep 1
 
-    rm -f data/raids.json data/bits.json data/events.json data/goals.json
+    rm -f data/raids.json data/bits.json data/subs.json data/gift-subs.json data/events.json data/goals.json
 
     python scripts/flora-launcher.py
 

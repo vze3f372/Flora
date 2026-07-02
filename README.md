@@ -69,6 +69,9 @@ http://127.0.0.1:8000/panel.html?type=raids-biggest
 http://127.0.0.1:8000/panel.html?type=bits
 http://127.0.0.1:8000/panel.html?type=bits-count
 http://127.0.0.1:8000/panel.html?type=bits-biggest
+http://127.0.0.1:8000/panel.html?type=sub-months-total
+http://127.0.0.1:8000/panel.html?type=sub-months-streak
+http://127.0.0.1:8000/panel.html?type=gift-subs
 http://127.0.0.1:8000/panel.html?type=follower-goal
 http://127.0.0.1:8000/panel.html?type=sub-goal
 http://127.0.0.1:8000/panel.html?type=recent-events
@@ -143,6 +146,8 @@ Live runtime files are local working data. They are ignored by Git and recreated
 ```text
 data/raids.json
 data/bits.json
+data/subs.json
+data/gift-subs.json
 data/events.json
 data/goals.json
 data/avatar-cache.json

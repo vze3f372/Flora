@@ -185,6 +185,69 @@ This updates:
 data/events.json
 ~~~
 
+If month fields are supplied, the same endpoint also updates the subscription leaderboards.
+
+Example body:
+
+~~~json
+{
+  "name": "%userName%",
+  "totalMonths": "%badgeCount%",
+  "streakMonths": "%monthsSubscribed%",
+  "tier": "%tier%",
+  "isPrimeSub": "%isPrimeSub%"
+}
+~~~
+
+This also updates:
+
+~~~text
+data/subs.json
+~~~
+
+## Gift subscription action
+
+Method:
+
+~~~text
+POST
+~~~
+
+URL:
+
+~~~text
+http://127.0.0.1:8000/api/gift-sub
+~~~
+
+Content type:
+
+~~~text
+application/json
+~~~
+
+Body:
+
+~~~json
+{
+  "name": "%userName%",
+  "recipient": "%recipientUserName%",
+  "giftCount": 1,
+  "totalGifted": "%totalSubsGifted%",
+  "tier": "%tier%",
+  "anonymous": "%anonymous%",
+  "monthsGifted": "%monthsGifted%"
+}
+~~~
+
+This updates:
+
+~~~text
+data/gift-subs.json
+data/events.json
+~~~
+
+Use `updateGoal=true` to increment the subscriber goal by `giftCount`.
+
 ## Follower goal action
 
 Method:

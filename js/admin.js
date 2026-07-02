@@ -112,6 +112,9 @@ const rotationFields = {
 const obsUrls = [
   ["/panel.html?type=raids", "Raids"],
   ["/panel.html?type=bits", "Bits"],
+  ["/panel.html?type=sub-months-total", "Top subs"],
+  ["/panel.html?type=sub-months-streak", "Sub streaks"],
+  ["/panel.html?type=gift-subs", "Gift subs"],
   ["/panel.html?type=follower-goal", "Follower goal"],
   ["/panel.html?type=sub-goal", "Sub goal"],
   ["/panel.html?type=recent-events", "Recent activity"],
@@ -123,6 +126,8 @@ const streamerbotUrls = [
   ["/api/bits?name=%userName%&bits=%bits%&cheers=1", "Cheer / bits"],
   ["/api/follow?name=%userName%&updateGoal=true", "Follow + goal"],
   ["/api/sub?name=%userName%&updateGoal=true", "Sub + goal"],
+  ["/api/sub?name=%userName%&totalMonths=%badgeCount%&streakMonths=%monthsSubscribed%&tier=%tier%&isPrimeSub=%isPrimeSub%&avatarUrl=%targetUserProfileImageUrlEscaped%", "Sub leaderboard"],
+  ["/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%", "Gift sub leaderboard"],
 ];
 
 function absoluteUrl(path) {
@@ -1179,6 +1184,8 @@ const runtimeRestoreConfirmation = document.getElementById("runtime-restore-conf
 const runtimeRestoreFields = {
   raids: document.getElementById("runtime-restore-raids"),
   bits: document.getElementById("runtime-restore-bits"),
+  subs: document.getElementById("runtime-restore-subs"),
+  giftSubs: document.getElementById("runtime-restore-gift-subs"),
   events: document.getElementById("runtime-restore-events"),
   avatarCache: document.getElementById("runtime-restore-avatar-cache"),
   avatarImages: document.getElementById("runtime-restore-avatar-images"),
@@ -1219,6 +1226,8 @@ function runtimeRestoreSelection() {
   return {
     raids: Boolean(runtimeRestoreFields.raids?.checked),
     bits: Boolean(runtimeRestoreFields.bits?.checked),
+    subs: Boolean(runtimeRestoreFields.subs?.checked),
+    giftSubs: Boolean(runtimeRestoreFields.giftSubs?.checked),
     events: Boolean(runtimeRestoreFields.events?.checked),
     avatarCache: Boolean(runtimeRestoreFields.avatarCache?.checked),
     avatarImages: Boolean(runtimeRestoreFields.avatarImages?.checked),
@@ -1231,6 +1240,8 @@ function runtimeRestoreSelectionLabels(options) {
 
   if (options.raids) labels.push("raid leaderboard");
   if (options.bits) labels.push("bits leaderboard");
+  if (options.subs) labels.push("subscription leaderboard");
+  if (options.giftSubs) labels.push("gift sub leaderboard");
   if (options.events) labels.push("recent events");
   if (options.avatarCache) labels.push("avatar cache metadata");
   if (options.avatarImages) labels.push("avatar image files");
@@ -1415,6 +1426,8 @@ const runtimeResetConfirmation = document.getElementById("runtime-reset-confirma
 const runtimeResetFields = {
   raids: document.getElementById("runtime-reset-raids"),
   bits: document.getElementById("runtime-reset-bits"),
+  subs: document.getElementById("runtime-reset-subs"),
+  giftSubs: document.getElementById("runtime-reset-gift-subs"),
   events: document.getElementById("runtime-reset-events"),
   avatarCache: document.getElementById("runtime-reset-avatar-cache"),
   avatarImages: document.getElementById("runtime-reset-avatar-images"),
@@ -1425,6 +1438,8 @@ function selectedRuntimeResetOptions() {
   return {
     raids: Boolean(runtimeResetFields.raids?.checked),
     bits: Boolean(runtimeResetFields.bits?.checked),
+    subs: Boolean(runtimeResetFields.subs?.checked),
+    giftSubs: Boolean(runtimeResetFields.giftSubs?.checked),
     events: Boolean(runtimeResetFields.events?.checked),
     avatarCache: Boolean(runtimeResetFields.avatarCache?.checked),
     avatarImages: Boolean(runtimeResetFields.avatarImages?.checked),
@@ -1437,6 +1452,8 @@ function runtimeResetSelectionLabels(options) {
 
   if (options.raids) labels.push("raid leaderboard");
   if (options.bits) labels.push("bits leaderboard");
+  if (options.subs) labels.push("subscription leaderboard");
+  if (options.giftSubs) labels.push("gift sub leaderboard");
   if (options.events) labels.push("recent events");
   if (options.avatarCache) labels.push("avatar cache metadata");
   if (options.avatarImages) labels.push("avatar image files");
@@ -2111,6 +2128,9 @@ const FLORA_OBS_SINGLE_SOURCES = [
   ["Bits leaderboard", "/panel.html?type=bits"],
   ["Cheer count leaderboard", "/panel.html?type=bits-count"],
   ["Biggest cheer leaderboard", "/panel.html?type=bits-biggest"],
+  ["Total sub months leaderboard", "/panel.html?type=sub-months-total"],
+  ["Sub streak leaderboard", "/panel.html?type=sub-months-streak"],
+  ["Gift sub leaderboard", "/panel.html?type=gift-subs"],
   ["Follower goal", "/panel.html?type=follower-goal"],
   ["Subscriber goal", "/panel.html?type=sub-goal"],
   ["Recent events", "/panel.html?type=recent-events"],
@@ -2299,6 +2319,26 @@ function floraActionBuilderApplyPreset() {
     floraActionBuilderAvatar.checked = false;
   }
 
+  if (preset === "sub-leaderboard") {
+    floraActionBuilderTarget.value = "sub-leaderboard";
+    floraActionBuilderNamePreset.value = "%userName%";
+    floraActionBuilderName.value = "%userName%";
+    floraActionBuilderUpdateGoal.checked = false;
+    floraActionBuilderCheers.checked = false;
+    floraActionBuilderAvatar.checked = true;
+    floraActionBuilderAvatarVariable.value = "%targetUserProfileImageUrlEscaped%";
+  }
+
+  if (preset === "gift-sub") {
+    floraActionBuilderTarget.value = "gift-sub";
+    floraActionBuilderNamePreset.value = "%userName%";
+    floraActionBuilderName.value = "%userName%";
+    floraActionBuilderUpdateGoal.checked = true;
+    floraActionBuilderCheers.checked = false;
+    floraActionBuilderAvatar.checked = true;
+    floraActionBuilderAvatarVariable.value = "%targetUserProfileImageUrlEscaped%";
+  }
+
   floraActionBuilderUpdateVisibility();
   floraActionBuilderGenerateUrl();
 }
@@ -2309,8 +2349,8 @@ function floraActionBuilderUpdateVisibility() {
   const isCustom = preset === "custom";
   const usesAmount = target === "raid" || target === "bits";
   const usesCheers = target === "bits";
-  const usesGoalUpdate = target === "follow" || target === "sub";
-  const usesAvatar = target === "raid" || target === "bits" || target === "follow" || target === "sub";
+  const usesGoalUpdate = target === "follow" || target === "sub" || target === "sub-leaderboard" || target === "gift-sub";
+  const usesAvatar = target === "raid" || target === "bits" || target === "follow" || target === "sub" || target === "sub-leaderboard" || target === "gift-sub";
 
   floraActionBuilderSetVisible(floraActionBuilderTargetWrap, isCustom);
   floraActionBuilderSetVisible(floraActionBuilderAmountPresetWrap, usesAmount);
@@ -2402,6 +2442,42 @@ function floraActionBuilderBuildUrl() {
     return `/api/sub?${floraActionBuilderQueryString(params)}`;
   }
 
+  if (target === "sub-leaderboard") {
+    params.push(["totalMonths", "%badgeCount%"]);
+    params.push(["streakMonths", "%monthsSubscribed%"]);
+    params.push(["tier", "%tier%"]);
+    params.push(["isPrimeSub", "%isPrimeSub%"]);
+
+    if (floraActionBuilderAvatar.checked && avatarUrl) {
+      params.push(["avatarUrl", avatarUrl]);
+    }
+
+    if (floraActionBuilderUpdateGoal.checked) {
+      params.push(["updateGoal", "true"]);
+    }
+
+    return `/api/sub?${floraActionBuilderQueryString(params)}`;
+  }
+
+  if (target === "gift-sub") {
+    params.push(["recipient", "%recipientUserName%"]);
+    params.push(["giftCount", "1"]);
+    params.push(["totalGifted", "%totalSubsGifted%"]);
+    params.push(["tier", "%tier%"]);
+    params.push(["anonymous", "%anonymous%"]);
+    params.push(["monthsGifted", "%monthsGifted%"]);
+
+    if (floraActionBuilderAvatar.checked && avatarUrl) {
+      params.push(["avatarUrl", avatarUrl]);
+    }
+
+    if (floraActionBuilderUpdateGoal.checked) {
+      params.push(["updateGoal", "true"]);
+    }
+
+    return `/api/gift-sub?${floraActionBuilderQueryString(params)}`;
+  }
+
   return "";
 }
 
@@ -2421,7 +2497,7 @@ function floraActionBuilderGenerateUrl() {
   const preset = floraActionBuilderType.value;
   const modeText = preset === "custom" ? "Custom role mapping" : "Preset mapping";
   const avatarNote = floraActionBuilderAvatar.checked
-    ? " Add Twitch → User → Get User Info For Target before the Fetch URL so %targetUserProfileImageUrl% is populated."
+    ? " Add Twitch → User → Get User Info For Target before the Fetch URL so %targetUserProfileImageUrlEscaped% is populated."
     : "";
   floraActionBuilderStatus.textContent = `${modeText}: copy this URL into a Streamer.bot Fetch action.${avatarNote}`;
 }

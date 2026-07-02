@@ -240,6 +240,9 @@ The admin page shows copyable OBS browser source URLs for:
 ```text
 http://127.0.0.1:8000/panel.html?type=raids
 http://127.0.0.1:8000/panel.html?type=bits
+http://127.0.0.1:8000/panel.html?type=sub-months-total
+http://127.0.0.1:8000/panel.html?type=sub-months-streak
+http://127.0.0.1:8000/panel.html?type=gift-subs
 http://127.0.0.1:8000/panel.html?type=follower-goal
 http://127.0.0.1:8000/panel.html?type=sub-goal
 http://127.0.0.1:8000/panel.html?type=recent-events
@@ -257,6 +260,8 @@ http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewers%
 http://127.0.0.1:8000/api/bits?name=%userName%&bits=%bits%&cheers=1
 http://127.0.0.1:8000/api/follow?name=%userName%&updateGoal=true
 http://127.0.0.1:8000/api/sub?name=%userName%&updateGoal=true
+http://127.0.0.1:8000/api/sub?name=%userName%&totalMonths=%badgeCount%&streakMonths=%monthsSubscribed%&tier=%tier%&isPrimeSub=%isPrimeSub%&avatarUrl=%targetUserProfileImageUrlEscaped%
+http://127.0.0.1:8000/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%
 ```
 
 Use these with Streamer.bot's built-in **Fetch URL** sub-action.
@@ -312,6 +317,8 @@ The restore card can restore:
 
 - Raid leaderboard data
 - Bits leaderboard data
+- Subscription leaderboard data
+- Gift sub leaderboard data
 - Recent events
 - Avatar cache metadata
 - Avatar image files
@@ -344,6 +351,8 @@ The card can reset:
 
 - Raid leaderboard data
 - Bits leaderboard data
+- Subscription leaderboard data
+- Gift sub leaderboard data
 - Recent events
 - Avatar cache metadata
 - Avatar image files
@@ -359,6 +368,8 @@ Reset behavior:
 
     data/raids.json        -> {}
     data/bits.json         -> {}
+    data/subs.json         -> {}
+    data/gift-subs.json    -> {}
     data/events.json       -> { "events": [] }
     data/avatar-cache.json -> {}
     assets/avatars/        -> selected image files removed
@@ -567,7 +578,7 @@ Enable:
 
 The default avatar URL variable is:
 
-    %targetUserProfileImageUrl%
+    %targetUserProfileImageUrlEscaped%
 
 When this option is enabled, add this Streamer.bot sub-action before the Flora Fetch URL:
 
@@ -579,11 +590,11 @@ For live user-triggered events, set the target user login to:
 
 The generated raid URL will look like:
 
-    http://127.0.0.1:8000/api/raid?name=%userName%&avatarUrl=%targetUserProfileImageUrl%&viewers=%viewers%
+    http://127.0.0.1:8000/api/raid?name=%userName%&avatarUrl=%targetUserProfileImageUrlEscaped%&viewers=%viewers%
 
 The generated bits URL will look like:
 
-    http://127.0.0.1:8000/api/bits?name=%userName%&avatarUrl=%targetUserProfileImageUrl%&bits=%bits%&cheers=1
+    http://127.0.0.1:8000/api/bits?name=%userName%&avatarUrl=%targetUserProfileImageUrlEscaped%&bits=%bits%&cheers=1
 
 Avatar support is optional. Leave the checkbox disabled to generate the original non-avatar Fetch URLs.
 
@@ -602,10 +613,10 @@ For raids, set the target user login to:
 
 Then use an avatar-enabled Fetch URL:
 
-    http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewers%&avatarUrl=%targetUserProfileImageUrl%
+    http://127.0.0.1:8000/api/raid?name=%userName%&viewers=%viewers%&avatarUrl=%targetUserProfileImageUrlEscaped%
 
 For bits, use:
 
-    http://127.0.0.1:8000/api/bits?name=%userName%&bits=%bits%&cheers=1&avatarUrl=%targetUserProfileImageUrl%
+    http://127.0.0.1:8000/api/bits?name=%userName%&bits=%bits%&cheers=1&avatarUrl=%targetUserProfileImageUrlEscaped%
 
 Flora stores downloaded avatar images locally in `assets/avatars/` and stores avatar metadata in `data/avatar-cache.json`. These are runtime cache files and are ignored by Git.

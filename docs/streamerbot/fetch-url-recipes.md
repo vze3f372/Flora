@@ -94,6 +94,30 @@ http://127.0.0.1:8000/api/sub?name=ManualSubTest&dryRun=true
 http://127.0.0.1:8000/api/sub?name=ManualSubTest
 ~~~
 
+## Subscription leaderboard dry-run
+
+~~~text
+http://127.0.0.1:8000/api/sub?name=ManualSubTest&totalMonths=12&streakMonths=3&tier=tier%201&isPrimeSub=false&dryRun=true
+~~~
+
+## Subscription leaderboard live
+
+~~~text
+http://127.0.0.1:8000/api/sub?name=ManualSubTest&totalMonths=12&streakMonths=3&tier=tier%201&isPrimeSub=false
+~~~
+
+## Gift sub leaderboard dry-run
+
+~~~text
+http://127.0.0.1:8000/api/gift-sub?name=ManualGifter&recipient=ManualRecipient&giftCount=1&totalGifted=5&tier=tier%202&anonymous=false&monthsGifted=3&dryRun=true
+~~~
+
+## Gift sub leaderboard live
+
+~~~text
+http://127.0.0.1:8000/api/gift-sub?name=ManualGifter&recipient=ManualRecipient&giftCount=1&totalGifted=5&tier=tier%202&anonymous=false&monthsGifted=3
+~~~
+
 ## Goal dry-run
 
 ~~~text
@@ -194,4 +218,26 @@ For subscription triggers that should also update the subscription goal, add `up
 
 ~~~text
 http://127.0.0.1:8000/api/sub?name=%userName%&updateGoal=true
+~~~
+
+## Subscription leaderboard from Streamer.bot variables
+
+Use this URL for the normal Twitch Subscription trigger when you want to update the subscription month leaderboards.
+
+~~~text
+http://127.0.0.1:8000/api/sub?name=%userName%&totalMonths=%badgeCount%&streakMonths=%monthsSubscribed%&tier=%tier%&isPrimeSub=%isPrimeSub%&avatarUrl=%targetUserProfileImageUrlEscaped%
+~~~
+
+## Gift sub leaderboard from Streamer.bot variables
+
+Use this URL for the Twitch Gift Subscription trigger when you want to update the gift sub leaderboard.
+
+~~~text
+http://127.0.0.1:8000/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%
+~~~
+
+To also increment the subscriber goal for a gift sub, add `updateGoal=true`.
+
+~~~text
+http://127.0.0.1:8000/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%&updateGoal=true
 ~~~

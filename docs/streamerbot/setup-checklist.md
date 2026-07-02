@@ -114,6 +114,18 @@ Biggest cheer leaderboard:
 
     http://127.0.0.1:8000/panel.html?type=bits-biggest
 
+Total sub months leaderboard:
+
+    http://127.0.0.1:8000/panel.html?type=sub-months-total
+
+Sub streak leaderboard:
+
+    http://127.0.0.1:8000/panel.html?type=sub-months-streak
+
+Gift sub leaderboard:
+
+    http://127.0.0.1:8000/panel.html?type=gift-subs
+
 Follower goal:
 
     http://127.0.0.1:8000/panel.html?type=follower-goal
@@ -176,7 +188,7 @@ Fetch URL without avatar support:
 
 Fetch URL with avatar support:
 
-    http://127.0.0.1:8000/api/raid?name=%userName%&avatarUrl=%targetUserProfileImageUrl%&viewers=%viewers%
+    http://127.0.0.1:8000/api/raid?name=%userName%&avatarUrl=%targetUserProfileImageUrlEscaped%&viewers=%viewers%
 
 Test URL with dry run:
 
@@ -204,7 +216,7 @@ Fetch URL without avatar support:
 
 Fetch URL with avatar support:
 
-    http://127.0.0.1:8000/api/bits?name=%userName%&avatarUrl=%targetUserProfileImageUrl%&bits=%bits%&cheers=1
+    http://127.0.0.1:8000/api/bits?name=%userName%&avatarUrl=%targetUserProfileImageUrlEscaped%&bits=%bits%&cheers=1
 
 Test URL with dry run:
 
@@ -232,7 +244,7 @@ Fetch URL without avatar support:
 
 Fetch URL with avatar support:
 
-    http://127.0.0.1:8000/api/follow?name=%userName%&avatarUrl=%targetUserProfileImageUrl%&updateGoal=true
+    http://127.0.0.1:8000/api/follow?name=%userName%&avatarUrl=%targetUserProfileImageUrlEscaped%&updateGoal=true
 
 Test URL with dry run:
 
@@ -254,17 +266,33 @@ For the user info sub-action:
     User Login:
     %userName%
 
-Fetch URL without avatar support:
+Subscription goal Fetch URL:
 
     http://127.0.0.1:8000/api/sub?name=%userName%&updateGoal=true
 
-Fetch URL with avatar support:
+Subscription leaderboard Fetch URL:
 
-    http://127.0.0.1:8000/api/sub?name=%userName%&avatarUrl=%targetUserProfileImageUrl%&updateGoal=true
+    http://127.0.0.1:8000/api/sub?name=%userName%&totalMonths=%badgeCount%&streakMonths=%monthsSubscribed%&tier=%tier%&isPrimeSub=%isPrimeSub%&avatarUrl=%targetUserProfileImageUrlEscaped%
 
-Test URL with dry run:
+Subscription leaderboard test URL with dry run:
 
-    http://127.0.0.1:8000/api/sub?name=TestSubscriber&updateGoal=true&dryRun=true
+    http://127.0.0.1:8000/api/sub?name=TestSubscriber&totalMonths=12&streakMonths=3&tier=tier%201&isPrimeSub=false&dryRun=true
+
+For gift subscription triggers, use:
+
+    Twitch → Subscriptions → Gift Subscription
+
+Gift sub leaderboard Fetch URL:
+
+    http://127.0.0.1:8000/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%
+
+Gift sub leaderboard plus subscriber goal Fetch URL:
+
+    http://127.0.0.1:8000/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%&updateGoal=true
+
+Gift sub test URL with dry run:
+
+    http://127.0.0.1:8000/api/gift-sub?name=TestGifter&recipient=TestRecipient&giftCount=1&totalGifted=5&tier=tier%202&anonymous=false&monthsGifted=3&dryRun=true
 
 ## 8. Avatar support
 
@@ -283,7 +311,7 @@ Set:
 
 Then include this Fetch URL parameter:
 
-    avatarUrl=%targetUserProfileImageUrl%
+    avatarUrl=%targetUserProfileImageUrlEscaped%
 
 Flora stores avatar metadata in:
 
@@ -295,7 +323,7 @@ Flora stores downloaded avatar images in:
 
 Both are runtime cache locations and are ignored by Git.
 
-The main runtime data files are also ignored by Git: `data/raids.json`, `data/bits.json`, `data/events.json`, and `data/goals.json`. If they are missing, Flora recreates them from `data/defaults/` when the server starts. See `docs/runtime-data.md` for the current reset workflow.
+The main runtime data files are also ignored by Git: `data/raids.json`, `data/bits.json`, `data/subs.json`, `data/gift-subs.json`, `data/events.json`, and `data/goals.json`. If they are missing, Flora recreates them from `data/defaults/` when the server starts. See `docs/runtime-data.md` for the current reset workflow.
 
 ## 9. Testing checklist
 
@@ -356,7 +384,7 @@ Confirm that Streamer.bot runs this before the Fetch URL:
 
 Confirm the Fetch URL includes:
 
-    avatarUrl=%targetUserProfileImageUrl%
+    avatarUrl=%targetUserProfileImageUrlEscaped%
 
 Check:
 

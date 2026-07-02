@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RAIDS_FILE = ROOT / "data" / "raids.json"
 BITS_FILE = ROOT / "data" / "bits.json"
 SUBS_FILE = ROOT / "data" / "subs.json"
+GIFT_SUBS_FILE = ROOT / "data" / "gift-subs.json"
 GOALS_FILE = ROOT / "data" / "goals.json"
 
 
@@ -37,6 +38,7 @@ DATA_FILES = {
     "raids": RAIDS_FILE,
     "bits": BITS_FILE,
     "subs": SUBS_FILE,
+    "gift-subs": GIFT_SUBS_FILE,
     "goals": GOALS_FILE,
     "events": EVENTS_FILE,
 }
@@ -608,6 +610,64 @@ def update_subs(args):
     ))
 
 
+
+def update_gift_subs(args):
+    name = require_non_empty_text(args.name, "name")
+    data = load_json_object(GIFT_SUBS_FILE)
+
+    existing = data.get(name, {})
+
+    if not isinstance(existing, dict):
+        existing = {}
+
+    previous_gifts = safe_int(existing.get("gifts"), 0)
+    previous_events = safe_int(existing.get("giftEvents"), 0)
+
+    gifts = previous_gifts + args.gift_count
+
+    if args.total_gifted is not None:
+        gifts = max(gifts, safe_int(args.total_gifted, 0))
+
+    anonymous = parse_bool_like(args.anonymous)
+
+    if anonymous is None:
+        anonymous = bool(existing.get("anonymous", False))
+
+    months_gifted = safe_int(existing.get("monthsGifted"), 0)
+
+    if args.months_gifted is not None:
+        months_gifted = safe_int(args.months_gifted, 0)
+
+    row = dict(existing)
+    row.update({
+        "gifts": gifts,
+        "giftEvents": previous_events + 1,
+        "lastGiftCount": args.gift_count,
+        "lastRecipient": str(args.recipient or existing.get("lastRecipient", "")).strip(),
+        "tier": str(args.tier or existing.get("tier", "")).strip(),
+        "anonymous": bool(anonymous),
+        "monthsGifted": months_gifted,
+        "lastGift": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+    })
+
+    data[name] = row
+    save_json_object(GIFT_SUBS_FILE, data, args.dry_run)
+
+    print_json(make_result(
+        "gift-sub-leaderboard",
+        dry_run=args.dry_run,
+        file="data/gift-subs.json",
+        name=name,
+        gifts=row["gifts"],
+        giftEvents=row["giftEvents"],
+        lastGiftCount=row["lastGiftCount"],
+        lastRecipient=row["lastRecipient"],
+        tier=row["tier"],
+        anonymous=row["anonymous"],
+        monthsGifted=row["monthsGifted"],
+    ))
+
+
 def add_event(args):
     write_event(
         args.type,
@@ -744,6 +804,20 @@ def build_parser():
     sub_leaderboard.add_argument("--is-prime-sub", default="")
     add_dry_run_argument(sub_leaderboard)
     sub_leaderboard.set_defaults(func=update_subs)
+
+    gift_sub_leaderboard = subparsers.add_parser(
+        "gift-sub-leaderboard",
+        help="Update gift subscription leaderboard statistics for one user.",
+    )
+    gift_sub_leaderboard.add_argument("--name", required=True)
+    gift_sub_leaderboard.add_argument("--recipient", default="")
+    gift_sub_leaderboard.add_argument("--gift-count", default=1, type=positive_int("gift-count"))
+    gift_sub_leaderboard.add_argument("--total-gifted", type=non_negative_int("total-gifted"))
+    gift_sub_leaderboard.add_argument("--tier", default="")
+    gift_sub_leaderboard.add_argument("--anonymous", default="")
+    gift_sub_leaderboard.add_argument("--months-gifted", type=non_negative_int("months-gifted"))
+    add_dry_run_argument(gift_sub_leaderboard)
+    gift_sub_leaderboard.set_defaults(func=update_gift_subs)
 
     goal = subparsers.add_parser(
         "goal",

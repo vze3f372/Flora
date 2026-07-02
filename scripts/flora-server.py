@@ -1538,6 +1538,8 @@ def _flora_admin_runtime_reset_selected(payload: dict) -> dict:
     return {
         "raids": bool(reset.get("raids")),
         "bits": bool(reset.get("bits")),
+        "subs": bool(reset.get("subs")),
+        "giftSubs": bool(reset.get("giftSubs")),
         "events": bool(reset.get("events")),
         "avatarCache": bool(reset.get("avatarCache")),
         "avatarImages": bool(reset.get("avatarImages")),
@@ -1627,6 +1629,18 @@ def _flora_admin_handle_runtime_reset_post(handler) -> bool:
             _flora_admin_write_json(path, {})
             reset_items.append("Bits leaderboard")
 
+        if selected["subs"]:
+            path = data_dir / "subs.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__subs.json"))
+            _flora_admin_write_json(path, {})
+            reset_items.append("Subscription leaderboard")
+
+        if selected["giftSubs"]:
+            path = data_dir / "gift-subs.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__gift-subs.json"))
+            _flora_admin_write_json(path, {})
+            reset_items.append("Gift sub leaderboard")
+
         if selected["events"]:
             path = data_dir / "events.json"
             backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__events.json"))
@@ -1697,6 +1711,18 @@ _RUNTIME_BACKUP_RESTORE_ITEMS = {
         "label": "Bits leaderboard",
         "backup": "data__bits.json",
         "destination": "data/bits.json",
+        "kind": "file",
+    },
+    "subs": {
+        "label": "Subscription leaderboard",
+        "backup": "data__subs.json",
+        "destination": "data/subs.json",
+        "kind": "file",
+    },
+    "giftSubs": {
+        "label": "Gift sub leaderboard",
+        "backup": "data__gift-subs.json",
+        "destination": "data/gift-subs.json",
         "kind": "file",
     },
     "events": {
@@ -2977,6 +3003,7 @@ RUNTIME_DATA_FILES = {
     ROOT / "data" / "raids.json": RUNTIME_DEFAULTS_DIR / "raids.json",
     ROOT / "data" / "bits.json": RUNTIME_DEFAULTS_DIR / "bits.json",
     ROOT / "data" / "subs.json": RUNTIME_DEFAULTS_DIR / "subs.json",
+    ROOT / "data" / "gift-subs.json": RUNTIME_DEFAULTS_DIR / "gift-subs.json",
     ROOT / "data" / "events.json": RUNTIME_DEFAULTS_DIR / "events.json",
     ROOT / "data" / "goals.json": RUNTIME_DEFAULTS_DIR / "goals.json",
 }
@@ -3021,6 +3048,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             "/api/bits": self.handle_bits,
             "/api/follow": self.handle_follow,
             "/api/sub": self.handle_sub,
+            "/api/gift-sub": self.handle_gift_sub,
             "/api/goal": self.handle_goal,
             "/api/event": self.handle_event,
         }
@@ -3391,6 +3419,94 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
 
         return {
             "action": "sub",
+            "dryRun": dry_run,
+            "results": results,
+            "avatar": avatar,
+        }
+
+    def handle_gift_sub(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
+        name = require_text(payload, "name", "userName")
+        recipient = optional_text(payload, "recipient", "")
+        gift_count = optional_int(payload, "giftCount", 1)
+        total_gifted = optional_int(payload, "totalGifted", None)
+        tier = optional_text(payload, "tier", "")
+        anonymous = optional_text(payload, "anonymous", "")
+        months_gifted = optional_int(payload, "monthsGifted", None)
+        event_time = optional_text(payload, "time", "Just now")
+        keep = optional_int(payload, "keep", 25)
+        update_goal = optional_bool(payload, "updateGoal", False)
+        avatar = safe_cache_avatar_from_payload(name, payload, dry_run)
+
+        if gift_count < 1:
+            gift_count = 1
+
+        gift_arguments = [
+            "gift-sub-leaderboard",
+            "--name",
+            name,
+            "--gift-count",
+            str(gift_count),
+        ]
+
+        if recipient:
+            gift_arguments.extend(["--recipient", recipient])
+
+        if total_gifted is not None:
+            gift_arguments.extend(["--total-gifted", str(total_gifted)])
+
+        if tier:
+            gift_arguments.extend(["--tier", tier])
+
+        if anonymous:
+            gift_arguments.extend(["--anonymous", anonymous])
+
+        if months_gifted is not None:
+            gift_arguments.extend(["--months-gifted", str(months_gifted)])
+
+        detail = "Gifted a subscription"
+
+        if gift_count > 1:
+            detail = f"Gifted {gift_count} subscriptions"
+
+        if recipient:
+            detail = f"{detail} to {recipient}"
+
+        results = [
+            run_writer(gift_arguments, dry_run),
+            run_writer(
+                [
+                    "event",
+                    "--type",
+                    "gift-sub",
+                    "--name",
+                    name,
+                    "--detail",
+                    detail,
+                    "--time",
+                    event_time,
+                    "--keep",
+                    str(keep),
+                ],
+                dry_run,
+            ),
+        ]
+
+        if update_goal:
+            results.append(
+                run_writer(
+                    [
+                        "goal-increment",
+                        "--key",
+                        "subscribers",
+                        "--amount",
+                        str(gift_count),
+                    ],
+                    dry_run,
+                )
+            )
+
+        return {
+            "action": "gift-sub",
             "dryRun": dry_run,
             "results": results,
             "avatar": avatar,

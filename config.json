@@ -401,6 +401,41 @@
       "rankLabel": "Rank",
       "nameLabel": "Subscriber",
       "sortMode": "streakSubMonths"
+    },
+    "gift-subs": {
+      "title": "TOP GIFT SUBS",
+      "subtitle": "SUBS GIFTED",
+      "dataFile": "data/gift-subs.json",
+      "maxRows": 10,
+      "sortBy": "gifts",
+      "sortThenBy": "giftEvents",
+      "columns": [
+        {
+          "label": "Gifts",
+          "field": "gifts",
+          "className": "primary-number",
+          "align": "center",
+          "width": "150px"
+        },
+        {
+          "label": "Tier",
+          "field": "tier",
+          "className": "secondary-text",
+          "align": "center",
+          "width": "150px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "type": "table",
+      "emptyMessage": "No gift subscriptions recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "Gifter",
+      "sortMode": "giftSubCount"
     }
   },
   "rotation": {
