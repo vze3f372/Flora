@@ -620,3 +620,21 @@ For bits, use:
     http://127.0.0.1:8000/api/bits?name=%userName%&bits=%bits%&cheers=1&avatarUrl=%targetUserProfileImageUrlEscaped%
 
 Flora stores downloaded avatar images locally in `assets/avatars/` and stores avatar metadata in `data/avatar-cache.json`. These are runtime cache files and are ignored by Git.
+
+## Rotation sequence modes
+
+Rotations support two sequence modes.
+
+Manual row order uses the exact order shown in the rotation editor. Use the arrow buttons beside each panel to move panels up or down.
+
+Grouped by panel type keeps the same enabled panels, but plays them grouped by category:
+
+1. Raid panels
+2. Bits panels
+3. Subscription panels
+4. Gift subscription panels
+5. Goal panels
+6. Recent event panels
+7. Other panels
+
+This applies to both the default rotation and named rotation profiles.

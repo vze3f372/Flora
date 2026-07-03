@@ -490,8 +490,11 @@
 
           <div class="rotation-grid">
             <label>
-              <span>Start panel</span>
-              <select id="rotation-start-panel"></select>
+              <span>Sequence mode</span>
+              <select id="rotation-sequence-mode">
+                <option value="manual">Manual row order</option>
+                <option value="grouped">Grouped by panel type</option>
+              </select>
             </label>
 
             <label>
@@ -502,6 +505,7 @@
 
           <div>
             <h3 class="section-subtitle">Rotation panels</h3>
+            <p class="form-note">Use the arrow buttons to set manual rotation order. Grouped mode keeps enabled panels but plays them by panel type.</p>
             <div id="rotation-panel-list" class="rotation-panel-list"></div>
           </div>
 
@@ -559,8 +563,11 @@
 
           <div class="rotation-grid">
             <label>
-              <span>Start panel</span>
-              <select id="named-rotation-start-panel"></select>
+              <span>Sequence mode</span>
+              <select id="named-rotation-sequence-mode">
+                <option value="manual">Manual row order</option>
+                <option value="grouped">Grouped by panel type</option>
+              </select>
             </label>
 
             <label>
@@ -571,6 +578,7 @@
 
           <div>
             <h3 class="section-subtitle">Panels in this group</h3>
+            <p class="form-note">Use the arrow buttons to set manual rotation order. Grouped mode keeps enabled panels but plays them by panel type.</p>
             <div id="named-rotation-panel-list" class="rotation-panel-list"></div>
           </div>
 

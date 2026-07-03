@@ -442,16 +442,16 @@
     "enabled": false,
     "panels": [
       {
-        "panel": "raids",
-        "durationSeconds": 10
-      },
-      {
         "panel": "bits",
         "durationSeconds": 10
       },
       {
         "panel": "follower-goal",
         "durationSeconds": 12
+      },
+      {
+        "panel": "raids",
+        "durationSeconds": 10
       },
       {
         "panel": "sub-goal",
@@ -481,6 +481,7 @@
   "rotations": {
     "leaderboards": {
       "enabled": true,
+      "sequenceMode": "grouped",
       "panels": [
         {
           "panel": "raids",
@@ -512,6 +513,7 @@
     },
     "goals": {
       "enabled": true,
+      "sequenceMode": "manual",
       "panels": [
         {
           "panel": "follower-goal",

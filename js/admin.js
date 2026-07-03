@@ -104,7 +104,7 @@ const styleFields = {
 
 const rotationFields = {
   enabled: document.getElementById("rotation-enabled"),
-  startPanel: document.getElementById("rotation-start-panel"),
+  sequenceMode: document.getElementById("rotation-sequence-mode"),
   transitionMilliseconds: document.getElementById("rotation-transition"),
   rotationUrl: document.getElementById("rotation-url"),
 };
@@ -260,6 +260,12 @@ function panelTitle(panelKey) {
   return panelKey;
 }
 
+function normalizeRotationSequenceMode(value) {
+  return String(value || "manual").trim().toLowerCase() === "grouped"
+    ? "grouped"
+    : "manual";
+}
+
 function rotationEntryMap(rotation) {
   const map = new Map();
 
@@ -270,6 +276,66 @@ function rotationEntryMap(rotation) {
   }
 
   return map;
+}
+
+function orderedRotationPanelKeys(rotation, panels) {
+  const availableKeys = Object.keys(panels || {});
+  const ordered = [];
+
+  for (const entry of rotation?.panels || []) {
+    if (
+      entry
+      && typeof entry.panel === "string"
+      && availableKeys.includes(entry.panel)
+      && !ordered.includes(entry.panel)
+    ) {
+      ordered.push(entry.panel);
+    }
+  }
+
+  for (const panelKey of availableKeys) {
+    if (!ordered.includes(panelKey)) {
+      ordered.push(panelKey);
+    }
+  }
+
+  return ordered;
+}
+
+function addRotationOrderControls(row) {
+  const controls = document.createElement("div");
+  controls.className = "rotation-order-controls";
+
+  const upButton = document.createElement("button");
+  upButton.type = "button";
+  upButton.className = "secondary-button rotation-move-up";
+  upButton.textContent = "↑";
+  upButton.title = "Move panel up";
+
+  const downButton = document.createElement("button");
+  downButton.type = "button";
+  downButton.className = "secondary-button rotation-move-down";
+  downButton.textContent = "↓";
+  downButton.title = "Move panel down";
+
+  controls.append(upButton, downButton);
+  row.append(controls);
+}
+
+function moveRotationPanelRow(button, direction) {
+  const row = button.closest(".rotation-panel-row");
+
+  if (!row || !row.parentElement) {
+    return;
+  }
+
+  if (direction === "up" && row.previousElementSibling) {
+    row.parentElement.insertBefore(row, row.previousElementSibling);
+  }
+
+  if (direction === "down" && row.nextElementSibling) {
+    row.parentElement.insertBefore(row.nextElementSibling, row);
+  }
 }
 
 function rotationDefaultDuration(panelKey, rotation) {
@@ -288,6 +354,7 @@ function normalizeRotation(rotation) {
 
   return {
     enabled: source.enabled === true,
+    sequenceMode: normalizeRotationSequenceMode(source.sequenceMode),
     panels: entries
       .filter((entry) => entry && typeof entry.panel === "string")
       .map((entry) => ({
@@ -308,7 +375,7 @@ function populateRotationPanelList(rotation) {
   rotationPanelList.replaceChildren();
 
   const entryMap = rotationEntryMap(rotation);
-  const panelKeys = Object.keys(availablePanels);
+  const panelKeys = orderedRotationPanelKeys(rotation, availablePanels);
 
   for (const panelKey of panelKeys) {
     const row = document.createElement("div");
@@ -343,45 +410,22 @@ function populateRotationPanelList(rotation) {
 
     durationLabel.append(durationText, durationInput);
     row.append(checkboxLabel, durationLabel);
+    addRotationOrderControls(row);
     rotationPanelList.append(row);
   }
 }
 
-function populateRotationStartPanel(rotation) {
-  const panelKeys = Object.keys(availablePanels);
-  rotationFields.startPanel.replaceChildren();
-
-  for (const panelKey of panelKeys) {
-    const option = document.createElement("option");
-    option.value = panelKey;
-    option.textContent = `${panelTitle(panelKey)} (${panelKey})`;
-    rotationFields.startPanel.append(option);
-  }
-
-  if (panelKeys.includes(rotation.startPanel)) {
-    rotationFields.startPanel.value = rotation.startPanel;
-  } else if (panelKeys.length > 0) {
-    rotationFields.startPanel.value = panelKeys[0];
-  }
-}
-
 function updateRotationUrl() {
-  const start = rotationFields.startPanel.value;
   const params = new URLSearchParams();
   params.set("rotation", "true");
-
-  if (start) {
-    params.set("start", start);
-  }
-
   rotationFields.rotationUrl.value = `${window.location.origin}/panel.html?${params.toString()}`;
 }
 
 function populateRotation(rotation) {
   currentRotation = normalizeRotation(rotation);
   rotationFields.enabled.checked = currentRotation.enabled;
+  rotationFields.sequenceMode.value = currentRotation.sequenceMode;
   rotationFields.transitionMilliseconds.value = currentRotation.transitionMilliseconds;
-  populateRotationStartPanel(currentRotation);
   populateRotationPanelList(currentRotation);
   updateRotationUrl();
 }
@@ -409,20 +453,15 @@ function collectRotation() {
     throw new Error("Rotation must include at least one panel.");
   }
 
-  const startPanel = rotationFields.startPanel.value;
-
-  if (!startPanel || !availablePanels[startPanel]) {
-    throw new Error("Start panel must reference an existing panel.");
-  }
-
   return {
     enabled: rotationFields.enabled.checked,
+    sequenceMode: normalizeRotationSequenceMode(rotationFields.sequenceMode.value),
     panels,
     transitionMilliseconds: nonNegativeIntegerValue(
       rotationFields.transitionMilliseconds,
       "transitionMilliseconds",
     ),
-    startPanel,
+    startPanel: panels[0].panel,
   };
 }
 
@@ -1021,7 +1060,16 @@ restoreConfigBackupButton.addEventListener("click", () => restoreBackup("config"
 restoreGoalsBackupButton.addEventListener("click", () => restoreBackup("goals"));
 copyRotationUrlButton.addEventListener("click", copyRotationUrl);
 openRotationPreviewButton.addEventListener("click", openRotationPreview);
-rotationFields.startPanel.addEventListener("change", updateRotationUrl);
+rotationPanelList.addEventListener("click", (event) => {
+  if (event.target.closest(".rotation-move-up")) {
+    moveRotationPanelRow(event.target, "up");
+  }
+
+  if (event.target.closest(".rotation-move-down")) {
+    moveRotationPanelRow(event.target, "down");
+  }
+});
+
 eventThemeForm.addEventListener("submit", saveEventTheme);
 resetEventThemeButton.addEventListener("click", resetEventThemeDefaults);
 
@@ -2597,7 +2645,7 @@ const createNamedRotationButton = document.getElementById("create-named-rotation
 const deleteNamedRotationButton = document.getElementById("delete-named-rotation-button");
 const namedRotationForm = document.getElementById("named-rotation-form");
 const namedRotationEnabled = document.getElementById("named-rotation-enabled");
-const namedRotationStartPanel = document.getElementById("named-rotation-start-panel");
+const namedRotationSequenceMode = document.getElementById("named-rotation-sequence-mode");
 const namedRotationTransition = document.getElementById("named-rotation-transition");
 const namedRotationPanelList = document.getElementById("named-rotation-panel-list");
 const namedRotationUrl = document.getElementById("named-rotation-url");
@@ -2641,6 +2689,10 @@ function namedRotationEntryMap(rotation) {
   return map;
 }
 
+function orderedNamedRotationPanelKeys(rotation) {
+  return orderedRotationPanelKeys(rotation, namedRotationPanels);
+}
+
 function populateNamedRotationSelect(selectedName = "") {
   namedRotationSelect.replaceChildren();
 
@@ -2673,31 +2725,12 @@ function updateNamedRotationUrl() {
   namedRotationUrl.value = `${window.location.origin}/panel.html?${params.toString()}`;
 }
 
-function populateNamedRotationStartPanel(rotation) {
-  namedRotationStartPanel.replaceChildren();
-
-  const panelKeys = Object.keys(namedRotationPanels);
-
-  for (const panelKey of panelKeys) {
-    const option = document.createElement("option");
-    option.value = panelKey;
-    option.textContent = `${namedRotationPanelTitle(panelKey)} (${panelKey})`;
-    namedRotationStartPanel.append(option);
-  }
-
-  if (panelKeys.includes(rotation?.startPanel)) {
-    namedRotationStartPanel.value = rotation.startPanel;
-  } else if (panelKeys.length > 0) {
-    namedRotationStartPanel.value = panelKeys[0];
-  }
-}
-
 function populateNamedRotationPanelList(rotation) {
   namedRotationPanelList.replaceChildren();
 
   const entryMap = namedRotationEntryMap(rotation);
 
-  for (const panelKey of Object.keys(namedRotationPanels)) {
+  for (const panelKey of orderedNamedRotationPanelKeys(rotation)) {
     const entry = entryMap.get(panelKey);
 
     const row = document.createElement("div");
@@ -2733,6 +2766,7 @@ function populateNamedRotationPanelList(rotation) {
     durationLabel.append(durationText, durationInput);
 
     row.append(checkboxLabel, durationLabel);
+    addRotationOrderControls(row);
     namedRotationPanelList.append(row);
   }
 }
@@ -2743,17 +2777,17 @@ function populateNamedRotationEditor() {
 
   if (!rotation) {
     namedRotationEnabled.checked = false;
+    namedRotationSequenceMode.value = "manual";
     namedRotationTransition.value = 500;
     namedRotationPanelList.replaceChildren();
-    namedRotationStartPanel.replaceChildren();
     updateNamedRotationUrl();
     namedRotationStatus.textContent = "No named rotation selected.";
     return;
   }
 
   namedRotationEnabled.checked = rotation.enabled === true;
+  namedRotationSequenceMode.value = normalizeRotationSequenceMode(rotation.sequenceMode);
   namedRotationTransition.value = rotation.transitionMilliseconds ?? 500;
-  populateNamedRotationStartPanel(rotation);
   populateNamedRotationPanelList(rotation);
   updateNamedRotationUrl();
   namedRotationStatus.textContent = `Editing rotation group: ${name}`;
@@ -2782,20 +2816,15 @@ function collectNamedRotation() {
     throw new Error("Named rotation must include at least one panel.");
   }
 
-  const startPanel = namedRotationStartPanel.value;
-
-  if (!panels.some((entry) => entry.panel === startPanel)) {
-    throw new Error("Start panel must be enabled in this named rotation group.");
-  }
-
   return {
     enabled: namedRotationEnabled.checked,
+    sequenceMode: normalizeRotationSequenceMode(namedRotationSequenceMode.value),
     panels,
     transitionMilliseconds: nonNegativeIntegerValue(
       namedRotationTransition,
       "Named rotation transition milliseconds",
     ),
-    startPanel,
+    startPanel: panels[0].panel,
   };
 }
 
@@ -2920,7 +2949,16 @@ if (namedRotationSelect) {
     window.open(namedRotationUrl.value, "_blank", "noopener,noreferrer");
   });
 
-  namedRotationStartPanel.addEventListener("change", updateNamedRotationUrl);
+  namedRotationPanelList.addEventListener("click", (event) => {
+    if (event.target.closest(".rotation-move-up")) {
+      moveRotationPanelRow(event.target, "up");
+    }
+
+    if (event.target.closest(".rotation-move-down")) {
+      moveRotationPanelRow(event.target, "down");
+    }
+  });
+
 
   loadNamedRotations().catch((error) => {
     namedRotationStatus.textContent = `Could not load named rotations: ${error.message}`;

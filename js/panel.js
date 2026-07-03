@@ -194,16 +194,86 @@ function getActiveRotation(config) {
   };
 }
 
+const ROTATION_SEQUENCE_MODE_MANUAL = "manual";
+const ROTATION_SEQUENCE_MODE_GROUPED = "grouped";
+
+const ROTATION_GROUP_ORDER = [
+  "raids",
+  "bits",
+  "subscriptions",
+  "giftSubs",
+  "goals",
+  "events",
+  "other",
+];
+
+const ROTATION_PANEL_GROUPS = {
+  raids: "raids",
+  "raids-count": "raids",
+  "raids-biggest": "raids",
+
+  bits: "bits",
+  "bits-count": "bits",
+  "bits-biggest": "bits",
+
+  "sub-goal": "subscriptions",
+  "sub-months-total": "subscriptions",
+  "sub-months-streak": "subscriptions",
+
+  "gift-subs": "giftSubs",
+
+  "follower-goal": "goals",
+
+  "recent-events": "events",
+};
+
+function getRotationSequenceMode(rotation) {
+  const mode = String(rotation?.sequenceMode || ROTATION_SEQUENCE_MODE_MANUAL)
+    .trim()
+    .toLowerCase();
+
+  return mode === ROTATION_SEQUENCE_MODE_GROUPED
+    ? ROTATION_SEQUENCE_MODE_GROUPED
+    : ROTATION_SEQUENCE_MODE_MANUAL;
+}
+
+function getRotationPanelGroup(panelName) {
+  return ROTATION_PANEL_GROUPS[panelName] || "other";
+}
+
+function rotationGroupRank(panelName) {
+  const group = getRotationPanelGroup(panelName);
+  const rank = ROTATION_GROUP_ORDER.indexOf(group);
+
+  return rank >= 0 ? rank : ROTATION_GROUP_ORDER.length;
+}
+
 function getRotationEntries(rotation) {
   if (!isObject(rotation) || !Array.isArray(rotation.panels)) {
     return [];
   }
 
-  return rotation.panels.filter(entry => (
-    isObject(entry)
-    && typeof entry.panel === "string"
-    && entry.panel.trim()
-  ));
+  const entries = rotation.panels
+    .map((entry, index) => ({ entry, index }))
+    .filter(({ entry }) => (
+      isObject(entry)
+      && typeof entry.panel === "string"
+      && entry.panel.trim()
+    ));
+
+  if (getRotationSequenceMode(rotation) === ROTATION_SEQUENCE_MODE_GROUPED) {
+    entries.sort((left, right) => {
+      const groupDifference = rotationGroupRank(left.entry.panel) - rotationGroupRank(right.entry.panel);
+
+      if (groupDifference !== 0) {
+        return groupDifference;
+      }
+
+      return left.index - right.index;
+    });
+  }
+
+  return entries.map(({ entry }) => entry);
 }
 
 function shouldUseRotation(config) {
@@ -223,7 +293,7 @@ function findRotationIndex(entries, panelName) {
 }
 
 function getRotationStartPanel(rotation) {
-  return getQueryValue("start", rotation?.startPanel ?? "");
+  return getQueryValue("start", "");
 }
 
 function normalizeRotationIndex(entries, rotation) {
