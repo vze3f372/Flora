@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.error
 import urllib.request
 import zipfile
 from datetime import datetime, timezone
@@ -259,15 +260,7 @@ def latest_release_tag(repo: str, *, dry_run: bool = False) -> str:
     return tag
 
 
-def download_release_zip(repo: str, tag: str, target_dir: Path, *, dry_run: bool = False) -> Path:
-    url = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
-    destination = target_dir / f"flora-{tag}.zip"
-
-    if dry_run:
-        log(f"dry-run: would download {url}")
-        return destination
-
-    log(f"downloading release archive: {tag}")
+def download_with_python(url: str, destination: Path) -> None:
     request = urllib.request.Request(
         url,
         headers={
@@ -279,7 +272,66 @@ def download_release_zip(repo: str, tag: str, target_dir: Path, *, dry_run: bool
         with destination.open("wb") as output:
             shutil.copyfileobj(response, output)
 
-    return destination
+
+def download_with_command(command: list[str], destination: Path) -> bool:
+    completed = subprocess.run(
+        command,
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    if completed.returncode == 0 and destination.exists() and destination.stat().st_size > 0:
+        return True
+
+    if completed.stderr.strip():
+        print(completed.stderr.strip(), file=sys.stderr)
+
+    return False
+
+
+def download_release_zip(repo: str, tag: str, target_dir: Path, *, dry_run: bool = False) -> Path:
+    url = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
+    destination = target_dir / f"flora-{tag}.zip"
+
+    if dry_run:
+        log(f"dry-run: would download {url}")
+        return destination
+
+    log(f"downloading release archive: {tag}")
+
+    try:
+        download_with_python(url, destination)
+        return destination
+    except (OSError, urllib.error.URLError) as error:
+        log(f"Python download failed: {error}")
+
+    if os.name == "nt":
+        log("trying Windows curl.exe download fallback")
+        if download_with_command(["curl.exe", "-L", "--fail", "-o", str(destination), url], destination):
+            return destination
+
+        log("trying PowerShell download fallback")
+        powershell_command = [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            (
+                "$ProgressPreference = 'SilentlyContinue'; "
+                f"Invoke-WebRequest -Uri '{url}' -OutFile '{destination}'"
+            ),
+        ]
+
+        if download_with_command(powershell_command, destination):
+            return destination
+
+    raise SystemExit(
+        "Could not download the Flora release archive. "
+        "Check the internet connection, Windows certificate store, antivirus HTTPS inspection, or download the release manually."
+    )
 
 
 def extract_release_zip(archive: Path, target_dir: Path, *, dry_run: bool = False) -> Path:
@@ -359,6 +411,55 @@ def overlay_release_files(source_root: Path, *, preserve_config: bool, dry_run: 
             log("release config saved as config.release.json")
 
 
+def merge_missing_config_defaults(local_value, release_value):
+    if not isinstance(local_value, dict) or not isinstance(release_value, dict):
+        return local_value
+
+    for key, release_child in release_value.items():
+        if key not in local_value:
+            local_value[key] = release_child
+            continue
+
+        local_child = local_value[key]
+
+        if isinstance(local_child, dict) and isinstance(release_child, dict):
+            merge_missing_config_defaults(local_child, release_child)
+
+    return local_value
+
+
+def merge_release_config_defaults(source_root: Path, *, dry_run: bool = False) -> None:
+    local_config_path = ROOT / "config.json"
+    release_config_path = source_root / "config.json"
+
+    if not local_config_path.exists() or not release_config_path.exists():
+        return
+
+    if dry_run:
+        log("dry-run: would merge missing release config defaults into config.json")
+        return
+
+    with local_config_path.open("r", encoding="utf-8") as input_file:
+        local_config = json.load(input_file)
+
+    with release_config_path.open("r", encoding="utf-8") as input_file:
+        release_config = json.load(input_file)
+
+    before = json.dumps(local_config, sort_keys=True)
+    merge_missing_config_defaults(local_config, release_config)
+    after = json.dumps(local_config, sort_keys=True)
+
+    if before == after:
+        log("config.json already contains release defaults")
+        return
+
+    with local_config_path.open("w", encoding="utf-8") as output_file:
+        json.dump(local_config, output_file, indent=2)
+        output_file.write("\n")
+
+    log("merged missing release config defaults into config.json")
+
+
 def update_from_archive(
     *,
     repo: str,
@@ -372,6 +473,7 @@ def update_from_archive(
     if dry_run:
         log("dry-run: archive update would preserve data/, assets/avatars/, backups/, and logs/")
         log("dry-run: existing config.json would be preserved")
+        log("dry-run: missing release config defaults would be merged into config.json")
         if tag is None:
             log("dry-run: pass --tag vX.Y.Z to preview a specific release")
         return
@@ -466,7 +568,8 @@ def main() -> int:
 
     if mode == "archive" and not args.replace_config:
         print("Existing config.json was preserved.")
-        print("The release config was saved as config.release.json.")
+        print("Missing release config defaults were merged into config.json.")
+        print("The full release config was saved as config.release.json.")
 
     print("Admin UI: http://127.0.0.1:8000/admin.html")
     return 0

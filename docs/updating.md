@@ -134,3 +134,29 @@ The updater files are:
 - scripts/flora-update.py
 - update-flora-linux.sh
 - update-flora-windows.bat
+
+## Config handling during archive updates
+
+Archive mode preserves runtime data and preserves the existing `config.json` by default.
+
+After copying the new application files, the updater merges missing release config defaults into the existing `config.json`. This allows older installs to gain new panel definitions and new config fields without replacing user customizations.
+
+The full release config is also saved as:
+
+    config.release.json
+
+Use `--replace-config` only when you intentionally want to replace the existing config with the release config.
+
+## Linux executable bit note
+
+Git installs and Linux tar archives should preserve the executable bit for:
+
+    update-flora-linux.sh
+
+If a downloaded ZIP archive does not preserve executable permissions, run the updater with Bash:
+
+    bash update-flora-linux.sh
+
+or restore the executable bit:
+
+    chmod +x update-flora-linux.sh

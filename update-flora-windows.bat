@@ -16,15 +16,22 @@ if %ERRORLEVEL% EQU 0 (
 )
 
 echo Python was not found. Install Python 3 or add it to PATH.
-exit /b 1
+goto :failed
 
 :done
 if errorlevel 1 (
-  echo.
-  echo Flora update failed.
-  exit /b %ERRORLEVEL%
+  goto :failed
 )
 
 echo.
 echo Flora update finished.
-endlocal
+echo.
+pause
+exit /b 0
+
+:failed
+echo.
+echo Flora update failed.
+echo.
+pause
+exit /b 1
