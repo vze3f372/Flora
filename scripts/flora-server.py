@@ -2125,6 +2125,7 @@ def _flora_admin_read_request_json(handler) -> dict:
 _FLORA_ADMIN_STYLE_DEFAULTS = {
     "colors": {
         "background": "#0f172a",
+        "backgroundAlt": "#0f172a",
         "panel": "#111827",
         "panelAlt": "#182235",
         "text": "#f8fafc",
@@ -2512,6 +2513,7 @@ _FLORA_ADMIN_THEME_PRESETS = {
         "style": {
             "colors": {
                 "background": "#020617",
+                "backgroundAlt": "#020617",
                 "panel": "#111827",
                 "panelAlt": "#182235",
                 "text": "#f8fafc",
@@ -2530,6 +2532,7 @@ _FLORA_ADMIN_THEME_PRESETS = {
         "style": {
             "colors": {
                 "background": "#0b0806",
+                "backgroundAlt": "#0b0806",
                 "panel": "#17100b",
                 "panelAlt": "#24180f",
                 "text": "#fff7ed",
@@ -2548,6 +2551,7 @@ _FLORA_ADMIN_THEME_PRESETS = {
         "style": {
             "colors": {
                 "background": "#090014",
+                "backgroundAlt": "#090014",
                 "panel": "#160026",
                 "panelAlt": "#23003d",
                 "text": "#faf5ff",
@@ -2566,6 +2570,7 @@ _FLORA_ADMIN_THEME_PRESETS = {
         "style": {
             "colors": {
                 "background": "#03140d",
+                "backgroundAlt": "#03140d",
                 "panel": "#0b1f16",
                 "panelAlt": "#123524",
                 "text": "#ecfdf5",
@@ -2584,6 +2589,7 @@ _FLORA_ADMIN_THEME_PRESETS = {
         "style": {
             "colors": {
                 "background": "#050505",
+                "backgroundAlt": "#050505",
                 "panel": "#111111",
                 "panelAlt": "#1f1f1f",
                 "text": "#fafafa",

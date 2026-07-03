@@ -27,14 +27,14 @@
     }
 }
 
-.panel-shell {
+.panel-content {
   transition:
     opacity 500ms ease,
     transform 500ms ease,
     filter 500ms ease;
 }
 
-.panel-shell.is-rotating-out {
+.panel-content.is-rotating-out {
   opacity: 0;
   transform: translateY(8px);
   filter: blur(2px);
@@ -56,3 +56,12 @@
   text-transform: uppercase;
   pointer-events: none;
 }
+
+.panel-shell,
+.panel-shell.is-rotating-out,
+.panel-shell.is-rotating-in {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+

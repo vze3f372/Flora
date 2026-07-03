@@ -1,6 +1,7 @@
 const DEFAULT_STYLE = {
   colors: {
     background: "#0f172a",
+    backgroundAlt: "#0b1f33",
     panel: "#111827",
     panelAlt: "#182235",
     text: "#f8fafc",
@@ -92,6 +93,7 @@ const fields = {
 
 const styleFields = {
   background: document.getElementById("style-background"),
+  backgroundAlt: document.getElementById("style-background-alt"),
   panel: document.getElementById("style-panel"),
   panelAlt: document.getElementById("style-panel-alt"),
   text: document.getElementById("style-text"),

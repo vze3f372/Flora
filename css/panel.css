@@ -13,12 +13,11 @@
     content: "";
     position: absolute;
     inset: 0;
+    z-index: 0;
     pointer-events: none;
-    background:
-        linear-gradient(135deg, rgba(255,255,255,0.18), transparent 28%),
-        radial-gradient(circle at top left, rgba(56,243,255,0.24), transparent 34%),
-        radial-gradient(circle at bottom right, rgba(0,120,255,0.14), transparent 38%);
-    opacity: 0.8;
+    border-radius: inherit;
+    background: var(--panel-background-accent, transparent);
+    opacity: 0.85;
 }
 
 

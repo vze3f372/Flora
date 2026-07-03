@@ -1,6 +1,7 @@
 const FLORA_STYLE_DEFAULTS = {
   colors: {
     background: "#0f172a",
+    backgroundAlt: "#0b1f33",
     panel: "#111827",
     panelAlt: "#182235",
     text: "#f8fafc",
@@ -53,6 +54,7 @@ function floraApplyStyle(style) {
   }
 
   floraSetVar("--flora-background", colors.background);
+  floraSetVar("--flora-background-alt", colors.backgroundAlt);
   floraSetVar("--flora-panel", colors.panel);
   floraSetVar("--flora-panel-alt", colors.panelAlt);
   floraSetVar("--flora-text", colors.text);
@@ -69,13 +71,17 @@ function floraApplyStyle(style) {
 
   floraSetVar(
     "--panel-background",
-    `linear-gradient(135deg, ${floraRgba(colors.panel, 0.94)}, ${floraRgba(colors.panelAlt, 0.78)})`
+    `linear-gradient(135deg, ${colors.background}, ${colors.backgroundAlt})`
+  );
+  floraSetVar(
+    "--panel-background-accent",
+    `radial-gradient(circle at top left, ${floraRgba(colors.backgroundAlt, 0.36)}, transparent 36%), radial-gradient(circle at bottom right, ${floraRgba(colors.background, 0.24)}, transparent 42%)`
   );
   floraSetVar(
     "--panel-background-alt",
-    `linear-gradient(135deg, ${floraRgba(colors.panelAlt, 0.96)}, ${floraRgba(colors.panel, 0.8)})`
+    `linear-gradient(135deg, ${colors.panelAlt}, ${colors.panel})`
   );
-  floraSetVar("--panel-border", floraRgba(colors.border, 0.88));
+  floraSetVar("--panel-border", colors.border);
   floraSetVar(
     "--panel-shadow",
     `0 0 18px ${floraRgba(colors.accent, 0.28)}, inset 0 0 28px ${floraRgba(colors.accent, 0.08)}`
@@ -99,7 +105,7 @@ function floraApplyStyle(style) {
   floraSetVar("--goal-empty", colors.panelAlt);
   floraSetVar("--event-type-color", colors.accent);
 
-  document.body.style.background = colors.background;
+  document.body.style.background = "transparent";
 }
 
 async function floraLoadStyle() {

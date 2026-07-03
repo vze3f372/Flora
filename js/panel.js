@@ -344,8 +344,12 @@ function getRotationTransitionMilliseconds(rotation) {
   return transitionMilliseconds;
 }
 
-function getPanelShell() {
+function getPanelFrame() {
   return document.querySelector(".panel-shell") ?? document.body;
+}
+
+function getPanelShell() {
+  return document.querySelector(".panel-content") ?? getPanelFrame();
 }
 
 function wait(milliseconds) {
