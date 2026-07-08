@@ -15,6 +15,7 @@ RAIDS_FILE = ROOT / "data" / "raids.json"
 BITS_FILE = ROOT / "data" / "bits.json"
 SUBS_FILE = ROOT / "data" / "subs.json"
 GIFT_SUBS_FILE = ROOT / "data" / "gift-subs.json"
+WATCH_STREAKS_FILE = ROOT / "data" / "watch-streaks.json"
 GOALS_FILE = ROOT / "data" / "goals.json"
 
 
@@ -39,6 +40,7 @@ DATA_FILES = {
     "bits": BITS_FILE,
     "subs": SUBS_FILE,
     "gift-subs": GIFT_SUBS_FILE,
+    "watch-streaks": WATCH_STREAKS_FILE,
     "goals": GOALS_FILE,
     "events": EVENTS_FILE,
 }
@@ -415,6 +417,50 @@ def update_bits(args):
         bits=row["bits"],
         cheers=row["cheers"],
         biggestCheer=row["biggestCheer"],
+    ))
+
+
+
+def update_watch_streak(args):
+    name = require_non_empty_text(args.name, "name")
+    watch_streak = args.watch_streak
+    watch_streak_id = str(args.watch_streak_id or "").strip()
+    message = str(args.message or "").strip()
+    shared_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+    data = load_json_object(WATCH_STREAKS_FILE)
+    row = data.setdefault(name, {})
+
+    if not isinstance(row, dict):
+        fail(f"data/watch-streaks.json.{name} must contain a JSON object")
+
+    previous_watch_streak = safe_int(row.get("watchStreak"), 0)
+    previous_best_watch_streak = safe_int(row.get("bestWatchStreak"), 0)
+
+    row["watchStreak"] = watch_streak
+    row["bestWatchStreak"] = max(previous_best_watch_streak, watch_streak)
+
+    if watch_streak_id:
+        row["watchStreakId"] = watch_streak_id
+
+    if message:
+        row["systemMessage"] = message
+
+    row["lastSharedAt"] = shared_at
+
+    save_json_object(WATCH_STREAKS_FILE, data, args.dry_run)
+
+    print_json(make_result(
+        "watch-streak",
+        dry_run=args.dry_run,
+        file="data/watch-streaks.json",
+        name=name,
+        watchStreak=row["watchStreak"],
+        bestWatchStreak=row["bestWatchStreak"],
+        previousWatchStreak=previous_watch_streak,
+        previousBestWatchStreak=previous_best_watch_streak,
+        watchStreakId=row.get("watchStreakId", ""),
+        lastSharedAt=row["lastSharedAt"],
     ))
 
 
@@ -818,6 +864,18 @@ def build_parser():
     gift_sub_leaderboard.add_argument("--months-gifted", type=non_negative_int("months-gifted"))
     add_dry_run_argument(gift_sub_leaderboard)
     gift_sub_leaderboard.set_defaults(func=update_gift_subs)
+
+
+    watch_streak = subparsers.add_parser(
+        "watch-streak",
+        help="Update the Twitch native watch streak leaderboard.",
+    )
+    watch_streak.add_argument("--name", required=True)
+    watch_streak.add_argument("--watch-streak", required=True, type=non_negative_int("watch streak"))
+    watch_streak.add_argument("--watch-streak-id", default="")
+    watch_streak.add_argument("--message", default="")
+    watch_streak.add_argument("--dry-run", action="store_true")
+    watch_streak.set_defaults(func=update_watch_streak)
 
     goal = subparsers.add_parser(
         "goal",

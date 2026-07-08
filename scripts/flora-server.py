@@ -3055,6 +3055,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             "/api/follow": self.handle_follow,
             "/api/sub": self.handle_sub,
             "/api/gift-sub": self.handle_gift_sub,
+            "/api/streaks/twitch/watch-streak": self.handle_watch_streak,
             "/api/goal": self.handle_goal,
             "/api/event": self.handle_event,
         }
@@ -3517,6 +3518,59 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             "results": results,
             "avatar": avatar,
         }
+
+
+    def handle_watch_streak(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
+        name = require_text(payload, "name", "userName")
+        watch_streak = require_int(payload, "watchStreak", "watch_streak")
+
+        watch_streak_id = str(
+            payload.get("watchStreakId")
+            or payload.get("watch_streak_id")
+            or ""
+        ).strip()
+
+        message = str(
+            payload.get("message")
+            or payload.get("systemMessage")
+            or payload.get("system_message")
+            or ""
+        ).strip()
+
+        args = [
+            "watch-streak",
+            "--name",
+            name,
+            "--watch-streak",
+            str(watch_streak),
+        ]
+
+        if watch_streak_id:
+            args.extend(["--watch-streak-id", watch_streak_id])
+
+        if message:
+            args.extend(["--message", message])
+
+        avatar = safe_cache_avatar_from_payload(name, payload, dry_run)
+
+        results = [
+            run_writer(
+                args,
+                dry_run,
+            )
+        ]
+
+        return {
+            "ok": True,
+            "action": "watch-streak",
+            "dryRun": dry_run,
+            "name": name,
+            "watchStreak": watch_streak,
+            "watchStreakId": watch_streak_id,
+            "results": results,
+            "avatar": avatar,
+        }
+
 
     def handle_goal(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
         key = require_text(payload, "key")
