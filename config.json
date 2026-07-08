@@ -436,6 +436,47 @@
       "rankLabel": "Rank",
       "nameLabel": "Gifter",
       "sortMode": "giftSubCount"
+    },
+    "stream-streaks": {
+      "type": "table",
+      "title": "STREAM STREAKS",
+      "subtitle": "CONSECUTIVE STREAM CHECK-INS",
+      "dataFile": "data/streaks.json",
+      "maxRows": 10,
+      "sortBy": "currentStreak",
+      "sortThenBy": "bestStreak",
+      "columns": [
+        {
+          "label": "Streak",
+          "field": "currentStreak",
+          "className": "primary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Best",
+          "field": "bestStreak",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "120px"
+        },
+        {
+          "label": "Streams",
+          "field": "streamsSeen",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "130px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "emptyMessage": "No stream streaks recorded yet",
+      "rankLabel": "Rank",
+      "nameLabel": "Viewer"
     }
   },
   "rotation": {
@@ -467,22 +508,21 @@
   },
   "style": {
     "colors": {
-      "background": "#0f172a",
-      "backgroundAlt": "#0b1f33",
-      "panel": "#111827",
-      "panelAlt": "#182235",
-      "text": "#f8fafc",
-      "muted": "#94a3b8",
-      "accent": "#38bdf8",
-      "border": "#293548",
-      "success": "#22c55e",
+      "background": "#871c62",
+      "backgroundAlt": "#211920",
+      "panel": "#871c62",
+      "panelAlt": "#211920",
+      "text": "#faf5ff",
+      "muted": "#c4b5fd",
+      "accent": "#ee8422",
+      "border": "#ee8422",
+      "success": "#34d399",
       "error": "#fb7185"
     }
   },
   "rotations": {
     "leaderboards": {
       "enabled": true,
-      "sequenceMode": "grouped",
       "panels": [
         {
           "panel": "raids",
@@ -507,6 +547,10 @@
         {
           "panel": "bits-biggest",
           "durationSeconds": 10
+        },
+        {
+          "panel": "stream-streaks",
+          "durationSeconds": 10
         }
       ],
       "transitionMilliseconds": 500,
@@ -514,19 +558,30 @@
     },
     "goals": {
       "enabled": true,
-      "sequenceMode": "manual",
       "panels": [
         {
-          "panel": "follower-goal",
-          "durationSeconds": 12
+          "panel": "raids-count",
+          "durationSeconds": 10
         },
         {
-          "panel": "sub-goal",
-          "durationSeconds": 12
+          "panel": "raids",
+          "durationSeconds": 10
+        },
+        {
+          "panel": "raids-biggest",
+          "durationSeconds": 10
+        },
+        {
+          "panel": "recent-events",
+          "durationSeconds": 10
+        },
+        {
+          "panel": "follower-goal",
+          "durationSeconds": 10
         }
       ],
       "transitionMilliseconds": 500,
-      "startPanel": "follower-goal"
+      "startPanel": "raids-count"
     }
   }
 }
