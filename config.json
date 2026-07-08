@@ -492,21 +492,14 @@
           "field": "watchStreak",
           "className": "primary-number",
           "align": "center",
-          "width": "140px"
+          "width": "150px"
         },
         {
           "label": "Best",
           "field": "bestWatchStreak",
           "className": "secondary-number",
           "align": "center",
-          "width": "120px"
-        },
-        {
-          "label": "Points",
-          "field": "channelPointsAwarded",
-          "className": "secondary-number",
-          "align": "center",
-          "width": "120px"
+          "width": "130px"
         }
       ],
       "scroll": {
