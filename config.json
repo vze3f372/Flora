@@ -477,6 +477,47 @@
       "emptyMessage": "No stream streaks recorded yet",
       "rankLabel": "Rank",
       "nameLabel": "Viewer"
+    },
+    "watch-streaks": {
+      "type": "table",
+      "title": "WATCH STREAKS",
+      "subtitle": "TWITCH NATIVE STREAKS",
+      "dataFile": "data/watch-streaks.json",
+      "maxRows": 10,
+      "sortBy": "watchStreak",
+      "sortThenBy": "bestWatchStreak",
+      "columns": [
+        {
+          "label": "Streak",
+          "field": "watchStreak",
+          "className": "primary-number",
+          "align": "center",
+          "width": "140px"
+        },
+        {
+          "label": "Best",
+          "field": "bestWatchStreak",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "120px"
+        },
+        {
+          "label": "Points",
+          "field": "channelPointsAwarded",
+          "className": "secondary-number",
+          "align": "center",
+          "width": "120px"
+        }
+      ],
+      "scroll": {
+        "enabled": true,
+        "speedPixelsPerSecond": 24,
+        "startDelaySeconds": 1,
+        "gapPixels": 20
+      },
+      "emptyMessage": "No Twitch watch streaks shared yet",
+      "rankLabel": "Rank",
+      "nameLabel": "Viewer"
     }
   },
   "rotation": {
