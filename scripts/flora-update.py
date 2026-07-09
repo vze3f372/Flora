@@ -27,6 +27,9 @@ RUNTIME_DEFAULTS = {
     ROOT / "data" / "bits.json": ROOT / "data" / "defaults" / "bits.json",
     ROOT / "data" / "subs.json": ROOT / "data" / "defaults" / "subs.json",
     ROOT / "data" / "gift-subs.json": ROOT / "data" / "defaults" / "gift-subs.json",
+    ROOT / "data" / "streaks.json": ROOT / "data" / "defaults" / "streaks.json",
+    ROOT / "data" / "watch-streaks.json": ROOT / "data" / "defaults" / "watch-streaks.json",
+    ROOT / "data" / "stream-sessions.json": ROOT / "data" / "defaults" / "stream-sessions.json",
     ROOT / "data" / "events.json": ROOT / "data" / "defaults" / "events.json",
     ROOT / "data" / "goals.json": ROOT / "data" / "defaults" / "goals.json",
 }
@@ -36,6 +39,9 @@ PRESERVED_RUNTIME_FILES = {
     Path("data/bits.json"),
     Path("data/subs.json"),
     Path("data/gift-subs.json"),
+    Path("data/streaks.json"),
+    Path("data/watch-streaks.json"),
+    Path("data/stream-sessions.json"),
     Path("data/events.json"),
     Path("data/goals.json"),
     Path("data/avatar-cache.json"),
@@ -483,6 +489,9 @@ def update_from_archive(
         archive = download_release_zip(repo, release_tag, temp_dir, dry_run=dry_run)
         source_root = extract_release_zip(archive, temp_dir, dry_run=dry_run)
         overlay_release_files(source_root, preserve_config=preserve_config, dry_run=dry_run)
+
+        if preserve_config:
+            merge_release_config_defaults(source_root, dry_run=dry_run)
 
 
 def parse_args() -> argparse.Namespace:
