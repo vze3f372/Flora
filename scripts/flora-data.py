@@ -15,6 +15,9 @@ RAIDS_FILE = ROOT / "data" / "raids.json"
 BITS_FILE = ROOT / "data" / "bits.json"
 SUBS_FILE = ROOT / "data" / "subs.json"
 GIFT_SUBS_FILE = ROOT / "data" / "gift-subs.json"
+STREAM_STREAKS_FILE = ROOT / "data" / "streaks.json"
+STREAM_SESSIONS_FILE = ROOT / "data" / "stream-sessions.json"
+WATCH_STREAKS_FILE = ROOT / "data" / "watch-streaks.json"
 GOALS_FILE = ROOT / "data" / "goals.json"
 
 
@@ -39,6 +42,8 @@ DATA_FILES = {
     "bits": BITS_FILE,
     "subs": SUBS_FILE,
     "gift-subs": GIFT_SUBS_FILE,
+    "stream-streaks": STREAM_STREAKS_FILE,
+    "watch-streaks": WATCH_STREAKS_FILE,
     "goals": GOALS_FILE,
     "events": EVENTS_FILE,
 }
@@ -415,6 +420,152 @@ def update_bits(args):
         bits=row["bits"],
         cheers=row["cheers"],
         biggestCheer=row["biggestCheer"],
+    ))
+
+
+
+
+def load_stream_sessions():
+    data = load_json(STREAM_SESSIONS_FILE, {"streams": []})
+
+    if not isinstance(data, dict):
+        fail("data/stream-sessions.json must contain a JSON object")
+
+    streams = data.setdefault("streams", [])
+
+    if not isinstance(streams, list):
+        fail("data/stream-sessions.json.streams must be a list")
+
+    normalized_streams = []
+
+    for stream_id in streams:
+        text = str(stream_id).strip()
+
+        if text and text not in normalized_streams:
+            normalized_streams.append(text)
+
+    data["streams"] = normalized_streams
+    return data
+
+
+def previous_stream_id(streams, stream_id):
+    try:
+        index = streams.index(stream_id)
+    except ValueError:
+        return streams[-1] if streams else ""
+
+    if index <= 0:
+        return ""
+
+    return streams[index - 1]
+
+
+def update_stream_streak(args):
+    name = require_non_empty_text(args.name, "name")
+    stream_id = require_non_empty_text(args.stream_id, "stream id")
+    checked_in_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+    sessions = load_stream_sessions()
+    streams = sessions["streams"]
+    previous_id = previous_stream_id(streams, stream_id)
+
+    if stream_id not in streams:
+        streams.append(stream_id)
+
+    data = load_json_object(STREAM_STREAKS_FILE)
+    row = data.setdefault(name, {})
+
+    if not isinstance(row, dict):
+        fail(f"data/streaks.json.{name} must contain a JSON object")
+
+    previous_current_streak = safe_int(row.get("currentStreak"), 0)
+    previous_best_streak = safe_int(row.get("bestStreak"), 0)
+    previous_streams_seen = safe_int(row.get("streamsSeen"), 0)
+    last_stream_id = str(row.get("lastStreamId", "")).strip()
+
+    duplicate_check_in = last_stream_id == stream_id
+
+    if duplicate_check_in:
+        current_streak = previous_current_streak
+        streams_seen = previous_streams_seen
+    elif previous_id and last_stream_id == previous_id:
+        current_streak = previous_current_streak + 1
+        streams_seen = previous_streams_seen + 1
+    else:
+        current_streak = 1
+        streams_seen = previous_streams_seen + 1
+
+    row["currentStreak"] = current_streak
+    row["bestStreak"] = max(previous_best_streak, current_streak)
+    row["streamsSeen"] = streams_seen
+    row["lastStreamId"] = stream_id
+    row["lastSeenAt"] = checked_in_at
+
+    if "firstSeenAt" not in row:
+        row["firstSeenAt"] = checked_in_at
+
+    save_json_object(STREAM_SESSIONS_FILE, sessions, args.dry_run)
+    save_json_object(STREAM_STREAKS_FILE, data, args.dry_run)
+
+    print_json(make_result(
+        "stream-streak",
+        dry_run=args.dry_run,
+        file="data/streaks.json",
+        sessionsFile="data/stream-sessions.json",
+        name=name,
+        streamId=stream_id,
+        previousStreamId=previous_id,
+        duplicateCheckIn=duplicate_check_in,
+        currentStreak=row["currentStreak"],
+        bestStreak=row["bestStreak"],
+        streamsSeen=row["streamsSeen"],
+        previousCurrentStreak=previous_current_streak,
+        previousBestStreak=previous_best_streak,
+        previousStreamsSeen=previous_streams_seen,
+        lastSeenAt=row["lastSeenAt"],
+    ))
+
+
+def update_watch_streak(args):
+    name = require_non_empty_text(args.name, "name")
+    watch_streak = args.watch_streak
+    watch_streak_id = str(args.watch_streak_id or "").strip()
+    message = str(args.message or "").strip()
+    shared_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+    data = load_json_object(WATCH_STREAKS_FILE)
+    row = data.setdefault(name, {})
+
+    if not isinstance(row, dict):
+        fail(f"data/watch-streaks.json.{name} must contain a JSON object")
+
+    previous_watch_streak = safe_int(row.get("watchStreak"), 0)
+    previous_best_watch_streak = safe_int(row.get("bestWatchStreak"), 0)
+
+    row["watchStreak"] = watch_streak
+    row["bestWatchStreak"] = max(previous_best_watch_streak, watch_streak)
+
+    if watch_streak_id:
+        row["watchStreakId"] = watch_streak_id
+
+    if message:
+        row["systemMessage"] = message
+
+    row["lastSharedAt"] = shared_at
+
+    save_json_object(WATCH_STREAKS_FILE, data, args.dry_run)
+
+    print_json(make_result(
+        "watch-streak",
+        dry_run=args.dry_run,
+        file="data/watch-streaks.json",
+        name=name,
+        watchStreak=row["watchStreak"],
+        bestWatchStreak=row["bestWatchStreak"],
+        previousWatchStreak=previous_watch_streak,
+        previousBestWatchStreak=previous_best_watch_streak,
+        watchStreakId=row.get("watchStreakId", ""),
+        lastSharedAt=row["lastSharedAt"],
     ))
 
 
@@ -818,6 +969,28 @@ def build_parser():
     gift_sub_leaderboard.add_argument("--months-gifted", type=non_negative_int("months-gifted"))
     add_dry_run_argument(gift_sub_leaderboard)
     gift_sub_leaderboard.set_defaults(func=update_gift_subs)
+
+
+
+    stream_streak = subparsers.add_parser(
+        "stream-streak",
+        help="Update the Flora attendance streak leaderboard.",
+    )
+    stream_streak.add_argument("--name", required=True)
+    stream_streak.add_argument("--stream-id", required=True)
+    stream_streak.add_argument("--dry-run", action="store_true")
+    stream_streak.set_defaults(func=update_stream_streak)
+
+    watch_streak = subparsers.add_parser(
+        "watch-streak",
+        help="Update the Twitch native watch streak leaderboard.",
+    )
+    watch_streak.add_argument("--name", required=True)
+    watch_streak.add_argument("--watch-streak", required=True, type=non_negative_int("watch streak"))
+    watch_streak.add_argument("--watch-streak-id", default="")
+    watch_streak.add_argument("--message", default="")
+    watch_streak.add_argument("--dry-run", action="store_true")
+    watch_streak.set_defaults(func=update_watch_streak)
 
     goal = subparsers.add_parser(
         "goal",

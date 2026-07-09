@@ -27,6 +27,9 @@ REQUIRED_FILES = [
     "data/defaults/bits.json",
     "data/defaults/goals.json",
     "data/defaults/events.json",
+    "data/defaults/streaks.json",
+    "data/defaults/watch-streaks.json",
+    "data/defaults/stream-sessions.json",
     "scripts/validate-config.py",
     "scripts/flora-data.py",
     "docs/streamerbot/http-actions.md",
@@ -42,6 +45,8 @@ def runtime_default_for(relative_path):
         "data/bits.json": "data/defaults/bits.json",
         "data/events.json": "data/defaults/events.json",
         "data/goals.json": "data/defaults/goals.json",
+        "data/streaks.json": "data/defaults/streaks.json",
+        "data/watch-streaks.json": "data/defaults/watch-streaks.json",
     }
 
     return runtime_defaults.get(str(relative_path).replace(chr(92), "/"))
