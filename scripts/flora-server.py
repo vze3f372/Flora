@@ -3055,6 +3055,7 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
             "/api/follow": self.handle_follow,
             "/api/sub": self.handle_sub,
             "/api/gift-sub": self.handle_gift_sub,
+            "/api/streaks/attendance/check-in": self.handle_stream_streak,
             "/api/streaks/twitch/watch-streak": self.handle_watch_streak,
             "/api/goal": self.handle_goal,
             "/api/event": self.handle_event,
@@ -3515,6 +3516,37 @@ class FloraRequestHandler(SimpleHTTPRequestHandler):
         return {
             "action": "gift-sub",
             "dryRun": dry_run,
+            "results": results,
+            "avatar": avatar,
+        }
+
+
+
+    def handle_stream_streak(self, payload: dict[str, Any], dry_run: bool) -> dict[str, Any]:
+        name = require_text(payload, "name", "userName")
+        stream_id = require_text(payload, "streamId", "stream_id")
+
+        avatar = safe_cache_avatar_from_payload(name, payload, dry_run)
+
+        results = [
+            run_writer(
+                [
+                    "stream-streak",
+                    "--name",
+                    name,
+                    "--stream-id",
+                    stream_id,
+                ],
+                dry_run,
+            )
+        ]
+
+        return {
+            "ok": True,
+            "action": "stream-streak",
+            "dryRun": dry_run,
+            "name": name,
+            "streamId": stream_id,
             "results": results,
             "avatar": avatar,
         }
