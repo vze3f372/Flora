@@ -2419,7 +2419,7 @@ function floraActionBuilderUpdateVisibility() {
   const usesAmount = target === "raid" || target === "bits";
   const usesCheers = target === "bits";
   const usesGoalUpdate = target === "follow" || target === "sub" || target === "sub-leaderboard" || target === "gift-sub";
-  const usesAvatar = target === "raid" || target === "bits" || target === "follow" || target === "sub" || target === "sub-leaderboard" || target === "gift-sub";
+  const usesAvatar = target === "raid" || target === "bits" || target === "follow" || target === "sub" || target === "sub-leaderboard" || target === "gift-sub" || target === "stream-streaks" || target === "watch-streaks";
 
   floraActionBuilderSetVisible(floraActionBuilderTargetWrap, isCustom);
   floraActionBuilderSetVisible(floraActionBuilderAmountPresetWrap, usesAmount);
@@ -2528,7 +2528,30 @@ function floraActionBuilderBuildUrl() {
     return `/api/sub?${floraActionBuilderQueryString(params)}`;
   }
 
-  if (target === "gift-sub") {
+
+  if (target === "stream-streaks") {
+    params.push(["streamId", "%date:yyyy-MM-dd%"]);
+
+    if (floraActionBuilderAvatar.checked && avatarUrl) {
+      params.push(["avatarUrl", avatarUrl]);
+    }
+
+    return `/api/streaks/attendance/check-in?${floraActionBuilderQueryString(params)}`;
+  }
+
+  if (target === "watch-streaks") {
+    params.push(["watchStreak", "%watchStreak%"]);
+    params.push(["watchStreakId", "%watchStreakId%"]);
+    params.push(["message", "%systemMessage%"]);
+
+    if (floraActionBuilderAvatar.checked && avatarUrl) {
+      params.push(["avatarUrl", avatarUrl]);
+    }
+
+    return `/api/streaks/twitch/watch-streak?${floraActionBuilderQueryString(params)}`;
+  }
+
+if (target === "gift-sub") {
     params.push(["recipient", "%recipientUserName%"]);
     params.push(["giftCount", "1"]);
     params.push(["totalGifted", "%totalSubsGifted%"]);
