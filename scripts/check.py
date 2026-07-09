@@ -29,6 +29,7 @@ REQUIRED_FILES = [
     "data/defaults/events.json",
     "data/defaults/streaks.json",
     "data/defaults/watch-streaks.json",
+    "data/defaults/stream-sessions.json",
     "scripts/validate-config.py",
     "scripts/flora-data.py",
     "docs/streamerbot/http-actions.md",

@@ -1540,6 +1540,9 @@ def _flora_admin_runtime_reset_selected(payload: dict) -> dict:
         "bits": bool(reset.get("bits")),
         "subs": bool(reset.get("subs")),
         "giftSubs": bool(reset.get("giftSubs")),
+        "streamStreaks": bool(reset.get("streamStreaks")),
+        "streamSessions": bool(reset.get("streamSessions")),
+        "watchStreaks": bool(reset.get("watchStreaks")),
         "events": bool(reset.get("events")),
         "avatarCache": bool(reset.get("avatarCache")),
         "avatarImages": bool(reset.get("avatarImages")),
@@ -1641,6 +1644,24 @@ def _flora_admin_handle_runtime_reset_post(handler) -> bool:
             _flora_admin_write_json(path, {})
             reset_items.append("Gift sub leaderboard")
 
+        if selected["streamStreaks"]:
+            path = data_dir / "streaks.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__streaks.json"))
+            _flora_admin_write_json(path, {})
+            reset_items.append("Flora attendance streaks")
+
+        if selected["streamSessions"]:
+            path = data_dir / "stream-sessions.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__stream-sessions.json"))
+            _flora_admin_write_json(path, {"streams": []})
+            reset_items.append("Flora stream sessions")
+
+        if selected["watchStreaks"]:
+            path = data_dir / "watch-streaks.json"
+            backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__watch-streaks.json"))
+            _flora_admin_write_json(path, {})
+            reset_items.append("Twitch watch streaks")
+
         if selected["events"]:
             path = data_dir / "events.json"
             backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__events.json"))
@@ -1723,6 +1744,24 @@ _RUNTIME_BACKUP_RESTORE_ITEMS = {
         "label": "Gift sub leaderboard",
         "backup": "data__gift-subs.json",
         "destination": "data/gift-subs.json",
+        "kind": "file",
+    },
+    "streamStreaks": {
+        "label": "Flora attendance streaks",
+        "backup": "data__streaks.json",
+        "destination": "data/streaks.json",
+        "kind": "file",
+    },
+    "streamSessions": {
+        "label": "Flora stream sessions",
+        "backup": "data__stream-sessions.json",
+        "destination": "data/stream-sessions.json",
+        "kind": "file",
+    },
+    "watchStreaks": {
+        "label": "Twitch watch streaks",
+        "backup": "data__watch-streaks.json",
+        "destination": "data/watch-streaks.json",
         "kind": "file",
     },
     "events": {
@@ -3010,6 +3049,9 @@ RUNTIME_DATA_FILES = {
     ROOT / "data" / "bits.json": RUNTIME_DEFAULTS_DIR / "bits.json",
     ROOT / "data" / "subs.json": RUNTIME_DEFAULTS_DIR / "subs.json",
     ROOT / "data" / "gift-subs.json": RUNTIME_DEFAULTS_DIR / "gift-subs.json",
+    ROOT / "data" / "streaks.json": RUNTIME_DEFAULTS_DIR / "streaks.json",
+    ROOT / "data" / "watch-streaks.json": RUNTIME_DEFAULTS_DIR / "watch-streaks.json",
+    ROOT / "data" / "stream-sessions.json": RUNTIME_DEFAULTS_DIR / "stream-sessions.json",
     ROOT / "data" / "events.json": RUNTIME_DEFAULTS_DIR / "events.json",
     ROOT / "data" / "goals.json": RUNTIME_DEFAULTS_DIR / "goals.json",
 }

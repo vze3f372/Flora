@@ -39,3 +39,7 @@ logs/flora-watchdog.log
 data/subs.json
 
 data/gift-subs.json
+
+data/streaks.json
+data/watch-streaks.json
+data/stream-sessions.json

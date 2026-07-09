@@ -130,6 +130,8 @@ const streamerbotUrls = [
   ["/api/sub?name=%userName%&updateGoal=true", "Sub + goal"],
   ["/api/sub?name=%userName%&totalMonths=%badgeCount%&streakMonths=%monthsSubscribed%&tier=%tier%&isPrimeSub=%isPrimeSub%&avatarUrl=%targetUserProfileImageUrlEscaped%", "Sub leaderboard"],
   ["/api/gift-sub?name=%userName%&recipient=%recipientUserName%&giftCount=1&totalGifted=%totalSubsGifted%&tier=%tier%&anonymous=%anonymous%&monthsGifted=%monthsGifted%&avatarUrl=%targetUserProfileImageUrlEscaped%", "Gift sub leaderboard"],
+  ["/api/streaks/attendance/check-in?name=%userName%&streamId=%date:yyyy-MM-dd%", "Flora attendance streaks"],
+  ["/api/streaks/twitch/watch-streak?name=%userName%&watchStreak=%watchStreak%&watchStreakId=%watchStreakId%&message=%systemMessage%", "Twitch watch streaks"],
 ];
 
 function absoluteUrl(path) {
@@ -1236,6 +1238,9 @@ const runtimeRestoreFields = {
   bits: document.getElementById("runtime-restore-bits"),
   subs: document.getElementById("runtime-restore-subs"),
   giftSubs: document.getElementById("runtime-restore-gift-subs"),
+  streamStreaks: document.getElementById("runtime-restore-stream-streaks"),
+  streamSessions: document.getElementById("runtime-restore-stream-sessions"),
+  watchStreaks: document.getElementById("runtime-restore-watch-streaks"),
   events: document.getElementById("runtime-restore-events"),
   avatarCache: document.getElementById("runtime-restore-avatar-cache"),
   avatarImages: document.getElementById("runtime-restore-avatar-images"),
@@ -1278,6 +1283,9 @@ function runtimeRestoreSelection() {
     bits: Boolean(runtimeRestoreFields.bits?.checked),
     subs: Boolean(runtimeRestoreFields.subs?.checked),
     giftSubs: Boolean(runtimeRestoreFields.giftSubs?.checked),
+    streamStreaks: Boolean(runtimeRestoreFields.streamStreaks?.checked),
+    streamSessions: Boolean(runtimeRestoreFields.streamSessions?.checked),
+    watchStreaks: Boolean(runtimeRestoreFields.watchStreaks?.checked),
     events: Boolean(runtimeRestoreFields.events?.checked),
     avatarCache: Boolean(runtimeRestoreFields.avatarCache?.checked),
     avatarImages: Boolean(runtimeRestoreFields.avatarImages?.checked),
@@ -1292,6 +1300,9 @@ function runtimeRestoreSelectionLabels(options) {
   if (options.bits) labels.push("bits leaderboard");
   if (options.subs) labels.push("subscription leaderboard");
   if (options.giftSubs) labels.push("gift sub leaderboard");
+  if (options.streamStreaks) labels.push("Flora attendance streaks");
+  if (options.streamSessions) labels.push("Flora stream sessions");
+  if (options.watchStreaks) labels.push("Twitch watch streaks");
   if (options.events) labels.push("recent events");
   if (options.avatarCache) labels.push("avatar cache metadata");
   if (options.avatarImages) labels.push("avatar image files");
@@ -1478,6 +1489,9 @@ const runtimeResetFields = {
   bits: document.getElementById("runtime-reset-bits"),
   subs: document.getElementById("runtime-reset-subs"),
   giftSubs: document.getElementById("runtime-reset-gift-subs"),
+  streamStreaks: document.getElementById("runtime-reset-stream-streaks"),
+  streamSessions: document.getElementById("runtime-reset-stream-sessions"),
+  watchStreaks: document.getElementById("runtime-reset-watch-streaks"),
   events: document.getElementById("runtime-reset-events"),
   avatarCache: document.getElementById("runtime-reset-avatar-cache"),
   avatarImages: document.getElementById("runtime-reset-avatar-images"),
@@ -1490,6 +1504,9 @@ function selectedRuntimeResetOptions() {
     bits: Boolean(runtimeResetFields.bits?.checked),
     subs: Boolean(runtimeResetFields.subs?.checked),
     giftSubs: Boolean(runtimeResetFields.giftSubs?.checked),
+    streamStreaks: Boolean(runtimeResetFields.streamStreaks?.checked),
+    streamSessions: Boolean(runtimeResetFields.streamSessions?.checked),
+    watchStreaks: Boolean(runtimeResetFields.watchStreaks?.checked),
     events: Boolean(runtimeResetFields.events?.checked),
     avatarCache: Boolean(runtimeResetFields.avatarCache?.checked),
     avatarImages: Boolean(runtimeResetFields.avatarImages?.checked),
@@ -2181,6 +2198,8 @@ const FLORA_OBS_SINGLE_SOURCES = [
   ["Total sub months leaderboard", "/panel.html?type=sub-months-total"],
   ["Sub streak leaderboard", "/panel.html?type=sub-months-streak"],
   ["Gift sub leaderboard", "/panel.html?type=gift-subs"],
+  ["Stream streak leaderboard", "/panel.html?type=stream-streaks"],
+  ["Watch streak leaderboard", "/panel.html?type=watch-streaks"],
   ["Follower goal", "/panel.html?type=follower-goal"],
   ["Subscriber goal", "/panel.html?type=sub-goal"],
   ["Recent events", "/panel.html?type=recent-events"],
