@@ -971,3 +971,43 @@ select:focus {
   display: block;
 }
 /* FLORA_UNIFIED_ROTATION_EDITOR_END */
+
+/* Streak runtime reset/restore checkbox sizing */
+.runtime-reset-grid input[type="checkbox"] {
+  width: auto;
+  min-width: 0;
+  height: auto;
+  margin: 0;
+  flex: 0 0 auto;
+  appearance: auto;
+}
+
+.runtime-reset-grid label {
+  align-items: center;
+}
+
+/* v0.17.3 streak runtime checkbox fix */
+.runtime-reset-grid label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.65rem;
+  line-height: 1.3;
+}
+
+.runtime-reset-grid input[type="checkbox"],
+.runtime-reset-grid label input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  box-sizing: border-box;
+  display: inline-block;
+  flex: 0 0 1rem;
+  width: 1rem !important;
+  min-width: 1rem !important;
+  max-width: 1rem !important;
+  height: 1rem !important;
+  min-height: 1rem !important;
+  max-height: 1rem !important;
+  margin: 0;
+  padding: 0;
+}

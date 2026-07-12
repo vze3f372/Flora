@@ -2,26 +2,26 @@
 
 Flora supports two separate streak leaderboard panels:
 
-- `stream-streaks`: Flora-calculated attendance streaks.
-- `watch-streaks`: Twitch-native watch streaks reported by Streamer.bot.
+- `stream-streaks`: Flora Watch Streak, managed locally by Flora.
+- `watch-streaks`: Twitch Watch Streak reported by Streamer.bot.
 
 Keep these separate. They measure different things.
 
 ## OBS browser source URLs
 
-Flora attendance streaks:
+Flora Watch Streak:
 
 ~~~text
 http://127.0.0.1:8000/panel.html?type=stream-streaks
 ~~~
 
-Twitch-native watch streaks:
+Twitch Watch Streak:
 
 ~~~text
 http://127.0.0.1:8000/panel.html?type=watch-streaks
 ~~~
 
-## Flora attendance streaks
+## Flora Watch Streak
 
 Use this when you want Flora to calculate its own consecutive-stream attendance leaderboard.
 
@@ -52,7 +52,7 @@ Rules:
 - If they missed the previous stream, their current streak resets to `1`.
 - `bestStreak` stores their highest Flora attendance streak.
 
-## Twitch-native watch streaks
+## Twitch Watch Streak
 
 Use this when you want Flora to display Twitch's official watch streak value.
 

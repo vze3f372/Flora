@@ -439,8 +439,8 @@
     },
     "stream-streaks": {
       "type": "table",
-      "title": "STREAM STREAKS",
-      "subtitle": "CONSECUTIVE STREAM CHECK-INS",
+      "title": "FLORA WATCH STREAK",
+      "subtitle": "FLORA MANAGED STREAKS",
       "dataFile": "data/streaks.json",
       "maxRows": 10,
       "sortBy": "currentStreak",
@@ -474,14 +474,14 @@
         "startDelaySeconds": 1,
         "gapPixels": 20
       },
-      "emptyMessage": "No stream streaks recorded yet",
+      "emptyMessage": "No Flora watch streaks recorded yet",
       "rankLabel": "Rank",
       "nameLabel": "Viewer"
     },
     "watch-streaks": {
       "type": "table",
-      "title": "WATCH STREAKS",
-      "subtitle": "TWITCH NATIVE STREAKS",
+      "title": "TWITCH WATCH STREAK",
+      "subtitle": "TWITCH MANAGED STREAKS",
       "dataFile": "data/watch-streaks.json",
       "maxRows": 10,
       "sortBy": "watchStreak",

@@ -1648,19 +1648,24 @@ def _flora_admin_handle_runtime_reset_post(handler) -> bool:
             path = data_dir / "streaks.json"
             backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__streaks.json"))
             _flora_admin_write_json(path, {})
-            reset_items.append("Flora attendance streaks")
 
-        if selected["streamSessions"]:
+            sessions_path = data_dir / "stream-sessions.json"
+            backups.append(_flora_admin_runtime_backup_file(sessions_path, backup_dir, "data__stream-sessions.json"))
+            _flora_admin_write_json(sessions_path, {"streams": []})
+
+            reset_items.append("Flora Watch Streak data")
+
+        elif selected["streamSessions"]:
             path = data_dir / "stream-sessions.json"
             backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__stream-sessions.json"))
             _flora_admin_write_json(path, {"streams": []})
-            reset_items.append("Flora stream sessions")
+            reset_items.append("Flora Watch Streak session data")
 
         if selected["watchStreaks"]:
             path = data_dir / "watch-streaks.json"
             backups.append(_flora_admin_runtime_backup_file(path, backup_dir, "data__watch-streaks.json"))
             _flora_admin_write_json(path, {})
-            reset_items.append("Twitch watch streaks")
+            reset_items.append("Twitch Watch Streak data")
 
         if selected["events"]:
             path = data_dir / "events.json"
@@ -1747,19 +1752,19 @@ _RUNTIME_BACKUP_RESTORE_ITEMS = {
         "kind": "file",
     },
     "streamStreaks": {
-        "label": "Flora attendance streaks",
+        "label": "Flora Watch Streak data",
         "backup": "data__streaks.json",
         "destination": "data/streaks.json",
         "kind": "file",
     },
     "streamSessions": {
-        "label": "Flora stream sessions",
+        "label": "Flora Watch Streak session data",
         "backup": "data__stream-sessions.json",
         "destination": "data/stream-sessions.json",
         "kind": "file",
     },
     "watchStreaks": {
-        "label": "Twitch watch streaks",
+        "label": "Twitch Watch Streak data",
         "backup": "data__watch-streaks.json",
         "destination": "data/watch-streaks.json",
         "kind": "file",
